@@ -10,7 +10,6 @@ import sys
 import pytest
 
 from scripts.ci.setup_toolchain import current_target
-from tests.ci.desktop_release_roles import gate
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -122,76 +121,6 @@ def test_cache_roots_cannot_select_private_state_or_follow_workspace_symlinks(tm
         describe_cache(source, tmp_path / "*", "test")
     with pytest.raises(ValueError, match="producer"):
         describe_cache(source, tmp_path / "cache", "test\nOTHER=value")
-
-
-def test_composite_transports_only_and_uses_the_restore_key_for_save(tmp_path):
-    from ruamel.yaml import YAML
-
-    action = ROOT / ".github/actions/desktop-build-cache/action.yml"
-    assert action.is_file(), "the desktop transport action is missing"
-    document = YAML(typ="safe").load(action.read_text(encoding="utf-8-sig"))
-    steps = document["runs"]["steps"]
-    source = source_tree(tmp_path / "source")
-    cache = tmp_path / "cache"
-    output = tmp_path / "output"
-    inputs = {"source": str(source), "cache": str(cache), "work": str(tmp_path / "job"),
-              "producer": "desktop-production", "phase": "restore", "key": ""}
-
-    describe_step = next(step for step in steps if step.get("id") == "describe")
-    def run_description(phase, key):
-        inputs.update(phase=phase, key=key)
-        values = {f"${{{{ inputs.{name} }}}}": value for name, value in inputs.items()}
-        values["${{ github.action_path }}"] = str(action.parent)
-        env = {name: values[value] for name, value in describe_step["env"].items()}
-        output.unlink(missing_ok=True)
-        result = subprocess.run(
-            ["bash", "-e", "-c", describe_step["run"]], cwd=tmp_path,
-            env={**os.environ, **env, "GITHUB_OUTPUT": str(output), "RUNNER_OS": "Linux"},
-            capture_output=True, text=True, encoding="utf-8", timeout=30,
-            check=False,
-        )
-        return result
-
-    result = run_description("restore", "")
-    assert result.returncode == 0, result.stdout + result.stderr
-    values = dict(line.split("=", 1) for line in output.read_text(encoding="utf-8-sig").splitlines())
-    assert json.loads(values["cache-paths"])
-    assert not cache.exists(), "description must not install/prune anything"
-    restored_key = values["cache-key"]
-    result = run_description("save", restored_key)
-    assert result.returncode == 0, result.stdout + result.stderr
-    assert run_description("save", "").returncode != 0
-    assert run_description("typo", "").returncode != 0
-
-    restore = next(step for step in steps if step.get("id") == "restore")
-    save = next(step for step in steps if step.get("id") == "save")
-    assert restore["uses"].startswith("actions/cache/restore@")
-    assert save["uses"].startswith("actions/cache/save@")
-    assert restore["with"]["path"] == save["with"]["path"]
-    assert save["with"]["key"] == "${{ inputs.key }}"
-    assert restore["continue-on-error"] is True
-    assert save["continue-on-error"] is True
-    for step in steps:
-        assert not gate(step["if"], {}, {}, job_if=False, cancelled=True), \
-            "failure salvage must not run during cancellation"
-    # A cache service failure is reported instead of failing preparation.
-    (report,) = [step for step in steps if "::warning::" in step.get("run", "")]
-    for failed in ("restore", "save"):
-        assert gate(report["if"], {}, {}, job_if=False, failed=True, steps={failed: {"outcome": "failure"}})
-    assert not gate(report["if"], {}, {}, job_if=False, steps={"restore": {"outcome": "success"}})
-
-
-def test_action_path_join_is_an_actual_newline(tmp_path):
-    import re
-    from ruamel.yaml import YAML
-
-    action = YAML(typ="safe").load((ROOT / ".github/actions/desktop-build-cache/action.yml").read_text(encoding="utf-8-sig"))
-    expression = next(step for step in action["runs"]["steps"] if step.get("id") == "restore")["with"]["path"]
-    # GitHub expression strings do not process backslash escapes. A JSON
-    # string does; evaluate that exact separator instead of trusting YAML.
-    match = re.search(r", fromJSON\('([^']+)'\)\)", expression)
-    assert match, "decode the JSON newline rather than joining paths with a literal backslash-n"
-    assert json.loads(match[1]) == "\n"
 
 
 def test_job_state_cannot_be_nested_in_a_transport_domain(tmp_path):

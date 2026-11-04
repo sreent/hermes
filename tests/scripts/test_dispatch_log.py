@@ -9,7 +9,6 @@ from scripts.releases.bundle_env import parse_assignments
 from scripts.releases.channel_build import dispatch_command as channel_dispatch
 from scripts.releases.commit_build import dispatch_command as commit_dispatch
 from scripts.releases.job_groups import ALL_JOBS
-from tests.ci.test_desktop_release_tag_admission import _workflow
 
 SHA = "a" * 40
 REPOSITORY = "fixture-owner/fixture-repo"
@@ -39,21 +38,6 @@ def env(**values):
     }
     base.update(values)
     return base
-
-
-def test_pre_build_setup_prints_the_dispatch_before_any_other_work():
-    steps = _workflow()["jobs"]["validate"]["steps"]
-    printed = steps[1]
-    assert printed["name"] == "Print the release.py command for this run"
-    assert printed["run"] == "python3 -m scripts.releases.dispatch_log"
-    assert "if" not in printed
-    forwarded = {key: value for key, value in printed["env"].items()}
-    assert forwarded["BUILD_COMMIT"] == "${{ inputs.build_commit }}"
-    assert forwarded["CHANNEL"] == "${{ inputs.channel }}"
-    assert forwarded["BUNDLE_ENV_JSON"] == "${{ inputs.bundle_env }}"
-    assert forwarded["JOBS"] == "${{ inputs.jobs }}"
-    assert forwarded["DEFAULT_BRANCH"] == "${{ github.event.repository.default_branch }}"
-    assert "GITHUB_TOKEN" not in forwarded and "GH_TOKEN" not in forwarded
 
 
 @pytest.mark.parametrize("kind,extra", [

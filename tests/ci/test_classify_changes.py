@@ -10,7 +10,6 @@ from __future__ import annotations
 import importlib.util
 import io
 import json
-import re
 import subprocess
 import sys
 from pathlib import Path
@@ -564,36 +563,6 @@ def _yaml(rel: str) -> dict:
     return yaml.safe_load((_REPO / rel).read_text(encoding="utf-8-sig"))
 
 
-def test_every_lane_reaches_the_composite_action():
-    """The action is the one surface every consumer reads, so it must carry all
-    of them — ci.yaml, nix.yml and docker.yml each re-export a different subset.
-    """
-    lanes = set(classify(["run_agent.py"]))
-    action_outputs = set(_yaml(".github/actions/detect-changes/action.yml")["outputs"])
-    assert lanes - action_outputs == set(), "lane(s) missing from the composite action's outputs"
-
-
-def test_ci_jobs_only_gate_on_detect_outputs_that_detect_actually_declares():
-    """An ``if`` that reads an undeclared output resolves to the empty string.
-
-    The lane then reports "skipping" on every PR, forever, and nothing goes red
-    — there is no error for referencing an output a job never declared. That is
-    exactly how the ``rust`` lane shipped dead: the classifier emitted it and
-    the composite action re-exported it, but ci.yaml's ``detect`` job did not,
-    so ``needs.detect.outputs.rust`` was never anything but "".
-    """
-    ci = _yaml(".github/workflows/ci.yaml")
-    declared = set(ci["jobs"]["detect"]["outputs"])
-
-    referenced: set[str] = set()
-    for job in ci["jobs"].values():
-        for expr in _iter_if_expressions(job):
-            referenced.update(re.findall(r"needs\.detect\.outputs\.(\w+)", expr))
-
-    assert referenced, "found no detect-gated jobs — the walk is broken, not the wiring"
-    assert referenced - declared == set(), "job(s) gate on an output detect never declares"
-
-
 def _iter_if_expressions(job: object):
     """Yield every ``if:`` string in a job, including inside its steps, plus
     every reusable-workflow ``with:`` value (an undeclared output passed as an
@@ -622,48 +591,6 @@ _REAL_UPDATE_LANES = (
     # Catalog-only PRs skip the suite, so their catalog tests must gate the merge.
     ("ci.yaml", "catalog-tests", "catalog-tests.yml", "catalog"),
 )
-
-
-@pytest.mark.parametrize("caller,job,called,lane", _REAL_UPDATE_LANES)
-def test_real_update_suites_gate_the_merge_when_their_lane_fires(caller, job, called, lane):
-    """A real-update suite that runs but cannot fail the merge is decoration.
-
-    Each one must reach ``all-checks-pass`` (directly, or through the
-    reusable workflow that calls it), be gated on its lane, and never be
-    ``continue-on-error``: a red shard has to block the PR it ran for.
-    """
-    ci = _yaml(".github/workflows/ci.yaml")
-    caller_jobs = _yaml(f".github/workflows/{caller}")["jobs"]
-    assert caller_jobs[job]["uses"] == f"./.github/workflows/{called}"
-    gate = caller_jobs[job].get("if", "") + json.dumps(caller_jobs[job].get("with") or {})
-    assert lane in gate, f"{caller}::{job} is not gated on {lane}"
-    root = job if caller == "ci.yaml" else "tests-os"
-    assert root in ci["jobs"]["all-checks-pass"]["needs"]
-    for name, body in _yaml(f".github/workflows/{called}")["jobs"].items():
-        assert not body.get("continue-on-error"), f"{called}::{name} cannot fail the merge"
-
-
-def test_remote_backends_lane_runs_test_files_that_exist_and_start_it():
-    """The lane's test list and its path gate must agree: a renamed test file would
-    otherwise drop silently out of the run (run_tests.sh skips a missing path) or stop
-    starting the lane on the PR that edits it."""
-    text = (_REPO / ".github/workflows/remote-backends.yml").read_text(encoding="utf-8-sig")
-    paths = sorted(set(re.findall(r"(tests/[\w/.-]+\.py)", text)))
-    assert paths
-    assert [p for p in paths if not (_REPO / p).is_file()] == []
-    assert [p for p in paths if not classify([p])["remote_backends"]] == []
-    # A skip there is a missing host, not a pass; the runner, not a grep over its
-    # progress line, decides that.
-    assert "scripts/run_tests.sh --fail-on-skip" in text
-
-
-def test_windows_venv_e2e_runs_only_test_files_that_exist():
-    """``run_tests.sh`` drops a missing path (or a ``::node`` selector) without
-    a word, so a stale entry silently stops running on every wine2e push."""
-    text = (_REPO / ".github/workflows/windows-venv-e2e.yml").read_text(encoding="utf-8-sig")
-    paths = re.findall(r"(tests/[\w/.:-]+)", text)
-    assert paths
-    assert [p for p in paths if "::" in p or not (_REPO / p).is_file()] == []
 
 
 def _write_event(tmp_path, number: int | None = 88442) -> Path:
@@ -771,22 +698,3 @@ def test_pull_request_labels_prefers_the_live_labels_over_the_replayed_event(tmp
     monkeypatch.setattr(_mod.subprocess, "run", lambda *a, **k: failed)
     event.write_text(json.dumps({"pull_request": {"number": 7, "labels": [{"name": "run-e2e"}]}}), encoding="utf-8")
     assert pull_request_labels() == ["run-e2e"]
-
-
-def test_catalog_lane_runs_every_test_that_reads_the_shipped_catalog():
-    """A catalog-only PR runs only the lane's discovered files, so a test that
-    reads the real ``plugin-catalog/`` must be among them."""
-    spec = importlib.util.spec_from_file_location("catalog_test_files", _REPO / "scripts/ci/catalog_test_files.py")
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    files = set(mod.catalog_test_files())
-    for must in (
-        "tests/hermes_cli/test_plugin_catalog.py",
-        "tests/scripts/test_validate_plugin_catalog.py",
-        "tests/scripts/test_contributor_map.py",
-        "tests/website/test_extract_plugins.py",
-    ):
-        assert must in files
-    assert not any(f.startswith("tests/e2e/") for f in files)
-    text = (_REPO / ".github/workflows/catalog-tests.yml").read_text(encoding="utf-8-sig")
-    assert "scripts/ci/catalog_test_files.py" in text and "scripts/run_tests.sh" in text

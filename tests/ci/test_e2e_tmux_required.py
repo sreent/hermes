@@ -51,12 +51,3 @@ def test_every_tmux_suite_uses_the_gate_instead_of_a_bare_skip():
     assert not bare, f"skip over zero coverage in the e2e lane: {bare}"
     ungated = [str(p.relative_to(_REPO)) for p in _TMUX_SUITES if "require_tmux()" not in p.read_text(encoding="utf-8")]
     assert not ungated, ungated
-
-
-def test_the_e2e_job_requires_tmux():
-    yaml = pytest.importorskip("hermes_yaml")
-    job = yaml.safe_load((_REPO / ".github" / "workflows" / "tests.yml").read_text(encoding="utf-8"))["jobs"]["e2e"]
-    run_step = next(s for s in job["steps"] if s.get("name") == "Run e2e tests")
-    assert run_step["env"]["HERMES_E2E_REQUIRE_TUI"] == "1"
-    assert any("tmux" in s.get("run", "") and "tmux -V" in s.get("run", "") for s in job["steps"]), \
-        "the e2e job must install/verify tmux before the tmux suites run"

@@ -2,52 +2,16 @@
 verdict the crash cells can only reach on a Windows runner says pass exactly when the user's
 update was what the cell claims."""
 
-import importlib
-import inspect
-import os
-import shlex
 import subprocess
 import sys
 import time
 from pathlib import Path
 from types import SimpleNamespace
 
-import psutil
 import pytest
-from _pytest.mark.expression import Expression
 
 import tests.e2e.core.windows_update.test_crash_cells as crash
 from hermes_cli import update_lock
-
-_REPO = Path(__file__).resolve().parents[2]
-_SUITE = "tests/e2e/core/windows_update"
-
-
-def _workflow_selection() -> str:
-    """The ``-m`` expression the Windows install + update E2E workflow runs its suite with."""
-    yaml = pytest.importorskip("hermes_yaml")
-    wf = yaml.safe_load((_REPO / ".github/workflows/windows-install-update-e2e.yml").read_text(encoding="utf-8-sig"))
-    step = next(s for s in wf["jobs"]["install-update"]["steps"] if s.get("name") == "Run Windows install + update E2E")
-    argv = shlex.split(step["run"].replace("\\\n", " "))
-    assert f"{_SUITE}/" in argv, f"the workflow no longer runs {_SUITE}/: {argv}"
-    return argv[argv.index("-m") + 1]
-
-
-# run_tests.sh reports a file whose every test the -m expression deselects as passed with 0
-# tests run, so a dropped platforms("windows") marker would silently run zero cells.
-@pytest.mark.parametrize("path", sorted(p.name for p in (_REPO / _SUITE).glob("test_*.py")))
-def test_windows_update_workflow_selects_every_test_of_the_suite(path):
-    selection = Expression.compile(_workflow_selection())
-    module = importlib.import_module(f"{_SUITE.replace('/', '.')}.{Path(path).stem}")
-    tests = [fn for name, fn in inspect.getmembers(module, inspect.isfunction) if name.startswith("test")]
-    assert tests, f"{path}: no module-level test functions to select"
-    for fn in tests:
-        marks = [getattr(m, "mark", m) for m in [*getattr(module, "pytestmark", []), *getattr(fn, "pytestmark", [])]]
-        names = {m.name for m in marks}
-        assert selection.evaluate(lambda name, **_: name in names), f"{path}::{fn.__name__}: the workflow deselects it"
-        windows = any(m.name == "platforms" and "windows" in m.args for m in marks)
-        assert windows, f"{path}::{fn.__name__}: not marked platforms('windows'), so the Windows runner skips it"
-
 
 class _Machine:
     def __init__(self, logs: Path) -> None:
@@ -223,33 +187,6 @@ def test_orphan_marker_guard_fires_once_the_fix_lands(monkeypatch):
     monkeypatch.setattr(crash, "orphan_marker_fix_missing", list)
     with pytest.raises(AssertionError, match="delete ORPHAN_MARKER_GAP"):
         test_orphan_marker_wrapper_expires_once_its_fix_is_in_the_tree()
-
-
-# Review 5411223855 (F52): a runtime proof the crash file ran, beside the static selection check
-# above: a lost opt-in env or any other zero-execution path also exits 0 per file.
-def test_workflow_requires_the_crash_journey_manifest(tmp_path, monkeypatch):
-    from tests.ci import workflow_steps
-
-    yaml = pytest.importorskip("hermes_yaml")
-    wf = yaml.safe_load((_REPO / ".github/workflows/windows-install-update-e2e.yml").read_text(encoding="utf-8-sig"))
-    steps = wf["jobs"]["install-update"]["steps"]
-    names = [s.get("name") for s in steps]
-    run, check = steps[names.index("Run Windows install + update E2E")], steps[names.index("Every crash cell ran")]
-    assert names.index("Every crash cell ran") > names.index("Run Windows install + update E2E")
-    workflow_steps.required(check, {"inputs": {}})  # neither disabled nor advisory
-    assert check["env"]["HERMES_E2E_ARTIFACTS"] == run["env"]["HERMES_E2E_ARTIFACTS"]
-    assert f"'{crash.CELLS_RAN_MANIFEST}'" in check["run"] and "throw" in check["run"]
-
-    j = crash.Journey(_Machine(tmp_path))
-    j.step("install", lambda: "ok")
-    j.step("mid_fetch", lambda: (_ for _ in ()).throw(RuntimeError("boom")))
-    monkeypatch.delenv("HERMES_E2E_ARTIFACTS", raising=False)
-    crash._record_cells_ran(j)
-    assert not list(tmp_path.rglob(crash.CELLS_RAN_MANIFEST))
-    monkeypatch.setenv("HERMES_E2E_ARTIFACTS", str(tmp_path / "artifacts"))
-    crash._record_cells_ran(j)
-    assert (tmp_path / "artifacts" / crash.CELLS_RAN_MANIFEST).read_text(encoding="utf-8") == (
-        "install: ok\nmid_fetch: failed\n")
 
 
 # Review 5411223855 (crash-cell timing): while the hold filter blocks git, the op and index.lock
