@@ -913,12 +913,16 @@ class GatewaySlashCommandsMixin(
         enough to review inline, so the full flow works on every platform."""
         from hermes_cli.write_approval_commands import handle_pending_subcommand
         from tools import write_approval as wa
+        from tools.memory_sharing import owner_for_source, viewing_as
         from tools.memory_tool import load_on_disk_store
         # Apply approved writes against a fresh on-disk store (the gateway has no long-lived agent;
         # the store persists to the same MEMORY/USER.md and honors the configured char limits).
-        out = handle_pending_subcommand(
-            wa.MEMORY, event.get_command_args().strip().split(), memory_store=load_on_disk_store(),
-            set_mode_fn=self._write_approval_setter("memory", event))
+        # Under memory.sharing the sender's own memory, and only their own pending writes.
+        owner = owner_for_source(event.source, self._session_key_for_source(event.source))
+        with viewing_as(owner):
+            out = handle_pending_subcommand(
+                wa.MEMORY, event.get_command_args().strip().split(), memory_store=load_on_disk_store(owner),
+                set_mode_fn=self._write_approval_setter("memory", event))
         return out if out is not None else t("gateway.memory.unknown_subcommand")
 
     async def _handle_skills_command(self, event: MessageEvent) -> str:

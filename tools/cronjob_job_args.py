@@ -60,6 +60,7 @@ def _origin_from_env(
     schedule: str | dict[str, Any] | None = None,
 ) -> Optional[dict[str, str]]:
     from gateway.session_context import async_delivery_supported, get_session_env
+    from tools.memory_sharing import origin_memory_owner
     origin_platform = get_session_env("HERMES_SESSION_PLATFORM")
     origin_chat_id = get_session_env("HERMES_SESSION_CHAT_ID")
     if not (origin_platform and origin_chat_id):
@@ -104,6 +105,8 @@ def _origin_from_env(
         # Workspace/server scope (Slack team, Discord guild...): Slack session keys embed it,
         # so a continuable cron seed built without it would never resolve a scoped reply.
         "scope_id": get_session_env("HERMES_SESSION_SCOPE_ID") or None,
+        # Under memory.sharing, whose memory the job's runs use (tools/memory_sharing.py).
+        **origin_memory_owner(),
     }
 
 

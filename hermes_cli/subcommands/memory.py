@@ -31,4 +31,8 @@ def build_memory_parser(subparsers, *, cmd_memory: Callable) -> None:
     _reset_parser.add_argument(
         "--target", choices=["all", "memory", "user"], default="all",
         help="Which store to reset: 'all' (default), 'memory', or 'user'")
+    _reset_parser.add_argument(
+        "--user", metavar="PLATFORM:ID",
+        help="Erase one messaging user's memory instead (memory.sharing per_user or hybrid), "
+             "e.g. telegram:123456789")
     memory_parser.set_defaults(func=cmd_memory)

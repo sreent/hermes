@@ -1045,6 +1045,11 @@ memory:
   # every N user turns. Set to 0 to disable. Only active when memory is enabled.
   nudge_interval: 10        # Nudge every 10 user turns (0 = disabled)
 
+  # Whose MEMORY.md / USER.md each conversation uses when several people talk to this agent:
+  # shared (one for the agent), per_user (each messaging user's own), or hybrid (the agent's
+  # notes shared, each user's profile their own). The CLI/TUI/desktop operator keeps memories/.
+  sharing: shared
+
   # Where MEMORY.md / USER.md are kept. "local" keeps them in this profile's
   # memories/ folder. "gcs" or "s3" (MinIO, AWS S3, R2) keeps them in a bucket,
   # under <prefix><profile>/memories/; memories/ becomes a cache. Writes are

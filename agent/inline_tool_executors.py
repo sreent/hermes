@@ -136,7 +136,14 @@ def _session_search(agent, args: dict, ctx: InlineToolContext) -> Any:
             ("exclude_session_ids", "exclude_session_ids"),
         ),
         db=session_db, current_session_id=agent.session_id,
+        viewer=_session_viewer(agent),
     )
+
+
+def _session_viewer(agent) -> Any:
+    """Whose sessions this agent may search under memory.sharing (tools/memory_sharing.py)."""
+    from tools.memory_sharing import session_viewer
+    return session_viewer(agent)
 
 
 def _memory(agent, args: dict, ctx: InlineToolContext) -> Any:

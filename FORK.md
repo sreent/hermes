@@ -250,18 +250,38 @@ Not rebranded yet:
   signing.
 - Docs pages, translated READMEs, favicons and images, and the TUI's translated taglines.
 
-### Planned: configurable memory sharing
+### Memory sharing per agent: shared, per_user, hybrid
 
-Configurable memory sharing per agent (`shared`, `per_user`, `hybrid`). The upstream code that
-currently ties memory to a profile rather than to a user:
+`memory.sharing` in a profile's config.yaml decides whose `MEMORY.md` / `USER.md` a conversation uses:
 
-- `tools/memory_tool.py` `get_memory_dir()`: MEMORY.md and USER.md always live under the profile home.
-- `agent/agent_init.py` `_init_memory()`: builds and loads the store; the agent already has `user_id`,
-  `chat_type` and `thread_id` here.
-- `tools/memory_tool.py` `load_on_disk_store()`: the gateway approval and `/memory` paths load the store
-  without an agent.
-- `tools/session_search_tool.py` `session_search()`: searches every session with no user filter, although
-  the `sessions` table stores `user_id`.
-- Skills under the profile home are shared by everyone who talks to the profile.
-- Background review and flush agents write memory after a turn, and must run as the same user.
-- In a shared group or thread session the agent is built once, with the first sender's `user_id`.
+- `shared` is upstream's behaviour and the default.
+- `per_user` gives each messaging user their own pair of files.
+- `hybrid` shares the agent's `MEMORY.md` and gives each user their own `USER.md`.
+
+The operator (CLI, TUI, desktop, their own cron jobs) keeps the profile's `memories/` files. A user's files live
+in `memories/users/<platform>/<id>/`. A group or thread session shared by its members is owned by the chat:
+`memories/chats/<platform>/<chat>[/<thread>]/`, since no single member's memory may load into it. Documented
+in `website/docs/user-guide/configuration.md#memory-sharing`.
+
+- `tools/memory_sharing.py` (new) holds the logic:
+  - the setting, and the owner, derived from the identity the gateway already gives the agent (DM, or the
+    session key ending in the participant id);
+  - folders and store construction;
+  - `owner_for_agent`: a cron job's owner, then the store's (review forks share it), then identity, then the
+    delegating parent's;
+  - the viewer filter for pending writes;
+  - `OwnerScopedSessions`, the session view `session_search` gets.
+- Upstream hooks, each small:
+  - `tools/memory_tool_store.py`: the store has an owner, and `_path_for` uses its folder.
+  - `tools/memory_tool.py`: `load_on_disk_store(owner)`; staged writes carry their owner, and approval applies
+    them there.
+  - `tools/memory_storage.py`: bucket keys use the path under `memories/`, so users never share an object.
+  - `agent/agent_init.py`: the store comes from `store_for_agent`.
+  - `agent/inline_tool_executors.py`: `session_search` gets the viewer.
+  - `tools/session_search_tool.py`: a scoped view, and no cross-profile reads.
+  - `tools/write_approval.py`: pending memory writes are filtered to the viewer.
+  - `gateway/slash_commands.py`: `/memory` runs as the sender.
+  - `tools/cronjob_job_args.py`: a job made in a chat records `origin.memory_owner`.
+  - `cron/scheduler.py`: the job's agent takes that owner; the line count is unchanged.
+  - `hermes memory reset --user platform:id` (`hermes_cli/subcommands/memory.py`, `main_agent_cmds.py`).
+- Not per user: skills, and external memory providers, which scope users themselves.

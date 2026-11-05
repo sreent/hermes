@@ -8,7 +8,8 @@ With a bucket, the bucket holds the truth and the local files are a cache the re
 reading. ``MemoryStore`` pulls the bucket copy before it reads, and writes the bucket with a
 conditional write (generation / ETag match) before it writes the local file; a write that lost a race
 to another writer raises :class:`MemoryStorageConflict` and is re-applied to the newer copy. Each
-profile's objects live under ``<prefix><profile>/memories/``.
+profile's objects live under ``<prefix><profile>/memories/``, keeping the folders
+``memory.sharing`` gives each user (``users/<platform>/<id>/``).
 
 Secrets never come from config.yaml: S3 reads ``AWS_ACCESS_KEY_ID`` / ``AWS_SECRET_ACCESS_KEY`` (and
 ``AWS_SESSION_TOKEN``); GCS uses the metadata server (GKE workload identity, GCE) or the service-account
@@ -96,6 +97,20 @@ def _profile_namespace() -> str:
     return profile_name_for_home(get_hermes_home()) or "default"
 
 
+def _memory_relpath(path: Path) -> str:
+    """``path`` relative to the profile's memories/ folder: ``MEMORY.md``, or ``users/<platform>/<id>/USER.md``
+    under ``memory.sharing`` (tools/memory_sharing.py). Raises for a path outside it rather than let two
+    owners' files share one object."""
+    from tools import memory_tool
+    root = memory_tool.get_memory_dir()
+    for candidate, base in ((path, root), (path.resolve(), root.resolve())):
+        try:
+            return candidate.relative_to(base).as_posix()
+        except ValueError:
+            continue
+    raise ValueError(f"{path} is not under {root}")
+
+
 class MemoryMirror:
     """Keeps one profile's memory files in step with a bucket (see the module docstring).
 
@@ -109,7 +124,7 @@ class MemoryMirror:
         self._namespace = namespace
 
     def key_for(self, path: Path) -> str:
-        return f"{self._prefix}{self._namespace or _profile_namespace()}/memories/{path.name}"
+        return f"{self._prefix}{self._namespace or _profile_namespace()}/memories/{_memory_relpath(path)}"
 
     @staticmethod
     def _version_file(path: Path) -> Path:

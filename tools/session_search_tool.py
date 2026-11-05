@@ -603,9 +603,11 @@ def _dispatch(query, role_filter, limit, db, current_session_id, session_id,
 def session_search(query: str = "", role_filter: str | None = None, limit: int | None = None, db=None,
                    current_session_id: str | None = None, session_id: str | None = None, around_message_id: int | None = None,
                    window: int = 5, sort: str | None = None, profile: str | None = None, detail: str = "adaptive",
-                   after: str | None = None, before: str | None = None, exclude_session_ids: Optional[list[str]] = None) -> str:
+                   after: str | None = None, before: str | None = None, exclude_session_ids: Optional[list[str]] = None,
+                   viewer: Optional[str] = None) -> str:
     """Run session search, closing DBs opened here. Positional order is frozen for old callers;
-    new parameters are appended after ``detail``."""
+    new parameters are appended after ``detail``. ``viewer``: the memory owner whose sessions alone
+    are visible under ``memory.sharing`` (tools/memory_sharing.py); None searches everything."""
     from hermes_constants import get_hermes_home
     from hermes_state import SessionDB, format_session_db_unavailable
     from hermes_state_registry import release_or_close
@@ -644,6 +646,12 @@ def session_search(query: str = "", role_filter: str | None = None, limit: int |
             return tool_error(format_session_db_unavailable(), success=False)
         owned_dbs.append(db)
     try:
+        if viewer:
+            if profile_db is not None:
+                return tool_error("Other profiles' conversations are not available in this conversation.",
+                                  success=False)
+            from tools.memory_sharing import OwnerScopedSessions
+            db = OwnerScopedSessions(db, viewer)
         return _dispatch(query, role_filter, limit, db, current_session_id, session_id,
                          around_message_id, window, sort, profile, detail,
                          after=after, before=before, exclude_session_ids=exclude_session_ids)

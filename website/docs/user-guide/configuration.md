@@ -941,6 +941,43 @@ If the bucket is unreachable, sessions start with the cached copy and memory wri
 
 Credentials never go in `config.yaml`. `s3` reads `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` (plus `AWS_SESSION_TOKEN` for temporary credentials) from the profile's `.env` or the environment, and the server must support conditional PUTs. `gcs` uses the metadata server (GKE workload identity, or a GCE service account) or the service-account key file named by `GOOGLE_APPLICATION_CREDENTIALS`; the account needs read and write access to the bucket's objects.
 
+### Memory sharing
+
+When several people talk to the same agent (a Telegram bot, a Slack app, a Discord server), `memory.sharing` decides whose `MEMORY.md` and `USER.md` each conversation uses. It is set per agent, in each profile's `config.yaml`:
+
+```yaml
+memory:
+  sharing: hybrid   # shared (default) | per_user | hybrid
+```
+
+| Setting | `MEMORY.md` (the agent's notes) | `USER.md` (who the user is) |
+|---|---|---|
+| `shared` | one for the agent | one for the agent |
+| `per_user` | each user's own | each user's own |
+| `hybrid` | one for the agent | each user's own |
+
+Whose memory a conversation gets:
+
+- **You, the operator**: the CLI, the TUI, the desktop app, and cron jobs you created there. You keep the profile's `memories/` files under every setting.
+- **A messaging user**, in a DM or in a group session isolated per participant (the gateway default, `group_sessions_per_user`): `memories/users/<platform>/<user id>/`.
+- **A group or thread whose members share one session** (threads, unless `thread_sessions_per_user` is on): `memories/chats/<platform>/<chat id>[/<thread id>]/`. Everyone in it reads the same transcript, so no single member's memory loads there.
+
+Under `per_user` and `hybrid`, the rest of the agent follows the same owner:
+
+- `session_search` only finds the owner's own past conversations, and cannot read another profile's. Your own search is not restricted.
+- A cron job created in someone's chat uses that person's memory when it runs.
+- Memory writes waiting for approval (`memory.write_approval`) are listed only to the user whose conversation proposed them, and applied to that user's memory whoever approves them. In the CLI and desktop you see all of them.
+
+Things to know before switching:
+
+- Memory written before you switch from `shared` stays in the profile's `memories/` files, which become yours. Each user then starts with empty memory.
+- Skills stay shared by everyone who talks to the agent, under every setting, as do external memory providers (`memory.provider`), which scope users their own way.
+- Per-user folders follow `memory.storage`, so with a bucket each user's files live under the same relative path in the bucket.
+
+To erase one user's memory, use `hermes memory reset --user telegram:123456789`; add `--target user` to keep their `MEMORY.md`. This deletes the bucket copy too.
+
+An unknown value turns built-in memory off and logs why, rather than guessing who may see what.
+
 ## Context File Truncation
 
 Controls how much content Hermes loads from each automatic context file before applying head/tail truncation. This applies to files injected into the system prompt such as `SOUL.md`, `.hermes.md`, `AGENTS.md`, `CLAUDE.md`, and `.cursorrules`. It does **not** affect the `read_file` tool.

@@ -25,6 +25,7 @@ from typing import Any, Dict, List, Optional
 
 from hermes_constants import get_hermes_home
 from utils import atomic_json_write
+from tools.memory_sharing import viewing_owner, visible_to_viewer
 
 logger = logging.getLogger(__name__)
 
@@ -97,7 +98,8 @@ def list_pending(subsystem: str) -> list[dict[str, Any]]:
             record = json.loads(p.read_text(encoding="utf-8-sig"))
             if not isinstance(record, dict):
                 raise ValueError(f"expected a JSON object, got {type(record).__name__}")
-            records.append(record)
+            if _visible(subsystem, record):
+                records.append(record)
         except Exception:
             logger.warning("Skipping unreadable pending record: %s", p)
     records.sort(key=lambda r: r.get("created_at", 0))
@@ -111,7 +113,7 @@ def get_pending(subsystem: str, pending_id: str) -> Optional[dict[str, Any]]:
         return None
     try:
         data = json.loads(path.read_text(encoding="utf-8-sig"))
-        return data if isinstance(data, dict) else None
+        return data if isinstance(data, dict) and _visible(subsystem, data) else None
     except Exception:
         return None
 
@@ -120,7 +122,7 @@ def discard_pending(subsystem: str, pending_id: str) -> bool:
     """Delete a pending record. Returns True if it existed."""
     try:
         path = _pending_path(subsystem, pending_id)
-        if path.exists():
+        if path.exists() and get_pending(subsystem, pending_id) is not None:
             path.unlink()
             return True
     except Exception as e:  # pragma: no cover
@@ -133,9 +135,17 @@ def pending_count(subsystem: str) -> int:
     d = _pending_path(subsystem, "").parent
     if not d.exists():
         return 0
+    if subsystem == MEMORY and viewing_owner() is not None:
+        return len(list_pending(subsystem))
     with suppress(Exception):
         return sum(1 for _ in d.glob("*.json"))
     return 0
+
+
+def _visible(subsystem: str, record: dict[str, Any]) -> bool:
+    """Under ``memory.sharing``, a user reviewing pending memory writes sees only their own
+    (tools/memory_sharing.py); the operator sees all of them."""
+    return subsystem != MEMORY or visible_to_viewer(record)
 
 
 # --- Write origin ---

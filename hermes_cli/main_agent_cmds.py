@@ -22,6 +22,10 @@ def _cmd_memory_off():
 def _cmd_memory_reset(args):
     from hermes_constants import get_hermes_home, display_hermes_home
     mem_dir = get_hermes_home() / "memories"
+    if getattr(args, "user", None):  # one user's memory under memory.sharing (tools/memory_sharing.py)
+        from tools.memory_sharing import user_owner
+        mem_dir = mem_dir / user_owner(args.user).key
+    shown = f"{display_hermes_home()}/{mem_dir.relative_to(get_hermes_home()).as_posix()}/"
     target = getattr(args, "target", "all")
     files_to_reset = []
     if target in {"all", "memory"}:
@@ -31,7 +35,7 @@ def _cmd_memory_reset(args):
 
     existing = [(f, desc) for f, desc in files_to_reset if (mem_dir / f).exists()]
     if not existing:
-        print(f"\n  Nothing to reset — no memory files found in {display_hermes_home()}/memories/\n")
+        print(f"\n  Nothing to reset — no memory files found in {shown}\n")
         return
 
     print("\n  This will permanently erase the following memory files:")
@@ -57,7 +61,7 @@ def _cmd_memory_reset(args):
             print(f"  ✓ Deleted {f} ({desc})")
 
     print("\n  Memory reset complete. New sessions will start with a blank slate.")
-    print(f"  Files were in: {display_hermes_home()}/memories/\n")
+    print(f"  Files were in: {shown}\n")
 
 
 def cmd_memory(args):

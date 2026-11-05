@@ -2481,7 +2481,7 @@ def _resolve_cron_agent_setup(job: dict, job_id: str, job_name: str, jc) -> _Cro
 def _construct_cron_agent(AIAgent, job: dict, _cfg: dict, setup: _CronAgentSetup, *, workdir, session_id, session_db):
     runtime = setup.runtime
     pr = _cfg.get("provider_routing") or {}
-    return AIAgent(
+    agent = AIAgent(
         model=setup.model,
         api_key=runtime.get("api_key"),
         base_url=runtime.get("base_url"),
@@ -2489,17 +2489,14 @@ def _construct_cron_agent(AIAgent, job: dict, _cfg: dict, setup: _CronAgentSetup
         requested_provider=runtime.get("requested_provider"),
         api_mode=runtime.get("api_mode"),
         request_overrides=runtime.get("request_overrides"),
-        acp_command=runtime.get("command"),
-        acp_args=runtime.get("args"),
+        acp_command=runtime.get("command"), acp_args=runtime.get("args"),
         max_iterations=setup.max_iterations,
         reasoning_config=setup.reasoning_config,
         prefill_messages=setup.prefill_messages,
         fallback_model=setup.fallback_model,
         credential_pool=setup.credential_pool,
-        providers_allowed=pr.get("only"),
-        providers_ignored=pr.get("ignore"),
-        providers_order=pr.get("order"),
-        provider_sort=pr.get("sort"),
+        providers_allowed=pr.get("only"), providers_ignored=pr.get("ignore"),
+        providers_order=pr.get("order"), provider_sort=pr.get("sort"),
         openrouter_min_coding_score=(_cfg.get("openrouter") or {}).get("min_coding_score"),
         enabled_toolsets=_resolve_cron_enabled_toolsets(job, _cfg),
         disabled_toolsets=_resolve_cron_disabled_toolsets(_cfg),
@@ -2513,6 +2510,9 @@ def _construct_cron_agent(AIAgent, job: dict, _cfg: dict, setup: _CronAgentSetup
         session_id=session_id,
         session_db=session_db,
     )
+    from tools.memory_sharing import apply_job_owner
+    apply_job_owner(agent, job)  # memory.sharing: the memory of the conversation that made the job
+    return agent
 
 
 class _FireAudit:

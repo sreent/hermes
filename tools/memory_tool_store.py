@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from utils import atomic_write_text
+from tools.memory_sharing import scope_dirs
 from tools.memory_storage import MemoryStorageConflict, MemoryStorageError
 from tools.threat_patterns import first_threat_message as _first_threat_message
 
@@ -188,9 +189,14 @@ class MemoryStore:
     _MAX_CONSOLIDATION_FAILURES_PER_TURN = 3
 
     def __init__(self, memory_char_limit: int = 2200, user_char_limit: int = 1375, *,
-                 memory_enabled: bool = True, user_profile_enabled: bool = True, mirror: Any = None):
+                 memory_enabled: bool = True, user_profile_enabled: bool = True, mirror: Any = None,
+                 owner: Any = None, sharing: str = "shared"):
         # ``mirror``: a ``tools.memory_storage.MemoryMirror`` when memory.storage names a bucket.
         self._mirror = mirror
+        # Whose memory this is (``tools.memory_sharing.MemoryOwner``; None = the agent's own) and
+        # ``memory.sharing``, which together pick each file's folder under memories/.
+        self.owner, self.sharing = owner, sharing
+        self._scope = scope_dirs(sharing, owner)
         self.memory_entries: list[str] = []
         self.user_entries: list[str] = []
         self.memory_char_limit, self.user_char_limit = memory_char_limit, user_char_limit
@@ -302,10 +308,21 @@ class MemoryStore:
                 with suppress(OSError):
                     _flock(True)
 
-    @staticmethod
-    def _path_for(target: str) -> Path:
+    def _path_for(self, target: str) -> Path:
         from tools import memory_tool  # get_memory_dir is monkeypatched there
-        return memory_tool.get_memory_dir() / ("USER.md" if target == "user" else "MEMORY.md")
+        target = "user" if target == "user" else "memory"
+        return memory_tool.get_memory_dir() / self._scope[target] / ("USER.md" if target == "user" else "MEMORY.md")
+
+    def for_owner(self, owner: Any) -> "MemoryStore":
+        """This store, or a loaded one with the same settings for another owner's memory (applying a
+        pending write staged in that owner's conversation)."""
+        if owner == self.owner:
+            return self
+        store = MemoryStore(self.memory_char_limit, self.user_char_limit, memory_enabled=self.memory_enabled,
+                            user_profile_enabled=self.user_profile_enabled, mirror=self._mirror, owner=owner,
+                            sharing=self.sharing)
+        store.load_from_disk()
+        return store
 
     def _entries_for(self, target: str) -> list[str]:
         return self.user_entries if target == "user" else self.memory_entries

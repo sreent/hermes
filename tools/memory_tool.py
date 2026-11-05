@@ -42,25 +42,26 @@ def get_memory_dir() -> Path:
 
 from tools.memory_tool_store import (
     ENTRY_DELIMITER, FAILURE_CLASS, MEMORY_BLOCK_HEADERS, PATCH_DROP_HINT, MemoryStore, _scan_memory_content)
+from tools.memory_sharing import MemoryOwner, with_owner
 
 
-def load_on_disk_store() -> MemoryStore:
+def load_on_disk_store(owner: Any = None) -> MemoryStore:
     """Fresh on-disk MemoryStore with configured limits/flags for contexts with no live
     agent (gateway, Desktop, ``/memory``) so approvals enforce the SAME caps as
-    ``agent_init``. Falls back to defaults if config can't load; never raises."""
+    ``agent_init``. ``owner`` (``tools.memory_sharing.MemoryOwner``) picks whose memory under
+    ``memory.sharing``; None is the agent's own. Falls back to defaults if config can't load; never raises."""
     try:
         from hermes_cli.config import load_config
         config = load_config() or {}
         mem_cfg = get_builtin_memory_config(config)
         memory_enabled, user_profile_enabled = get_builtin_memory_store_flags(config)
+        from tools.memory_sharing import build_store
         from tools.memory_storage import MemoryStorageError
         try:
-            mirror = memory_mirror(mem_cfg)
+            store = build_store(mem_cfg, owner, memory_enabled=memory_enabled, user_profile_enabled=user_profile_enabled)
         except (ValueError, MemoryStorageError):  # logged there; no writes the bucket would later undo
-            mirror, memory_enabled, user_profile_enabled = None, False, False
-        store = MemoryStore(int(mem_cfg.get("memory_char_limit", 2200)), int(mem_cfg.get("user_char_limit", 1375)),
-                            memory_enabled=memory_enabled, user_profile_enabled=user_profile_enabled,
-                            mirror=mirror)
+            store = MemoryStore(int(mem_cfg.get("memory_char_limit", 2200)), int(mem_cfg.get("user_char_limit", 1375)),
+                                memory_enabled=False, user_profile_enabled=False, owner=owner)
     except Exception:
         store = MemoryStore()  # config optional — fall back to defaults rather than break /memory
     store.load_from_disk()
@@ -103,7 +104,8 @@ def _gate_or_stage(store: MemoryStore, summary: str, detail: str, payload: dict[
     if (unmatched := _pin_matched_entries(store, payload)) is not None:
         return unmatched
     FAILURE_CLASS.set("staged")
-    record = wa.stage_write(wa.MEMORY, payload, summary=f"{summary}: {detail[:120]}", origin=wa.current_origin())
+    record = wa.stage_write(wa.MEMORY, with_owner(payload, store), summary=f"{summary}: {detail[:120]}",
+                            origin=wa.current_origin())
     return json.dumps({"success": True, "staged": True, "pending_id": record["id"], "message": decision.message},
                       ensure_ascii=False)
 
@@ -207,7 +209,7 @@ def _background_delete_gate(store, action, operations, target="memory", content=
         from tools import write_approval as wa
         FAILURE_CLASS.set("staged")
         record = wa.stage_write(
-            wa.MEMORY, payload,
+            wa.MEMORY, with_owner(payload, store),
             summary=(f"background review consolidation ({'batch' if operations is not None else action} "
                      f"on {target}): {detail}")[:200],
             origin=wa.current_origin())
@@ -373,6 +375,10 @@ def apply_memory_pending(payload: dict[str, Any], store: MemoryStore) -> dict[st
     replace/remove applies to exactly its pinned ``matched_entry`` or is refused; a record
     staged before pinning has no verifiable target, so it is refused rather than replayed by
     old_text (which could hit a newer entry the approver never saw)."""
+    try:  # the memory of the conversation that staged it, whoever approves (tools/memory_sharing.py)
+        store = store.for_owner(MemoryOwner.from_key(payload.get("owner")))
+    except ValueError as exc:
+        return {"success": False, "error": f"This pending write names no valid memory owner: {exc}"}
     action, target = payload.get("action"), payload.get("target")
     target_error = _memory_target_error(store, target, payload.get("operations"))
     if target_error is not None:
