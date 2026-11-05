@@ -659,6 +659,8 @@ _ENTRIES = {
     "hermes-acp-version": Entry("hermes-acp", ("--version",), frozenset({0}), prints_version=True),
     "hermes-acp-help": Entry("hermes-acp", ("--help",), frozenset({0})),
     "hermes-agent-help": Entry("hermes-agent", ("--help",), frozenset({0})),
+    # FORK.md, "Rebranded as tuos": it starts the hermes installed beside it, which prints the version.
+    "tuos-version": Entry("tuos", ("--version",), frozenset({0}), prints_version=True),
 }
 def _run_on_tty(argv: list[str], *, env: dict[str, str], cwd: Path, writable: list[Path],
                 timeout: float) -> subprocess.CompletedProcess:
@@ -731,6 +733,8 @@ def test_entrypoint_in_a_fresh_process(case, tmp_path):
         if entry.via == "module":
             argv = [PY, "-m", "hermes_cli.main", *args]
         else:
+            if entry.via == "tuos":  # execs the hermes console script installed beside it
+                _console_script(tmp_path / "bin", "hermes").chmod(0o755)
             argv = [PY, str(_console_script(tmp_path / "bin", entry.via)), *args]
         launcher = _run_on_tty if entry.tty else run
         cp = launcher(argv, env=env, cwd=WORKTREE, writable=[tmp_path], timeout=300)

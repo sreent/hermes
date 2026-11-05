@@ -368,7 +368,7 @@ def test_unaccounted_serve_report_names_serve_remedy_not_gateway_restart(capsys)
     assert report_unaccounted_runtimes(outcomes) is True
     out = capsys.readouterr().out
     assert "serve [default] pid 900" in out
-    assert "relaunch `hermes serve`" in out
+    assert "relaunch `tuos serve`" in out
     assert "hermes gateway restart" not in out
 
 

@@ -67,7 +67,7 @@ def test_failed_repair_keeps_marker_and_stops_at_retry_limit(tmp_path, monkeypat
     assert len(calls) == before
     output = capsys.readouterr()
     assert output.out == ""
-    assert "hermes pm repair" in output.err
+    assert "tuos pm repair" in output.err
 
 
 def test_recovery_obeys_live_owner_and_single_flight(tmp_path, monkeypatch):

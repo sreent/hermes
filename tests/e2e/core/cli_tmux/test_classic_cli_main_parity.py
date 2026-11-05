@@ -182,7 +182,7 @@ def test_classic_cli_matches_main_baseline_across_fifteen_steps(tmp_path: Path) 
             pane.submit("/quit")
             assert pane.wait_dead(30), f"10a_exit_summary: CLI alive 30 s after /quit:\n{pane.screen()}"
             summary = s.capture("10a_exit_summary", scrollback=True).split("/quit")[-1]
-            s.expect("10a_exit_summary", ["Resume this session with:", "hermes --resume ", f'hermes -c "{TITLE}"',
+            s.expect("10a_exit_summary", ["Resume this session with:", "tuos --resume ", f'tuos -c "{TITLE}"',
                                           "Session:", f"Title:          {TITLE}", "Duration:", "Messages:"], summary)
 
             pane.launch("-c")

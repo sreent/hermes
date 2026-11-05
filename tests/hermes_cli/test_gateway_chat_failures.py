@@ -155,7 +155,7 @@ async def test_textless_oneshot_names_the_failure_on_stderr(capsys):
                            {"stored_session_id": "stored"}, quiet=True)
     view.unattended = True
     assert await asyncio.wait_for(view.run("query", oneshot=True), 2) == 1
-    assert "hermes -z: no final response was produced" in capsys.readouterr().err
+    assert "tuos -z: no final response was produced" in capsys.readouterr().err
 
 
 @pytest.mark.asyncio

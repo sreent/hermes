@@ -345,7 +345,7 @@ async def test_fabricated_dcr_registration_rejected_before_network(tmp_path, mon
     assert "does not support automatic client registration" in text
     assert "https://example.com/register" in text
     assert "config.yaml" in text
-    assert "hermes mcp login srv" in text
+    assert "tuos mcp login srv" in text
     await flow.aclose()
 
 

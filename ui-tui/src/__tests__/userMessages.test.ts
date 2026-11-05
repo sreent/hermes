@@ -61,7 +61,7 @@ describe('describeTurnFailure', () => {
     })
 
     expect(text).not.toContain('/retry')
-    expect(text).toContain('hermes model')
+    expect(text).toContain('tuos model')
   })
 
   it('falls back to the layer copy, and to a generic title, when the code is unknown', () => {
@@ -249,7 +249,7 @@ describe('backend lifecycle copy', () => {
     expect(text).toContain('Details: ModuleNotFoundError: No module named pydantic')
     expect(text).not.toContain('[lifecycle]')
     expect(text).toContain('/logs')
-    expect(text).toContain('hermes doctor')
+    expect(text).toContain('tuos doctor')
     expect(text).toContain('/resume')
     expect(text).not.toMatch(/\bgateway\b/)
   })

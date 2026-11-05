@@ -72,7 +72,7 @@ def test_scoped_reconciliation_matrix(monkeypatch, capsys, name, old, marker, li
     before = target.read_bytes()
     assert fleet._pending_fleet_restart_needed() is pending
     fleet._warn_pending_fleet_restart_on_startup()
-    assert ("hermes gateway restart" in capsys.readouterr().err) is pending
+    assert ("tuos gateway restart" in capsys.readouterr().err) is pending
     # Deferred catch-up rides the ordinary completion owner under PM; the marker
     # lifecycle is what the startup warning reflects here.
     assert target.read_bytes() == before
@@ -125,7 +125,7 @@ def test_gatewayless_host_settles_on_host_evidence(monkeypatch, capsys, name, re
     assert fleet._pending_fleet_restart_needed() is pending
     assert host_obligation.host_obligation_path().exists() is pending
     fleet._warn_pending_fleet_restart_on_startup()
-    assert ("hermes gateway restart" in capsys.readouterr().err) is pending
+    assert ("tuos gateway restart" in capsys.readouterr().err) is pending
 
 
 def test_gatewayless_probe_failure_keeps_marker(monkeypatch):
@@ -171,7 +171,7 @@ def test_inventory_less_marker_settles_after_out_of_band_pull(monkeypatch, capsy
     seed(monkeypatch, {}, "old", live)
     marker = host_obligation.host_obligation_path()
     fleet._warn_pending_fleet_restart_on_startup()
-    assert ("hermes gateway restart" in capsys.readouterr().err) is pending
+    assert ("tuos gateway restart" in capsys.readouterr().err) is pending
     assert fleet._pending_fleet_restart_needed() is pending
     assert marker.exists() is pending
 

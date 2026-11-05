@@ -126,7 +126,7 @@ describe('runExportProfileFlow', () => {
       await expect(runExportProfileFlow('glam')).resolves.toBeNull()
       expect(exportProfileArchive).not.toHaveBeenCalled()
       expect($notifications.get().at(-1)).toMatchObject({ kind: 'error', title: 'Failed to export profile' })
-      expect($notifications.get().at(-1)?.message).toContain('hermes profile export glam')
+      expect($notifications.get().at(-1)?.message).toContain('tuos profile export glam')
     } finally {
       clearWebappSession()
       Reflect.deleteProperty(window, 'hermesDesktop')

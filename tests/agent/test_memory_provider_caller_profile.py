@@ -360,7 +360,7 @@ def test_tool_calls_reuse_what_initialize_bound(homes, monkeypatch):
 def test_refused_checkpoint_compression_fails_closed(homes):
     alpha_home, beta_home = homes
     alpha = _manager(alpha_home)
-    with _Scope(beta_home), pytest.raises(RuntimeError, match="hermes logs errors"):
+    with _Scope(beta_home), pytest.raises(RuntimeError, match="tuos logs errors"):
         alpha.on_pre_compress([{"role": "user", "content": "x"}], require_checkpoint=True)
 
 

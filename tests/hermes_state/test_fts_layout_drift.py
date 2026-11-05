@@ -149,7 +149,7 @@ def _notice_for(db_path: pathlib.Path, monkeypatch) -> str:
 
 def test_notice_for_a_stale_trigram_does_not_claim_the_legacy_reclaim(v1_trigram_db, monkeypatch):
     out = _notice_for(v1_trigram_db, monkeypatch)
-    assert "hermes sessions optimize-storage" in out
+    assert "tuos sessions optimize-storage" in out
     assert "60%" not in out and "old storage layout" not in out.lower()
 
 

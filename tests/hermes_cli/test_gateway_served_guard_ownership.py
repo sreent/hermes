@@ -96,7 +96,7 @@ def test_satellite_served_by_same_tenants_multiplexer_is_still_refused(tmp_path,
     assert gw.named_profile_served_by_running_multiplexer() is True
     refused, out = _refusal(gw)
     assert refused is True
-    assert "hermes -p default gateway restart" in out
+    assert "tuos -p default gateway restart" in out
     with pytest.raises(SystemExit) as exc:
         with redirect_stdout(io.StringIO()):
             gw._guard_named_profile_under_multiplexer()

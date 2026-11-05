@@ -181,7 +181,7 @@ def test_desktop_serve_ticker_is_not_reported_as_no_gateway(tmp_path, monkeypatc
     assert cron._builtin_gateway_liveness() is True
     cron.cron_status()
     output = capsys.readouterr().out
-    assert "Scheduler host: an in-process ticker (hermes serve / Desktop backend) ticking profile 'default'" in output
+    assert "Scheduler host: an in-process ticker (tuos serve / Desktop backend) ticking profile 'default'" in output
     assert "will fire automatically" in output
     assert "No scheduler is serving profile" not in output
     assert "gateway install" not in output
