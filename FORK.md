@@ -171,9 +171,25 @@ entries. Documented in `website/docs/user-guide/configuration.md#memory-storage`
   config.yaml. The keys are not in `DEFAULT_CONFIG` (a data module at its size cap); `storage_settings`
   supplies the defaults.
 
+### Kubernetes: Helm chart
+
+`deploy/helm/tuos/` (new) runs the Docker image as a one-pod StatefulSet. Guide:
+`website/docs/user-guide/kubernetes.md` (new; listed in `website/sidebars.ts`). No upstream code changes.
+
+- The gateway is the container's main program (s6 supervises it); `/opt/data` is a volume claim that
+  outlives `helm uninstall`.
+- The pod's environment comes from a Secret: the user's own, or one the chart makes from `secrets.env`.
+- Helm's `config` value is mounted as the managed `config.yaml` through `HERMES_MANAGED_DIR`, at
+  `/etc/hermes-managed` because the image keeps build facts in `/etc/hermes`. That is how
+  `memory.storage` (GCS through Workload Identity, or MinIO) is set declaratively.
+- The dashboard runs as the image's s6 service, on loopback (reached with `kubectl port-forward`) unless
+  `dashboard.expose` puts it behind a Service, where it requires a login.
+- The pod starts as root, as the image requires, and does not mount a service-account token: the agent's
+  shell commands run in this pod.
+
 ### Planned: configurable memory sharing
 
-Configurable memory sharing per agent (`shared`, `per_user`, `hybrid`). The upstream code that configurable memory sharing per agent (`shared`, `per_user`, `hybrid`). The upstream code that
+Configurable memory sharing per agent (`shared`, `per_user`, `hybrid`). The upstream code that
 currently ties memory to a profile rather than to a user:
 
 - `tools/memory_tool.py` `get_memory_dir()`: MEMORY.md and USER.md always live under the profile home.

@@ -1,0 +1,25 @@
+{{- $pod := printf "%s-0" (include "tuos.fullname" .) -}}
+tuos is starting as pod {{ $pod }} in namespace {{ .Release.Namespace }}.
+
+Gateway output:
+  kubectl logs -f -n {{ .Release.Namespace }} {{ $pod }}
+
+Choose a model and connect chat platforms inside the pod, then restart the gateway to apply them:
+  kubectl exec -it -n {{ .Release.Namespace }} {{ $pod }} -- hermes setup
+  kubectl exec -n {{ .Release.Namespace }} {{ $pod }} -- hermes gateway restart
+{{- if .Values.dashboard.enabled }}
+{{- if .Values.dashboard.expose }}
+
+Dashboard: Service {{ include "tuos.fullname" . }}-dashboard, port {{ .Values.dashboard.service.port }}. It asks for the login
+set in the pod's environment (HERMES_DASHBOARD_BASIC_AUTH_*), and does not start without one.
+{{- else }}
+
+Dashboard:
+  kubectl port-forward -n {{ .Release.Namespace }} pod/{{ $pod }} {{ .Values.dashboard.port }}
+then open http://localhost:{{ .Values.dashboard.port }}
+{{- end }}
+{{- end }}
+{{- if not .Values.persistence.enabled }}
+
+WARNING: persistence is off. Configuration, sessions and skills are lost whenever the pod is replaced.
+{{- end }}

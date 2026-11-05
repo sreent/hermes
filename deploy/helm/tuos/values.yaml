@@ -1,0 +1,127 @@
+# tuos on Kubernetes: one pod running the messaging gateway (which also runs scheduled jobs) and,
+# optionally, the web dashboard. Guide: website/docs/user-guide/kubernetes.md
+
+# This fork publishes no image: build one from the repository's Dockerfile and push it to a
+# registry the cluster can pull from, e.g.
+#   docker build -t registry.example.com/tuos:$(git rev-parse --short HEAD) .
+image:
+  repository: ""  # required
+  tag: ""         # required
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# What the container runs, as arguments to `hermes`. The default is the gateway, which connects to
+# the chat platforms you configure and runs cron jobs (it keeps running with no platform set up).
+# ["sleep", "infinity"] starts the pod idle instead, for a first `hermes setup` through kubectl exec.
+args: ["gateway", "run"]
+
+# Settings for config.yaml, pinned by the chart. They are laid over /opt/data/config.yaml key by
+# key (Hermes's managed scope), and the dashboard and `hermes config set` cannot change them; keys
+# not listed here stay editable there. This becomes a ConfigMap, so no secrets: those go in
+# `secrets`. A change restarts the pod.
+config: {}
+  # Built-in memory (MEMORY.md, USER.md) in a bucket instead of on the data volume, so it outlives
+  # the volume and other agents can share it. Agents using the same bucket and prefix share memory;
+  # give each agent its own prefix to keep them apart.
+  #
+  # Google Cloud Storage. On GKE the pod authenticates through Workload Identity (see
+  # serviceAccount.annotations); its identity needs roles/storage.objectUser on the bucket.
+  # memory:
+  #   storage:
+  #     backend: gcs
+  #     bucket: my-tuos-memory
+  #     prefix: ""
+  #
+  # MinIO (or AWS S3, Cloudflare R2). Create the bucket first; put AWS_ACCESS_KEY_ID and
+  # AWS_SECRET_ACCESS_KEY in `secrets`.
+  # memory:
+  #   storage:
+  #     backend: s3
+  #     bucket: tuos-memory
+  #     endpoint_url: http://minio.minio.svc.cluster.local:9000
+  #     region: us-east-1
+  #     prefix: ""
+
+# Secrets for the pod's environment: model provider keys, chat platform tokens, bucket credentials.
+# Name a Secret you manage (kubectl create secret generic tuos-env --from-env-file=.env, External
+# Secrets, Sealed Secrets), or list the values under `env` and the chart creates the Secret (the
+# values are then also stored in the Helm release). A key that is also set in /opt/data/.env, which
+# `hermes setup` and the dashboard's Keys page write, takes its value from that file.
+secrets:
+  existingSecret: ""
+  env: {}
+    # OPENROUTER_API_KEY: ""
+    # TELEGRAM_BOT_TOKEN: ""
+    # TELEGRAM_ALLOWED_USERS: ""
+    # AWS_ACCESS_KEY_ID: ""      # memory in MinIO / S3
+    # AWS_SECRET_ACCESS_KEY: ""
+
+# More environment variables (name/value or valueFrom) and envFrom sources.
+env: []
+envFrom: []
+
+# The data volume, mounted at /opt/data: config, .env, sessions (SQLite), skills, cron jobs, logs.
+# SQLite needs block storage; network filesystems (NFS, Filestore, EFS) can corrupt it.
+persistence:
+  enabled: true      # false keeps everything in an emptyDir, lost when the pod goes
+  existingClaim: ""  # use this PersistentVolumeClaim instead of creating one
+  storageClass: ""   # "" is the cluster default; "-" asks for no storage class
+  accessModes:
+    - ReadWriteOnce
+  size: 10Gi         # fixed once created: resize the claim itself if its storage class allows
+  annotations: {}
+
+dashboard:
+  enabled: true
+  port: 9119
+  # false: the dashboard listens on the pod's loopback only. Reach it with
+  #   kubectl port-forward pod/<release>-0 9119
+  # true: it listens on all interfaces behind a Service, and refuses to start without a login: put
+  # HERMES_DASHBOARD_BASIC_AUTH_USERNAME, HERMES_DASHBOARD_BASIC_AUTH_PASSWORD and
+  # HERMES_DASHBOARD_BASIC_AUTH_SECRET (openssl rand -base64 32) in `secrets`, or configure OIDC.
+  expose: false
+  service:
+    type: ClusterIP
+    port: 9119
+    annotations: {}
+
+serviceAccount:
+  create: true
+  name: ""
+  # For GKE Workload Identity through a Google service account:
+  #   iam.gke.io/gcp-service-account: tuos-memory@PROJECT.iam.gserviceaccount.com
+  annotations: {}
+  # The agent runs shell commands in this pod; a mounted token would give them this service
+  # account's access to the Kubernetes API. GKE Workload Identity does not need it.
+  automountServiceAccountToken: false
+
+podAnnotations: {}
+podLabels: {}
+
+# The image starts as root to prepare the data volume, then runs everything as the `hermes` user
+# (UID 10000). Other start users are not supported, so leave runAsUser unset.
+podSecurityContext:
+  seccompProfile:
+    type: RuntimeDefault
+securityContext: {}
+
+# Browser tools (Chromium) are the hungriest part; without them 1Gi is usually enough.
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    memory: 4Gi
+
+# Long enough for the gateway to finish replies in flight when the pod stops.
+terminationGracePeriodSeconds: 60
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+extraVolumes: []
+extraVolumeMounts: []
