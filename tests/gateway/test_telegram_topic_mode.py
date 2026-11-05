@@ -245,7 +245,7 @@ async def test_topic_restore_quote_never_exposes_compaction_scaffolding(tmp_path
         "restorable",
     )
 
-    assert "Last Hermes message:\nreal completed answer" in result
+    assert "Last tuos message:\nreal completed answer" in result
     assert "CONTEXT COMPACTION" not in result
     assert "Historical Task Snapshot" not in result
     db.close()
@@ -276,7 +276,7 @@ async def test_topic_restore_quote_unwraps_merged_assistant_carrier(tmp_path):
         "restorable",
     )
 
-    assert "Last Hermes message:\nreal completed answer" in result
+    assert "Last tuos message:\nreal completed answer" in result
     assert "PRIOR CONTEXT" not in result
     assert "CONTEXT COMPACTION" not in result
     db.close()

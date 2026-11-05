@@ -370,8 +370,13 @@ class HermesArgumentParser(argparse.ArgumentParser):
             # (argparse hands add_parser() the parent's class), so the copy stays correct for both.
             lines = [f"{self.prog}: '{value}' is not a `{self.prog}` command."]
             close = difflib.get_close_matches(str(value), list(action.choices), n=3, cutoff=0.6)
-            install = _plugin_command_install_hint(self.prog, str(value))
-            moved = "" if install else _moved_command_hint(self.prog, str(value))
+            from hermes_cli.distribution import PRODUCT_NAME  # imported here: see format_help
+
+            # tuos (FORK.md): the message shows prog (tuos ...); the hints look the command up by its
+            # real name (hermes ...).
+            command = re.sub(rf"^{PRODUCT_NAME}\b", "hermes", self.prog)
+            install = _plugin_command_install_hint(command, str(value))
+            moved = "" if install else _moved_command_hint(command, str(value))
             if install:
                 # A provider that left core (``hermes honcho``) registers its command only once installed.
                 lines.append(f"The '{value}' memory plugin is not installed. Install it with: {install}")
