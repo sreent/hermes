@@ -410,7 +410,7 @@ def interactive_setup() -> None:
             print_info("No nicks allowed — the bot will ignore all messages until you add nicks.")
     print()
     print_success("IRC configuration saved to ~/.hermes/.env")
-    print_info("Restart the gateway for changes to take effect: hermes gateway restart")
+    print_info("Restart the gateway for changes to take effect: tuos gateway restart")
 
 
 def is_connected(config) -> bool:
@@ -590,7 +590,7 @@ def register(ctx):
     """Plugin entry point: called by the Hermes plugin system."""
     ctx.register_platform(
         name="irc",
-        dashboard_description="Relay messages between an IRC channel (or DMs) and Hermes.",
+        dashboard_description="Relay messages between an IRC channel (or DMs) and tuos.",
         docs_url="https://hermes-agent.nousresearch.com/docs/user-guide/messaging/irc",
         label="IRC",
         adapter_factory=IRCAdapter,

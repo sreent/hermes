@@ -72,7 +72,7 @@ def test_data_only_reports_a_failed_removal(layout, monkeypatch, capsys):
         uninstall.run_data_uninstall(SimpleNamespace(yes=True, dry_run=False))
     assert failure.value.code != 0
     output = capsys.readouterr().out
-    assert "Hermes data removed" not in output
+    assert "tuos data removed" not in output
     assert str(home / "sessions") in output
     assert all(path.exists() for path in witnesses)
 

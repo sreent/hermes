@@ -127,7 +127,7 @@ def request_permissions_grant(driver_cmd: Optional[str] = None) -> int:
     from tools.computer_use.cua_backend_driver import resolve_cua_driver_cmd
     binary = resolve_cua_driver_cmd(driver_cmd)
     if not binary:
-        print("cua-driver: not installed. Run: hermes computer-use install")
+        print("cua-driver: not installed. Run: tuos computer-use install")
         return 2
     print("Requesting Accessibility + Screen Recording for CuaDriver.\n"
           f"macOS will show a dialog attributed to CuaDriver ({CUA_DRIVER_BUNDLE_ID}) — approve it, then return here.")

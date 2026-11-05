@@ -114,7 +114,7 @@ def cmd_gateway_enroll(args) -> None:
     # to write there anyway.
     if is_managed():
         _fail(
-            "✗ `hermes gateway enroll` is not available in a managed/hosted install.\n"
+            "✗ `tuos gateway enroll` is not available in a managed/hosted install.\n"
             "  The relay gateway secret is provisioned by the hosting platform."
         )
 
@@ -147,7 +147,7 @@ def cmd_gateway_enroll(args) -> None:
         if getattr(exc, "relogin_required", False):
             _fail(
                 "✗ You're not logged into Nous Portal.",
-                "  Run `hermes setup` (or `hermes auth add nous`) first, then retry.",
+                "  Run `tuos setup` (or `tuos auth add nous`) first, then retry.",
             )
         _fail(f"✗ Could not resolve a Nous Portal access token: {exc}")
     except Exception as exc:

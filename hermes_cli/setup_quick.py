@@ -20,8 +20,8 @@ def _blank_slate_done(config: dict, hermes_home, tools_line: str, *extra: str, i
     from hermes_cli.setup import _info, _print_setup_summary, print_success
     print()
     print_success("Blank Slate setup complete — minimal agent ready.")
-    _info(*([intro] if intro else []), tools_line, "  Seed skills:         hermes skills opt-in --sync",
-          "  Add MCP servers:     hermes mcp add", *extra, "  Tune agent settings: hermes setup agent", None)
+    _info(*([intro] if intro else []), tools_line, "  Seed skills:         tuos skills opt-in --sync",
+          "  Add MCP servers:     tuos mcp add", *extra, "  Tune agent settings: tuos setup agent", None)
     _print_setup_summary(config, hermes_home)
 
 
@@ -81,7 +81,7 @@ def _run_portal_one_shot(config: dict) -> None:
         _reload_config_into(config, dict_only=True)
     print()
     print_success("Portal setup complete.")
-    _info("  Run `hermes portal info` to inspect routing.", "  Run `hermes` to start chatting.")
+    _info("  Run `tuos portal info` to inspect routing.", "  Run `tuos` to start chatting.")
     _record_setup_completed(config)
 
 
@@ -169,9 +169,9 @@ def _run_first_time_quick_setup(config: dict, hermes_home, is_existing: bool, im
         ensure_gateway_service(context="setup", interactive=True, config=config)
     print()
     print_success("Setup complete! You're ready to go.")
-    _info(None, "  Configure all settings:    hermes setup")
+    _info(None, "  Configure all settings:    tuos setup")
     if gateway_choice != 0:
-        print_info("  Connect Telegram/Discord:  hermes setup gateway")
+        print_info("  Connect Telegram/Discord:  tuos setup gateway")
     _print_macos_fda_tip()
     print()
     _print_setup_summary(config, hermes_home)
@@ -198,7 +198,7 @@ def _print_macos_fda_tip() -> None:
           "  System Settings → Privacy & Security → Full Disk Access → enable",
           "  your terminal (and Hermes.app if you use Desktop), or run:",
           "    open \"x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles\"",
-          "  The grant is permanent — it survives every Hermes update.")
+          "  The grant is permanent — it survives every tuos update.")
 
 
 def _blank_slate_minimal_toolsets(config: dict):
@@ -282,7 +282,7 @@ def _run_blank_slate_setup(config: dict, hermes_home, is_existing: bool):
           "Everything else (web, browser, code exec, memory,",
           "delegation, cron, plugins, MCP, …) starts disabled. The",
           "essential `hermes-agent` skill is always kept so the agent",
-          "can help you drive and configure Hermes itself.", None)
+          "can help you drive and configure tuos itself.", None)
 
     # Step 1: Provider & Model (REQUIRED — the agent cannot run without it)
     print_header("Step 1 — Provider & Model (required)")
@@ -336,8 +336,8 @@ def _blank_slate_walkthrough(config: dict, hermes_home):
     def _opted_out(_result) -> None:
         _info("No skills seeded (except the essential `hermes-agent`",
               "skill). A .no-bundled-skills marker keeps future",
-              "`hermes update` runs from re-injecting them. Opt back in any",
-              "time with `hermes skills opt-in --sync`.")
+              "`tuos update` runs from re-injecting them. Opt back in any",
+              "time with `tuos skills opt-in --sync`.")
 
     # Seeding first clears any stale opt-out marker; declining sets it (essential skills still seed).
     _set_bundled_skills_opt_out(
@@ -358,7 +358,7 @@ def _blank_slate_walkthrough(config: dict, hermes_home):
             logger.debug("blank-slate tools_command error: %s", exc)
             print_warning(f"Tool selector encountered an error: {exc}")
     else:
-        print_info("Keeping the minimal toolset. Add tools later with `hermes tools`.")
+        print_info("Keeping the minimal toolset. Add tools later with `tuos tools`.")
 
     # Built-in plugins and MCP servers (off unless chosen)
     for header, question, yes_msg, no_msg in (
@@ -397,7 +397,7 @@ def _run_quick_setup(config: dict, hermes_home):
     current_ver, latest_ver = check_config_version()
     if not (missing_required or missing_optional or missing_config or current_ver < latest_ver):
         print_success("Everything is configured! Nothing to do.")
-        _info(None, "Run 'hermes setup' and choose 'Full Setup' to reconfigure,",
+        _info(None, "Run 'tuos setup' and choose 'Full Setup' to reconfigure,",
               "or pick a specific section from the menu.")
         return
     if missing_required:
@@ -422,8 +422,8 @@ def _run_quick_setup(config: dict, hermes_home):
             _prompt_api_key(missing_tools[idx])
     if missing_messaging:  # checklist, then prompt for each selected platform's vars
         print_header("Messaging Platforms", gap=True)
-        _info("Connect Hermes to messaging apps to chat from anywhere.",
-              "You can configure these later with 'hermes setup gateway'.")
+        _info("Connect tuos to messaging apps to chat from anywhere.",
+              "You can configure these later with 'tuos setup gateway'.")
         # Group by platform in first-seen order; vars matching no platform are dropped.
         grouped: dict[str, list] = {}
         emojis = {}

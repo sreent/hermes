@@ -23,7 +23,7 @@ def build_parser(parent_subparsers: argparse._SubParsersAction) -> argparse.Argu
     )
     sub = parser.add_subparsers(dest="project_action")
     p_create = sub.add_parser("create", help="Create a new project")
-    p_create.add_argument("name", help="Human name, e.g. 'Hermes Agent'")
+    p_create.add_argument("name", help="Human name, e.g. 'tuos'")
     p_create.add_argument("folders", nargs="*", help="Folder paths to include (first = primary)")
     p_create.add_argument("--slug", default=None, help="Explicit slug override")
     p_create.add_argument("--primary", default=None, metavar="PATH", help="Primary repo path")
@@ -66,7 +66,7 @@ def projects_command(args: argparse.Namespace) -> int:
         if parser is not None:
             parser.print_help()
         else:
-            print("usage: hermes project <action> [options]\nRun 'hermes project --help' for the full list.", file=sys.stderr)
+            print("usage: tuos project <action> [options]\nRun 'tuos project --help' for the full list.", file=sys.stderr)
         return 0
     handler = _HANDLERS.get(action)
     if handler is None:
@@ -187,7 +187,7 @@ def _cmd_rename(args, conn, proj) -> str:
 @_with_project
 def _cmd_set_primary(args, conn, proj):
     if not pdb.set_primary(conn, proj.id, args.path):
-        return _err(f"'{args.path}' is not a folder of {proj.slug}; add it first with `hermes project add-folder`.")
+        return _err(f"'{args.path}' is not a folder of {proj.slug}; add it first with `tuos project add-folder`.")
     return f"Set primary of {proj.slug} -> {args.path}"
 
 

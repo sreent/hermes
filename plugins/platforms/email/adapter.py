@@ -1017,7 +1017,7 @@ def register(ctx) -> None:
         target_ref_syntax_fn=regex_stripped_parser(_SEND_TARGET_RE),
         standalone_send=StandaloneSendPolicy(text_direct=True),
         name="email", label="Email", adapter_factory=EmailAdapter, check_fn=check_email_requirements, is_connected=_is_connected,
-        dashboard_description="Talk to Hermes through an IMAP/SMTP mailbox.",
+        dashboard_description="Talk to tuos through an IMAP/SMTP mailbox.",
         docs_url="https://hermes-agent.nousresearch.com/docs/user-guide/messaging/",
         dashboard_env_vars=("EMAIL_ADDRESS", "EMAIL_PASSWORD", "EMAIL_IMAP_HOST", "EMAIL_SMTP_HOST"),
         dashboard_required_env=("EMAIL_ADDRESS", "EMAIL_PASSWORD", "EMAIL_IMAP_HOST", "EMAIL_SMTP_HOST"),

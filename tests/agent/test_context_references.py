@@ -719,7 +719,7 @@ async def test_side_thread_expansion_guards_the_served_profile_home(tmp_path: Pa
         reset_hermes_home_override(token)
 
     assert "HUB-CACHE-BODY" not in result.message
-    assert any("internal Hermes path" in w for w in result.warnings)
+    assert any("internal tuos path" in w for w in result.warnings)
 
 
 @pytest.mark.asyncio

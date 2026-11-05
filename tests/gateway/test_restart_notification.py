@@ -195,7 +195,7 @@ async def test_send_home_channel_startup_notification_preserves_thread_metadata(
     assert delivered == {("telegram", "parent-42", "777")}
     adapter.send.assert_called_once_with(
         "parent-42",
-        "♻️ Gateway online — Hermes is back and ready.",
+        "♻️ Gateway online — tuos is back and ready.",
         metadata={
             "thread_id": "777",
             "telegram_dm_topic_reply_fallback": True,

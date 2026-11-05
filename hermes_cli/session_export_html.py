@@ -792,7 +792,7 @@ def generate_multi_session_html_export(sessions: list[dict[str, Any]]) -> str:
         return "<html><body><h1>No sessions to export.</h1></body></html>"
     is_multi = len(sessions) > 1
     return HTML_TEMPLATE.format(
-        page_title="Hermes Session Export" if is_multi else _escape_html(sessions[0].get("title") or "Hermes Session"),
+        page_title="tuos Session Export" if is_multi else _escape_html(sessions[0].get("title") or "Hermes Session"),
         sidebar_html=_sidebar_html(sessions) if is_multi else "",
         sessions_html="\n".join(_session_view_html(s, is_multi) for s in sessions),
         main_margin="var(--sidebar-width)" if is_multi else "0",

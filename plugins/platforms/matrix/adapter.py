@@ -3208,10 +3208,10 @@ def interactive_setup() -> None:
 
             print_info("Preparing Matrix dependencies...")
             sync_venv(["matrix"], explicit=True)
-            print_success("Matrix dependencies prepared. Restart Hermes to use them.")
+            print_success("Matrix dependencies prepared. Restart tuos to use them.")
         except Exception as exc:
             print_warning(f"Matrix dependencies could not be prepared: {exc}")
-            print_info("Run `hermes pm install`, then restart Hermes.")
+            print_info("Run `tuos pm install`, then restart tuos.")
         print_info("🔒 Security: Restrict who can use your bot")
         print_info("   Matrix user IDs look like @username:server")
         allowed_users = prompt("Allowed user IDs (comma-separated, leave empty for open access)")

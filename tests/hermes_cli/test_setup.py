@@ -283,7 +283,7 @@ def test_python_setup_uses_declared_extras_and_reports_restart(extra, succeeds, 
         assert sys.modules[extra] is None  # installing never activates in this process
     else:
         assert "resolution refused" in output
-        assert "Retry with: hermes setup" in output
+        assert "Retry with: tuos setup" in output
         assert "installed." not in output
 
 

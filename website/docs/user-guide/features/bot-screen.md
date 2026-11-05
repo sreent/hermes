@@ -7,7 +7,7 @@ sidebar_position: 17
 
 On a headless Linux gateway host (a server, a cloud VM, Hermes Cloud) each bot
 gets its **own desktop**: an Xfce screen the bot's `computer_use` and headed
-browser act on, streamed live into Hermes Desktop. Watch what the bot does,
+browser act on, streamed live into tuos Desktop. Watch what the bot does,
 **take over** when it hits a login, 2FA prompt, CAPTCHA or payment step, then
 **hand control back** and let it continue with the session you just signed in
 to. The bot keeps working after you close the app or turn off your laptop; the
@@ -17,7 +17,7 @@ the screen lives **inside that sandbox** instead, alongside the shell, so the
 bot's `computer_use` and browser never act outside the boundary you drew (see
 [Where the screen runs](#where-the-screen-runs)).
 
-Every Hermes profile ("bot") has its own screen, its own browser profile and
+Every tuos profile ("bot") has its own screen, its own browser profile and
 its own cookies. Screens are work surfaces, not security boundaries: the bots
 share the host's user account, files and network (the same model as other
 hosted-agent products).
@@ -28,7 +28,7 @@ running as that user — another bot on the same host, and the bot's own
 `terminal` tool included — can reach them directly, bypassing the pane and the
 lease. The lease is a tool-level fence on `computer_use` and the browser tools,
 not an OS one. One boundary is wider than the OS user: Chromium's DevTools
-port (the dock's Browser and every Chromium Hermes launches advertise one on
+port (the dock's Browser and every Chromium tuos launches advertise one on
 loopback so the agent can attach) is reachable by **any** local user on the
 host, and Chromium offers no per-user restriction for it. Running each bot as
 its own OS user is out of scope; if that isolation matters to you, or the host
@@ -46,11 +46,11 @@ reverse proxy's access log may record an already-spent ticket.
 - The gateway host runs Linux. macOS and Windows hosts already have a real
   display; the pane is not offered there.
 - TigerVNC's `Xvnc` and the Xfce core components are installed on the host.
-  Nothing installs them silently: `hermes update` and fresh installs leave every
-  machine as it is. When they are missing the Screen pane in Hermes Desktop shows
+  Nothing installs them silently: `tuos update` and fresh installs leave every
+  machine as it is. When they are missing the Screen pane in tuos Desktop shows
   **Install on host** — one click runs the package manager on the gateway host
   (it asks for that host's sudo password in a masked card; the password goes to
-  that host only and is never stored) and streams the log. When Hermes itself
+  that host only and is never stored) and streams the log. When tuos itself
   runs as root — the usual case in a container — the installer runs the package
   manager directly, with no sudo and no password card. When it is not root and
   the host has no `sudo` at all, the pane and the CLI print the exact install
@@ -61,8 +61,8 @@ reverse proxy's access log may record an already-spent ticket.
   root in the container (`docker exec -u 0 <container> apt-get install -y …`).
   Add `chromium` to that line if you want the dock's Browser icon; see
   [Browser sessions](#browser-sessions-that-survive-the-handoff) below. From a shell,
-  `hermes computer-use screen status` prints the exact line and
-  `hermes computer-use screen install` runs it:
+  `tuos computer-use screen status` prints the exact line and
+  `tuos computer-use screen install` runs it:
 
   | Distro | Packages |
   |---|---|
@@ -82,11 +82,11 @@ reverse proxy's access log may record an already-spent ticket.
   constraint (idle desktop ≈ 0.01 core, live streaming ≈ 0.03 core). The packages
   take ~930 MB of disk on Debian 13.
 
-  Before starting a screen, Hermes checks that the host — or its container
+  Before starting a screen, tuos checks that the host — or its container
   cgroup, whichever is tighter — has `bot_desktop.min_free_memory_mb` free
   (default 1536; `0` disables the check). Below that the pane shows why in place
   of **Start screen** and
-  `hermes computer-use screen start` refuses; a screen already running is never
+  `tuos computer-use screen start` refuses; a screen already running is never
   taken down by this check. A screen nobody uses is stopped after
   `bot_desktop.idle_stop_minutes` (default 30) and comes back on the next use, so
   an instance pays for a desktop only while something is on it. The screen
@@ -127,7 +127,7 @@ screen is started.
 
 ## Using it
 
-Every bot's computer is one click away in three places of Hermes Desktop:
+Every bot's computer is one click away in three places of tuos Desktop:
 
 - **Bots → a bot → Scheduled Jobs**: the bot's screen is the hero at the very
   top of the pane, above the title and the routines: a live preview of the
@@ -147,7 +147,7 @@ Every bot's computer is one click away in three places of Hermes Desktop:
 
 1. Open the Screen with any of the entries above.
    The screen is **off by default** and nothing starts it for you: click
-   **Start screen** in the pane, run `hermes computer-use screen start` on the
+   **Start screen** in the pane, run `tuos computer-use screen start` on the
    host, or set `bot_desktop.auto_start: true` if you want a headless host to
    start the screen by itself on the bot's first `computer_use` call or first
    headed browser use (`browser.headed: true`) — off so that installing
@@ -201,7 +201,7 @@ screen does not re-pin the Browser icon. Delete that file and the dock is
 rebuilt on the next `screen start` from whatever is installed then.
 
 Which Chromium the dock and the bot use: an explicit
-`browser.executable_path` wins; otherwise Hermes uses the PM-managed
+`browser.executable_path` wins; otherwise tuos uses the PM-managed
 Chromium and falls back to a system `chromium` / `google-chrome`. A non-root
 user on a host with `kernel.apparmor_restrict_unprivileged_userns=1` (Ubuntu
 23.10 and later) gets the reverse order, because there the managed build cannot
@@ -216,19 +216,19 @@ that build can draw a window, so the dock's Browser icon uses it. The
 build's sandbox. A Playwright *headless shell* is never used for the
 icon: when it is the only browser, the pane / `screen status` report **no
 headed browser** until you install a headed one (`apt-get install chromium`).
-The dock icon starts the browser with the same sandbox settings Hermes's
+The dock icon starts the browser with the same sandbox settings tuos's
 Chromium launcher uses in that container, so the human's Browser and the bot's browser are one
 and the same.
 
 ## CLI
 
 ```bash
-hermes computer-use screen status          # installed? running? who holds control?
-hermes computer-use screen start           # start this profile's screen
-hermes computer-use screen stop            # stop it; refuses while a human holds control
-hermes computer-use screen stop --force    # ...unless you say so (also frees a stuck lease)
-hermes computer-use screen install [-y]    # apt/dnf/pacman the packages
-hermes -p research computer-use screen start   # another bot's screen
+tuos computer-use screen status          # installed? running? who holds control?
+tuos computer-use screen start           # start this profile's screen
+tuos computer-use screen stop            # stop it; refuses while a human holds control
+tuos computer-use screen stop --force    # ...unless you say so (also frees a stuck lease)
+tuos computer-use screen install [-y]    # apt/dnf/pacman the packages
+tuos -p research computer-use screen start   # another bot's screen
 ```
 
 ## Where the screen runs
@@ -302,7 +302,7 @@ kept, not replaced: when `docker_image` is unset and a persisted container runs
 another image (the old default, `nikolaik/python-nodejs:python3.11-nodejs20`),
 the terminal keeps using that container and you decide the switch. The
 interactive CLI asks once at startup; the Screen pane shows the same choice
-with **Switch image** / **Keep current image**; `hermes config set
+with **Switch image** / **Keep current image**; `tuos config set
 terminal.docker_image nousresearch/hermes-sandbox:desktop` is the same answer
 from any shell. Either answer writes `terminal.docker_image`, and a written
 image is a decision: the container is recreated on the next terminal call only
@@ -347,7 +347,7 @@ bot_desktop:
 ```
 
 `auto_start` is off by default. Start the screen from the Desktop's Screen
-pane (**Start screen**), from `hermes computer-use screen start`, or set the
+pane (**Start screen**), from `tuos computer-use screen start`, or set the
 flag to `true` for a headless host that should bring its screen up the first
 time the bot calls `computer_use` or opens a headed browser (`browser.headed:
 true`) and no display is available.
@@ -365,7 +365,7 @@ Xauthority, launcher log, per-profile xfconf).
 - **Xfce** starts component-wise (`xfsettingsd`, `xfwm4 --compositor=off`,
   `xfdesktop`, `xfce4-panel`) under a private D-Bus session, without
   `xfce4-session`, so nothing tries to lock the screen or reach `logind`.
-- **Hermes Desktop** bundles noVNC. It asks the gateway for a single-use ticket
+- **tuos Desktop** bundles noVNC. It asks the gateway for a single-use ticket
   (`display.observe`) over its normal authenticated connection and opens a
   sibling WebSocket to `/api/display/ws`; the gateway splices the RFB stream
   through. Nothing new is exposed; the pane works over local, SSH, URL+token
@@ -387,7 +387,7 @@ Xauthority, launcher log, per-profile xfconf).
 
 - **"Screen packages missing"** — click **Install on host** in the pane, or run
   the printed install line on the gateway host (not on the machine running
-  Hermes Desktop). The pane refuses a second install while one is running.
+  tuos Desktop). The pane refuses a second install while one is running.
 - **Screen starts then stops** — read `<HERMES_HOME>/bot-desktop/launcher.log`.
 - **Typing produces wrong characters during a takeover** — the screen runs a
   US keymap so RFB keysyms and cua-driver agree, and noVNC sends raw keycodes
@@ -397,9 +397,9 @@ Xauthority, launcher log, per-profile xfconf).
   with `setxkbmap` on that `DISPLAY`.
 - **Bot says `human_has_control` after you left** — click **Hand back** in the
   pane (or **Hand back (force)** after a reload). From a shell,
-  `hermes computer-use screen stop --force` releases the lease and stops the
+  `tuos computer-use screen stop --force` releases the lease and stops the
   screen (without `--force` the command refuses while a human holds control, so a
-  runbook can never yank a live takeover); `hermes computer-use screen start`
+  runbook can never yank a live takeover); `tuos computer-use screen start`
   brings it back with the bot in control.
 
 ### Testing under WSL

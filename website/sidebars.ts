@@ -24,7 +24,7 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
-      label: 'Using Hermes',
+      label: 'Using tuos',
       collapsed: true,
       items: [
         'user-guide/cli',

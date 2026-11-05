@@ -45,11 +45,11 @@ def _ensure_directory(path: Path, *, create: bool, secure: bool, home: Path) -> 
             _secure_dir(path)
     except OSError as exc:
         raise HomeInitializationError(
-            f"Cannot initialize Hermes directory {path}: {exc}. "
+            f"Cannot initialize tuos directory {path}: {exc}. "
             + (f"Directory links: {detail}. " if detail else "")
             + "Check the directory/link target, mount availability and access permissions; "
             "restore the mount or repair the link before retrying. "
-            "Hermes has not replaced the link or created its missing target."
+            "tuos has not replaced the link or created its missing target."
         ) from exc
 
 
@@ -69,7 +69,7 @@ def initialize_home(home: Path, subdirs: tuple[str, ...], ensured: set[str]) -> 
             _ensure_default_soul_md(home)
         except OSError as exc:
             raise HomeInitializationError(
-                f"Cannot initialize Hermes home {home}: {exc}. "
+                f"Cannot initialize tuos home {home}: {exc}. "
                 "Check storage availability and access permissions."
             ) from exc
     finally:

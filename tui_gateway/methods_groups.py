@@ -502,7 +502,7 @@ def _(rid, params: dict, service) -> dict:
 def _(rid, params: dict) -> dict:
     """Discard one indeterminate room task: forwarded to the gateway that owns the room, the only
     runtime that offers Discard; a room this backend drives itself never shows the action."""
-    return _err(rid, 4127, "Only the Hermes gateway that owns this Group Chat can discard its work.")
+    return _err(rid, 4127, "Only the tuos gateway that owns this Group Chat can discard its work.")
 
 
 def _passthrough(

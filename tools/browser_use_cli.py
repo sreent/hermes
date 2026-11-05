@@ -791,8 +791,8 @@ def browser_exec(code: str, session: str = "", timeout_s: int = _DEFAULT_TIMEOUT
 
     cmd = _find_cli()
     if not cmd:
-        return tool_error("browser-harness is missing from Hermes's Python environment. "
-                          "Run `hermes update` to re-sync it.")
+        return tool_error("browser-harness is missing from tuos's Python environment. "
+                          "Run `tuos update` to re-sync it.")
 
     env = _base_subprocess_env()
     if session:

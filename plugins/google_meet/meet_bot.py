@@ -458,7 +458,7 @@ def run_bot() -> int:
     except ImportError as e:
         state.set(error=f"playwright not installed: {e}", exited=True)
         sys.stderr.write("google_meet bot: playwright is not installed. Run "
-                         "`hermes meet install`\n")
+                         "`tuos meet install`\n")
         if rt["bridge"]:
             rt["bridge"].teardown()
         return 3

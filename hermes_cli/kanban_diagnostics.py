@@ -317,11 +317,11 @@ def _rule_triage_aux_unavailable(task, events, runs, now, cfg) -> list[Diagnosti
 
     task_id = _task_field(task, "id") or "<task_id>"
     actions = [_cli_hint(
-        f"Configure {primary_slot}", f"hermes config set {primary_slot}.provider auto", suggested=True,
+        f"Configure {primary_slot}", f"tuos config set {primary_slot}.provider auto", suggested=True,
     )]
     if not fallback_explicit and not main_visible:
         actions.append(_cli_hint(
-            f"Or configure fallback {fallback_slot}", f"hermes config set {fallback_slot}.provider auto",
+            f"Or configure fallback {fallback_slot}", f"tuos config set {fallback_slot}.provider auto",
         ))
     if not auto_decompose:
         cmd = f"hermes kanban specify {task_id}"
@@ -535,12 +535,12 @@ def _rule_review_dependency_deadlock(task, events, runs, now, cfg) -> list[Diagn
     actions: list[DiagnosticAction] = []
     if task_id:
         actions.append(_cli_hint(
-            "Complete the finished implementation phase", f"hermes kanban complete {task_id}",
+            "Complete the finished implementation phase", f"tuos kanban complete {task_id}",
             suggested=True,
         ))
     if task_id and child_ids:
         actions.append(_cli_hint(
-            "Or unlink the incorrectly gated reviewer", f"hermes kanban unlink {task_id} {child_ids[0]}",
+            "Or unlink the incorrectly gated reviewer", f"tuos kanban unlink {task_id} {child_ids[0]}",
         ))
 
     blocked_at = _event_ts(latest_block) or now
@@ -585,7 +585,7 @@ def _rule_running_with_open_parents(task, events, runs, now, cfg) -> list[Diagno
                "parent is done or archived. Finish the parent, or unlink the edge if it was never meant "
                "to gate this run.",
         actions=[_cli_hint("Unlink the parent that should not gate this run",
-                           f"hermes kanban unlink {parent_ids[0]} {task_id}")],
+                           f"tuos kanban unlink {parent_ids[0]} {task_id}")],
         first_seen_at=seen_at, last_seen_at=now, count=len(parent_ids),
         data={"open_parents": [{"id": p["id"], "status": p.get("status")} for p in open_parents]},
     )]
@@ -720,7 +720,7 @@ def _rule_stranded_in_ready(task, events, runs, now, cfg) -> list[Diagnostic]:
     actions = [
         DiagnosticAction(kind="reassign", label="Reassign to a different worker",
                          payload={"current_assignee": assignee}),
-        _cli_hint("Check dispatcher status", "hermes kanban diagnostics"),
+        _cli_hint("Check dispatcher status", "tuos kanban diagnostics"),
     ]
     return [Diagnostic(
         kind="stranded_in_ready", severity=severity,
@@ -799,7 +799,7 @@ def _rule_stale_running(task, events, runs, now, cfg) -> list[Diagnostic]:
                f"hold its profile's worker slot indefinitely while every card queued behind it "
                f"stays deferred. Check the card's log, then reclaim it.",
         actions=[DiagnosticAction(kind="reclaim", label="Reclaim the dead claim", suggested=True),
-                 _cli_hint("Reclaim from the CLI", f"hermes kanban reclaim {task_id}")],
+                 _cli_hint("Reclaim from the CLI", f"tuos kanban reclaim {task_id}")],
         first_seen_at=expires, last_seen_at=expires, count=1,
         data={"claim_expires": expires, "expired_seconds": int(expired_seconds),
               "recorded_pids": pids, "last_heartbeat_at": hb,

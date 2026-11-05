@@ -392,7 +392,7 @@ def run_debug_share(args):
         path = save_debug_archive(bundle)
     except OSError as exc:
         print(f"\nCould not save the debug report: {redact_debug_support_text(exc)}\n"
-              "Run `hermes debug share --local` to print it instead.", file=sys.stderr)
+              "Run `tuos debug share --local` to print it instead.", file=sys.stderr)
         sys.exit(1)
     print(_SAVED_MESSAGE.format(
         path=path, issues=ISSUES_URL,
@@ -403,8 +403,8 @@ def run_debug_delete(args):
     """Delete paste URLs that an earlier version's ``hermes debug share`` uploaded."""
     urls = getattr(args, "urls", [])
     if not urls:
-        print("Usage: hermes debug delete <url> [<url> ...]\n"
-              "  Deletes paste.rs pastes uploaded by an earlier version's 'hermes debug share'.")
+        print("Usage: tuos debug delete <url> [<url> ...]\n"
+              "  Deletes paste.rs pastes uploaded by an earlier version's 'tuos debug share'.")
         return
     for url in urls:
         try:

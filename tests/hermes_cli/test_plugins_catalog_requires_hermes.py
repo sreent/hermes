@@ -95,7 +95,7 @@ def test_update_keeps_the_installed_pin_when_the_new_pin_needs_a_newer_hermes(ga
 
     with pytest.raises(SystemExit):  # `hermes plugins update cat-plugin`
         pc.cmd_update("cat-plugin", interactive=False)
-    assert any(REFUSAL in line and "after you update Hermes" in line for line in gated["printed"])
+    assert any(REFUSAL in line and "after you update tuos" in line for line in gated["printed"])
     dashboard = pc.dashboard_update_user_plugin("cat-plugin")
     assert dashboard["ok"] is False and REFUSAL in dashboard["error"]
     assert REFUSAL in _rpc({"action": "update", "name": "cat-plugin"})["error"]["message"]

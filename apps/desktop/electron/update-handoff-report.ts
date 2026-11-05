@@ -69,8 +69,8 @@ export function reportHandoffResult(host: HandoffReportHost): void {
       host.log(`[updates] detached update finished with warnings: ${result.warnings.join(' | ')}`)
       void host.dialog.showMessageBox({
         type: 'info',
-        title: 'Hermes update',
-        message: 'Hermes updated, but some follow-up steps need another try',
+        title: 'tuos update',
+        message: 'tuos updated, but some follow-up steps need another try',
         detail: `${result.warnings.join('\n')}\n\nHermes retries them on the next launch or the next update.`
       })
     } else if (result && result.ok && result.manual && result.releaseHolders.length && host.closeHoldersAndRetry) {
@@ -82,7 +82,7 @@ export function reportHandoffResult(host: HandoffReportHost): void {
       host.log(`[updates] detached update finished with manual action (branch ${result.branch}): ${result.message}`)
       host.dialog.showMessageBox({
         type: 'warning',
-        title: 'Hermes update',
+        title: 'tuos update',
         message: 'The update finished, but needs one more step',
         detail: result.message
       })
@@ -116,8 +116,8 @@ function reportFailedHandoff(host: HandoffReportHost, result: HandoffResult): vo
   void host.dialog
     .showMessageBox({
       type: 'error',
-      title: 'Hermes update',
-      message: explained?.message ?? "Hermes couldn't finish updating",
+      title: 'tuos update',
+      message: explained?.message ?? "tuos couldn't finish updating",
       detail:
         explained === null
           ? "You're still on the previous version and can keep using it. Try the update again, or open the update log to report the problem.\n\n" +
@@ -164,10 +164,10 @@ function reportReleaseHolders(host: HandoffReportHost, holders: ReleaseHolder[],
   void host.dialog
     .showMessageBox({
       type: 'warning',
-      title: 'Hermes update',
+      title: 'tuos update',
       message: `${names} is blocking the Desktop app update`,
       detail:
-        `Hermes updated, but Windows would not replace the Desktop app because this program, which is not part of Hermes, is using its folder:\n\n${listed}\n\n` +
+        `tuos updated, but Windows would not replace the Desktop app because this program, which is not part of tuos, is using its folder:\n\n${listed}\n\n` +
         `${action}\n\nDetails: ${message}`,
       buttons: closable.length ? [`Close ${closableNames} and retry`, 'Not now'] : ['OK'],
       defaultId: closable.length ? 1 : 0,

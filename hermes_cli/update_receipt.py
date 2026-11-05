@@ -926,7 +926,7 @@ def finalize_interrupted_update_receipt(stop_reason: str, *, exit_code: int = 13
     along (the completion child persisted stages this process never saw).
     """
     print("⚠ Interrupted after the code was updated: the new code is in place; its remaining steps are owed "
-          "and the next launch or `hermes update` finishes them.", flush=True)
+          "and the next launch or `tuos update` finishes them.", flush=True)
     if _current.get() is None:
         return None
     closed = resume_run_record()
@@ -1294,7 +1294,7 @@ def print_fleet_version_matrix(fleet: list[dict[str, Any]]) -> bool:
     if RESTART_PENDING_STATE in states:
         print()
         print("  ℹ A restart-pending gateway has not yet been verified on the new code;")
-        print("    check after this update exits with `hermes gateway status`.")
+        print("    check after this update exits with `tuos gateway status`.")
     stale_or_down = sum(1 for entry in fleet if entry.get("state") in ("stale", "down"))
     if stale_or_down:
         print()
@@ -1307,6 +1307,6 @@ def print_fleet_version_matrix(fleet: list[dict[str, Any]]) -> bool:
         print()
         print(
             f"⚠ Gateway restart still owed: {stale_or_down} gateway(s) still running the old code (or stopped).")
-        print("  Run `hermes gateway restart` (or `hermes -p <profile> gateway restart` for a named")
-        print("  profile), then `hermes gateway status` to confirm.")
+        print("  Run `tuos gateway restart` (or `tuos -p <profile> gateway restart` for a named")
+        print("  profile), then `tuos gateway status` to confirm.")
     return stale_or_down > 0

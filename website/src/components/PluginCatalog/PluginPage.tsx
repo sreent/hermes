@@ -160,9 +160,9 @@ export default function PluginPage({ data }: { data: PluginPageData }) {
               <a
                 className={styles.installBtn}
                 href={desktopInstallLink(plugin.name)}
-                title="Opens the Install Plugin dialog in Hermes Desktop at the reviewed version. No app? Use the install command."
+                title="Opens the Install Plugin dialog in tuos Desktop at the reviewed version. No app? Use the install command."
               >
-                Open in Hermes Desktop
+                Open in tuos Desktop
               </a>
               <div className={styles.installCmd}>
                 <code>{plugin.installCommand}</code>

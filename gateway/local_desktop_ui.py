@@ -87,7 +87,7 @@ def _emit(sid, event, payload) -> None:
         publish = next((_turns[key] for key in keys if key and key in _turns), None)
     if publish is None:
         # Raised outside a local-viewer turn (a messaging route, a background thread): no window.
-        raise RuntimeError("no Hermes desktop window is attached to this turn")
+        raise RuntimeError("no tuos desktop window is attached to this turn")
     publish(event, dict(payload or {}))
 
 
@@ -106,7 +106,7 @@ def _publish_process(session, event_type, payload) -> None:
     with _lock:
         route = _process_routes.get(key) if key else None
     if route is None:
-        raise RuntimeError("no Hermes desktop window owns this process")
+        raise RuntimeError("no tuos desktop window owns this process")
     authority, session_id = route
     live = authority.sessions.get(session_id)
     if live is None:

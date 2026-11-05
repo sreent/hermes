@@ -85,10 +85,10 @@ def read_ref(path: Path) -> Optional[dict]:
         return None
     except (OSError, ValueError) as exc:
         from agent.vault_store import VaultError
-        raise VaultError(f"{path.name} is unreadable ({type(exc).__name__}); see `hermes vault key`") from exc
+        raise VaultError(f"{path.name} is unreadable ({type(exc).__name__}); see `tuos vault key`") from exc
     if not isinstance(data, dict) or data.get("storage") != "keychain" or not data.get("account"):
         from agent.vault_store import VaultError
-        raise VaultError(f"{path.name} does not describe a keychain entry; see `hermes vault key`")
+        raise VaultError(f"{path.name} does not describe a keychain entry; see `tuos vault key`")
     return data
 
 

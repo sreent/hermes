@@ -48,7 +48,7 @@ def raise_if_removed(*candidates: str) -> None:
             if removed.date:
                 detail += f" (removed {removed.date})"
             raise PluginOperationError(
-                f"Plugin '{removed.name}' was removed from the Hermes plugin catalog and is blocked from "
+                f"Plugin '{removed.name}' was removed from the tuos plugin catalog and is blocked from "
                 f"installation: {detail}", failure_class="removed_from_catalog")
 
 
@@ -58,8 +58,8 @@ def resolve_catalog_name(identifier: str, console) -> PluginCatalogEntry:
     entry = get_live_catalog_entry(identifier)
     if entry is None:
         _fail(console, (
-            f"[red]Error:[/red] '{identifier}' is not in the Hermes plugin catalog and is not a Git URL or "
-            "owner/repo shorthand. Browse entries with `hermes plugins search`."))
+            f"[red]Error:[/red] '{identifier}' is not in the tuos plugin catalog and is not a Git URL or "
+            "owner/repo shorthand. Browse entries with `tuos plugins search`."))
         raise SystemExit(1)  # _fail exits; keeps type-checkers honest
     return entry
 
@@ -312,7 +312,7 @@ def refuse_incompatible_catalog_entry(entry: PluginCatalogEntry) -> None:
     _refuse_unsupported_catalog_platform(entry)
     reason = catalog_hermes_error(entry)
     if reason:
-        raise PluginOperationError(f"{reason} Update Hermes (`{recommended_update_command()}`) and install again.",
+        raise PluginOperationError(f"{reason} Update tuos (`{recommended_update_command()}`) and install again.",
                                    failure_class="incompatible")
 
 
@@ -364,9 +364,9 @@ def refuse_if_installed_removed(name: str, plugin_dir) -> None:
     removed = installed_plugin_removal(name, plugin_dir)
     if removed is not None:
         raise PluginOperationError(
-            f"Plugin '{name}' was removed from the Hermes plugin catalog: "
-            f"{removed.reason or 'no reason recorded'}. Remove it with `hermes plugins remove {name}`, "
-            "or reinstall with `hermes plugins install <source> --force --allow-removed` if you trust it.")
+            f"Plugin '{name}' was removed from the tuos plugin catalog: "
+            f"{removed.reason or 'no reason recorded'}. Remove it with `tuos plugins remove {name}`, "
+            "or reinstall with `tuos plugins install <source> --force --allow-removed` if you trust it.")
 
 
 _PRESERVE_SKIP = ("__pycache__", ".git", CATALOG_SIDECAR)
@@ -664,7 +664,7 @@ def repin_catalog_plugin(
     if entry is None:
         raise PluginOperationError(
             f"Plugin '{catalog_name}' is no longer in the catalog — it may have been removed. "
-            "See `hermes plugins info` and the removed blocklist.")
+            "See `tuos plugins info` and the removed blocklist.")
     refuse_if_installed_removed(catalog_name, target)
     if at_catalog_pin(sidecar, entry.sha):
         return RepinResult(entry.sha, False, target.name, [])
@@ -675,7 +675,7 @@ def repin_catalog_plugin(
         raise PluginOperationError(
             f"Update of {catalog_name} to {entry.sha[:8]} not applied: {held} {catalog_name} stays at "
             f"{str(sidecar.get('sha') or '')[:8] or 'its installed version'}; the update is available after "
-            f"you update Hermes (`{recommended_update_command()}`).", failure_class="incompatible")
+            f"you update tuos (`{recommended_update_command()}`).", failure_class="incompatible")
 
     local, modified = _local_changes(target)
     old_sha8 = str(sidecar.get("sha") or "old")[:8]
@@ -760,7 +760,7 @@ def cmd_update_catalog(name: str, target: Path, sidecar: dict, console, *, inter
             console.print(f"    {line}")
         if not interactive or not _is_tty():
             console.print("  [yellow]Non-interactive session: update NOT applied (fail closed). "
-                          "Re-run `hermes plugins update` in a terminal to review and confirm.[/yellow]")
+                          "Re-run `tuos plugins update` in a terminal to review and confirm.[/yellow]")
             return False
         return _ask_yes("  Apply this update? [y/N]: ")
 
@@ -782,7 +782,7 @@ def cmd_update_catalog(name: str, target: Path, sidecar: dict, console, *, inter
                 else:
                     console.print(
                         f"[yellow]Plugin {result.installed_name} has new capabilities; review them with "
-                        f"`hermes plugins capabilities {result.installed_name}`.[/yellow]")
+                        f"`tuos plugins capabilities {result.installed_name}`.[/yellow]")
     return result.changed
 
 
@@ -807,7 +807,7 @@ def pin_label(entry: PluginCatalogEntry) -> str:
 def _render_entries(entries: list[PluginCatalogEntry], console) -> None:
     from hermes_cli.plugins_cmd import _table
     table = _table(((("Name", "bold")), ("Category", None), ("Tier", None), ("Description", None),
-                    ("Pinned", "dim"), ("Capabilities", "dim")), title="Hermes Plugin Catalog (curated)")
+                    ("Pinned", "dim"), ("Capabilities", "dim")), title="tuos Plugin Catalog (curated)")
     rank = {name: i for i, name in enumerate(CATALOG_TIERS)}
     style = {"official": "cyan", "verified": "green", "community": "magenta"}
     for e in sorted(entries, key=lambda e: (e.category, rank.get(e.tier, len(rank)), e.name)):
@@ -818,7 +818,7 @@ def _render_entries(entries: list[PluginCatalogEntry], console) -> None:
     console.print()
     console.print(table)
     console.print()
-    console.print("[dim]Details:[/dim] hermes plugins info <name>    [dim]Install:[/dim] hermes plugins install <name>")
+    console.print("[dim]Details:[/dim] tuos plugins info <name>    [dim]Install:[/dim] tuos plugins install <name>")
 
 
 def cmd_search(term: str = "", *, json_output: bool = False) -> None:
@@ -871,9 +871,9 @@ def cmd_info(name: str) -> None:
     held = catalog_hermes_error(entry)
     if held:
         from hermes_cli.config import recommended_update_command
-        console.print(f"[yellow]⚠ {held} Update Hermes (`{recommended_update_command()}`) to install it.[/yellow]")
+        console.print(f"[yellow]⚠ {held} Update tuos (`{recommended_update_command()}`) to install it.[/yellow]")
         console.print()
-    console.print(f"[dim]Install:[/dim]     hermes plugins install {entry.name}")
+    console.print(f"[dim]Install:[/dim]     tuos plugins install {entry.name}")
     console.print()
 
 

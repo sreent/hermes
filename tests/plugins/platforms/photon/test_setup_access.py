@@ -204,7 +204,7 @@ def test_opt_in_wait_always_names_a_line_to_text(
     if dedicated_line:
         assert waited == [dedicated_line]
     else:
-        assert waited == [] and "skipping the opt-in wait" in out and "hermes photon status" in out
+        assert waited == [] and "skipping the opt-in wait" in out and "tuos photon status" in out
 
 
 def test_setup_without_phone_does_not_report_complete(

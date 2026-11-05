@@ -472,7 +472,7 @@ def _cli_add(args: Any, client: OAuthClient, key: str) -> bool:
     from hermes_cli.auth_oauth_pkce_plugin import login
 
     if _unattended():
-        raise SystemExit(f"`hermes auth add {key}` signs you in through a browser; run it in your own terminal, "
+        raise SystemExit(f"`tuos auth add {key}` signs you in through a browser; run it in your own terminal, "
                          "not from a gateway, cron job or agent session.")
     secret = " and the client secret" if client.client_secret_env else ""
     print(f"Plugin '{key.rsplit(':', 1)[0]}' signs in to {client.id} at {urlparse(client.authorize_url).hostname}. "
@@ -484,7 +484,7 @@ def _cli_add(args: Any, client: OAuthClient, key: str) -> bool:
     except AuthError as exc:
         raise SystemExit(f"Login failed: {exc}") from None
     _write_grant(key, {**fields, "fingerprint": client.fingerprint})
-    print(f"Signed in to {client.id} for plugin '{key.rsplit(':', 1)[0]}'; the grant is stored in this Hermes profile.")
+    print(f"Signed in to {client.id} for plugin '{key.rsplit(':', 1)[0]}'; the grant is stored in this tuos profile.")
     return True
 
 

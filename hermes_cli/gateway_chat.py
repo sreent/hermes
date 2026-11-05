@@ -155,8 +155,8 @@ async def _resume_latest(client, args):
     except GatewayClientError as exc:
         if str(exc) != "not_found":
             raise
-        raise GatewayClientError("No previous CLI session to continue. Start a new one with `hermes`, "
-                                 "or list sessions with `hermes sessions list`.") from None
+        raise GatewayClientError("No previous CLI session to continue. Start a new one with `tuos`, "
+                                 "or list sessions with `tuos sessions list`.") from None
 
 
 async def run_gateway_chat(args, emitter=None):
@@ -191,7 +191,7 @@ async def run_gateway_chat(args, emitter=None):
                     if str(exc) != "not_found":
                         raise
                     raise GatewayClientError(
-                        f"No session found matching '{name}'. Use 'hermes sessions list' to see available "
+                        f"No session found matching '{name}'. Use 'tuos sessions list' to see available "
                         "sessions, or pass -c <name> --create-if-missing to start a new session with that title.")
             check_resume_policy(args, snapshot)
         else:

@@ -6,7 +6,7 @@ description: "How the ACP adapter works: lifecycle, sessions, event bridge, appr
 
 # ACP Internals
 
-The ACP adapter wraps Hermes' synchronous `AIAgent` in an async JSON-RPC stdio server.
+The ACP adapter wraps tuos' synchronous `AIAgent` in an async JSON-RPC stdio server.
 
 Key implementation files:
 
@@ -21,7 +21,7 @@ Key implementation files:
 ## Boot flow
 
 ```text
-hermes acp / hermes-acp / python -m acp_adapter
+tuos acp / hermes-acp / python -m acp_adapter
   -> acp_adapter.entry.main()
   -> parse --version / --check / --setup before server startup
   -> load ~/.hermes/.env
@@ -108,15 +108,15 @@ asyncio.run_coroutine_threadsafe(...)
 
 Mapping:
 
-- `allow_once` -> Hermes `once`
-- `allow_always` -> Hermes `always`
-- reject options -> Hermes `deny`
+- `allow_once` -> tuos `once`
+- `allow_always` -> tuos `always`
+- reject options -> tuos `deny`
 
 Timeouts and bridge failures deny by default.
 
 ### Tool rendering helpers
 
-`acp_adapter/tools.py` maps Hermes tools to ACP tool kinds and builds editor-facing content.
+`acp_adapter/tools.py` maps tuos tools to ACP tool kinds and builds editor-facing content.
 
 Examples:
 
@@ -146,7 +146,7 @@ prompt(..., session_id)
 ```
 
 A turn that ends in a terminal failure (provider refusal, non-retryable error, exhausted
-retries, interrupt before any reply) is closed by the core loop with a Hermes-authored
+retries, interrupt before any reply) is closed by the core loop with a tuos-authored
 assistant row ("Your request was not processed…" / "This turn did not complete…") so the
 durable transcript never ends on an open `user` row. Without it the next prompt would be
 merged into the failed request and replayed. Context-overflow failures are exempt: their
@@ -168,12 +168,12 @@ repair is session rotation, not another row.
 
 ACP does not implement its own auth store.
 
-Instead it reuses Hermes' runtime resolver:
+Instead it reuses tuos' runtime resolver:
 
 - `acp_adapter/auth.py`
 - `hermes_cli/runtime_provider.py`
 
-So ACP advertises and uses the currently configured Hermes provider/credentials. It also always advertises a terminal setup auth method (`hermes-setup`, args `--setup`) so first-run ACP clients can open Hermes' interactive model/provider configuration before starting a normal ACP session.
+So ACP advertises and uses the currently configured tuos provider/credentials. It also always advertises a terminal setup auth method (`hermes-setup`, args `--setup`) so first-run ACP clients can open tuos' interactive model/provider configuration before starting a normal ACP session.
 
 ## Working directory binding
 
@@ -204,5 +204,5 @@ ACP temporarily installs an approval callback on the terminal tool during prompt
 
 - `tests/acp_adapter/` — ACP test suite
 - `toolsets.py` — `hermes-acp` toolset definition
-- `hermes_cli/main.py` — `hermes acp` CLI subcommand
+- `hermes_cli/main.py` — `tuos acp` CLI subcommand
 - `pyproject.toml` — `[acp]` optional dependency + `hermes-acp` script

@@ -158,5 +158,5 @@ def add_adopt_parser(sessions_subparsers) -> None:
         description="Chats written before the gateway owned sessions become gateway sessions the first "
             "time a native client on this host opens them. This adopts them all at once, so remote "
             "clients such as the Webapp can continue them. Run it as the gateway's OS user; use "
-            "`hermes -p <profile> sessions adopt` for another profile.")
+            "`tuos -p <profile> sessions adopt` for another profile.")
     parser.add_argument('--dry-run', action='store_true', help='Only count what would be adopted')

@@ -70,9 +70,9 @@ def test_status_preserves_profile_health_contract(served_root, capsys, monkeypat
         assert "STALLED" in output
     if mode in {"disabled", "excluded", "unrelated_pid"}:
         assert "No scheduler is serving profile" in output
-        assert "hermes --profile default gateway install" in output
-        assert "sudo hermes --profile default gateway install --system" in output
-        assert "hermes --profile default gateway run" in output
+        assert "tuos --profile default gateway install" in output
+        assert "sudo tuos --profile default gateway install --system" in output
+        assert "tuos --profile default gateway run" in output
         # Multiplex-only: a per-profile service is not offered at all any more, not even as a
         # "legacy" fallback -- the one host gateway is the only topology, and an old per-profile
         # install is something to FOLD IN, not something to reinstall.
@@ -131,7 +131,7 @@ def test_satellite_list_and_create_require_own_heartbeat(served_root, capsys, mo
     cron.cron_list()
     listed = capsys.readouterr().out
     for output in (created, listed):
-        assert ("Check status:  hermes cron status" in output) == (heartbeat != "fresh")
+        assert ("Check status:  tuos cron status" in output) == (heartbeat != "fresh")
     cron.cron_status()
     assert ("will fire automatically" in capsys.readouterr().out) == (heartbeat == "fresh")
 
@@ -148,7 +148,7 @@ def test_standalone_guidance_matches_profile_membership(served_root, monkeypatch
     monkeypatch.setattr("gateway.status.is_gateway_runtime_lock_active", lambda lock_path=None: False)
     cron_status()
     output = capsys.readouterr().out
-    assert "hermes --profile default gateway install" in output
+    assert "tuos --profile default gateway install" in output
     # A named profile is told the host gateway serves it and how to fold an older per-profile
     # install in; it is never offered a second host process, legacy or otherwise.
     assert ("gateway migrate --multiplex" in output) == (home_kind == "named")
@@ -294,7 +294,7 @@ def test_doctor_reports_persisted_dispatch_health(served_root, capsys, dispatch)
     output = capsys.readouterr().out
     expected = {"catch_up": "catch-up", "late": "last fire was late", "forward_error": "loopback unavailable"}
     assert expected[dispatch] in output
-    assert "Review the findings above, then run `hermes cron doctor` again." in output
+    assert "Review the findings above, then run `tuos cron doctor` again." in output
     jobs.mark_job_run(job["id"], success=True)
     if dispatch == "forward_error":
         assert cron_doctor() == 0

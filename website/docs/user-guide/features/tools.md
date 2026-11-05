@@ -1,23 +1,23 @@
 ---
 sidebar_position: 1
 title: "Tools & Toolsets"
-description: "Overview of Hermes Agent's tools — what's available, how toolsets work, and terminal backends"
+description: "Overview of tuos's tools — what's available, how toolsets work, and terminal backends"
 ---
 
 # Tools & Toolsets
 
 Python dependency commands on this page use a
 [PM-prepared source checkout](../../reference/package-management.md#developer-workflow).
-After a dependency change, reactivate the checkout and restart Hermes.
+After a dependency change, reactivate the checkout and restart tuos.
 
 Tools are functions that extend the agent's capabilities. They're organized into logical **toolsets** that can be enabled or disabled per platform.
 
 ## Available Tools
 
-Hermes ships with a broad built-in tool registry covering web search, browser automation, terminal execution, file editing, memory, delegation, scheduled tasks, and more. Plugins add more tools — for example Home Assistant device control comes from the `homeassistant` catalog plugin.
+tuos ships with a broad built-in tool registry covering web search, browser automation, terminal execution, file editing, memory, delegation, scheduled tasks, and more. Plugins add more tools — for example Home Assistant device control comes from the `homeassistant` catalog plugin.
 
 :::note
-**Honcho cross-session memory** is available as a memory provider plugin from the plugin catalog (`hermes plugins install honcho`), not as a built-in toolset. See [Memory Providers](./memory-providers.md#honcho).
+**Honcho cross-session memory** is available as a memory provider plugin from the plugin catalog (`tuos plugins install honcho`), not as a built-in toolset. See [Memory Providers](./memory-providers.md#honcho).
 :::
 
 High-level categories:
@@ -25,32 +25,32 @@ High-level categories:
 | Category | Examples | Description |
 |----------|----------|-------------|
 | **Web** | `web_search`, `web_extract` | Search the web and extract page content. |
-| **X Search** | `x_search` | Search X (Twitter) posts and threads via xAI's built-in `x_search` Responses tool — gated on xAI credentials (SuperGrok OAuth or `XAI_API_KEY`); off by default, opt in via `hermes tools` → 🐦 X (Twitter) Search. |
+| **X Search** | `x_search` | Search X (Twitter) posts and threads via xAI's built-in `x_search` Responses tool — gated on xAI credentials (SuperGrok OAuth or `XAI_API_KEY`); off by default, opt in via `tuos tools` → 🐦 X (Twitter) Search. |
 | **Terminal & Files** | `terminal`, `process`, `read_file`, `patch` | Execute commands and manipulate files. |
-| **Browser** | `browser_exec`, `browser_cdp`, `browser_dialog`, `browser_vault` | Browser automation: `browser_exec` drives Chromium with Python over CDP (screenshots included). The Camofox browser is a separate catalog plugin (`hermes plugins install camofox`). |
+| **Browser** | `browser_exec`, `browser_cdp`, `browser_dialog`, `browser_vault` | Browser automation: `browser_exec` drives Chromium with Python over CDP (screenshots included). The Camofox browser is a separate catalog plugin (`tuos plugins install camofox`). |
 | **Media** | `vision_analyze`, `image_generate`, `text_to_speech` | Multimodal analysis and generation. |
 | **Agent orchestration** | `todo`, `clarify`, `execute_code`, `delegate_task` | Planning, clarification, code execution, and subagent delegation. |
 | **Memory & recall** | `memory`, `session_search` | Persistent memory and session search. |
-| **Automation** | `cronjob` | Scheduled tasks with create/list/update/pause/resume/run/remove actions. Outbound delivery is handled by cron's own delivery, the `hermes send` CLI, and the gateway notifier — not by an agent-callable tool. |
+| **Automation** | `cronjob` | Scheduled tasks with create/list/update/pause/resume/run/remove actions. Outbound delivery is handled by cron's own delivery, the `tuos send` CLI, and the gateway notifier — not by an agent-callable tool. |
 | **Integrations** | MCP server tools, plugin tools | MCP and plugin integrations, e.g. Home Assistant (`ha_*`, from the [`homeassistant` catalog plugin](../messaging/homeassistant.md)). |
 
 For the authoritative code-derived registry, see [Built-in Tools Reference](../../reference/tools-reference.md) and [Toolsets Reference](../../reference/toolsets-reference.md).
 
 :::tip Nous Tool Gateway
-Paid [Nous Portal](https://portal.nousresearch.com) subscribers can use web search, image generation, TTS, and browser automation through the **[Tool Gateway](tool-gateway.md)** — no separate API keys needed. Run `hermes model` to enable it, or configure individual tools with `hermes tools`.
+Paid [Nous Portal](https://portal.nousresearch.com) subscribers can use web search, image generation, TTS, and browser automation through the **[Tool Gateway](tool-gateway.md)** — no separate API keys needed. Run `tuos model` to enable it, or configure individual tools with `tuos tools`.
 :::
 
 ## Using Toolsets
 
 ```bash
 # Use specific toolsets
-hermes chat --toolsets "web,terminal"
+tuos chat --toolsets "web,terminal"
 
 # See all available tools
-hermes tools
+tuos tools
 
 # Configure tools per platform (interactive)
-hermes tools
+tuos tools
 ```
 
 Common toolsets include `web`, `search`, `terminal`, `file`, `browser`, `vision`, `image_gen`, `skills`, `tts`, `todo`, `memory`, `session_search`, `cronjob`, `code_execution`, `delegation`, `clarify`, `messaging`, `discord`, `discord_admin`, `debugging`, and `safe`.
@@ -123,9 +123,9 @@ terminal:
   docker_image: python:3.11-slim
 ```
 
-**One persistent container, shared across the whole process.** Hermes starts a single long-lived container on first use (`docker run -d ... sleep infinity`) and routes every terminal, file, and `execute_code` call through `docker exec` into that same container. Working-directory changes, installed packages, environment tweaks, and files written to `/workspace` all carry over from one tool call to the next, across `/new`, `/reset`, and `delegate_task` subagents, for the lifetime of the Hermes process. The container is stopped and removed on shutdown.
+**One persistent container, shared across the whole process.** tuos starts a single long-lived container on first use (`docker run -d ... sleep infinity`) and routes every terminal, file, and `execute_code` call through `docker exec` into that same container. Working-directory changes, installed packages, environment tweaks, and files written to `/workspace` all carry over from one tool call to the next, across `/new`, `/reset`, and `delegate_task` subagents, for the lifetime of the tuos process. The container is stopped and removed on shutdown.
 
-This means the Docker backend behaves like a persistent sandbox VM, not a fresh container per command. If you `pip install foo` once, it's there for the rest of the session. If you `cd /workspace/project`, subsequent `ls` calls see that directory. See [Configuration → Docker Backend](../configuration.md#docker-backend) for the full lifecycle details and the `container_persistent` flag that controls whether `/workspace` and `/root` survive across Hermes restarts.
+This means the Docker backend behaves like a persistent sandbox VM, not a fresh container per command. If you `pip install foo` once, it's there for the rest of the session. If you `cd /workspace/project`, subsequent `ls` calls see that directory. See [Configuration → Docker Backend](../configuration.md#docker-backend) for the full lifecycle details and the `container_persistent` flag that controls whether `/workspace` and `/root` survive across tuos restarts.
 
 ### SSH Backend
 
@@ -147,14 +147,14 @@ TERMINAL_SSH_KEY=~/.ssh/id_rsa
 An official plugin ([`singularity`](https://github.com/NousResearch/hermes-official-plugins/tree/main/singularity)), formerly built in; `hermes update` installs it for profiles that already use it.
 
 ```bash
-hermes plugins install singularity
+tuos plugins install singularity
 
 # Pre-build SIF for parallel workers
 apptainer build ~/python.sif docker://python:3.11-slim
 
 # Configure
-hermes config set terminal.backend singularity
-hermes config set terminal.singularity_image ~/python.sif
+tuos config set terminal.backend singularity
+tuos config set terminal.singularity_image ~/python.sif
 ```
 
 ### Sprites
@@ -163,7 +163,7 @@ A plugin ([`sprites`](https://github.com/NousResearch/hermes-plugin-sprites)) th
 
 ```bash
 hermes plugins install NousResearch/hermes-plugin-sprites --enable
-hermes config set terminal.backend sprites
+tuos config set terminal.backend sprites
 # Add SPRITES_TOKEN to ~/.hermes/.env
 ```
 
@@ -172,34 +172,34 @@ hermes config set terminal.backend sprites
 ```bash
 python -c "import pm; pm.sync_venv(['modal'], explicit=True)"
 modal setup
-hermes config set terminal.backend modal
+tuos config set terminal.backend modal
 ```
 
 ### Vercel Sandbox
 
 ```bash
 python -c "import pm; pm.sync_venv(['vercel'], explicit=True)"
-hermes config set terminal.backend vercel_sandbox
-hermes config set terminal.vercel_image vercel/sandbox/universal:latest
+tuos config set terminal.backend vercel_sandbox
+tuos config set terminal.vercel_image vercel/sandbox/universal:latest
 ```
 
-Authenticate with all three of `VERCEL_TOKEN`, `VERCEL_PROJECT_ID`, and `VERCEL_TEAM_ID`. This access-token setup is the supported path for deployments and normal long-running Hermes processes on Render, Railway, Docker, and similar hosts. Fresh sandboxes start from `terminal.vercel_image` (default `vercel/sandbox/universal:latest`; the legacy `vercel_runtime` presets are deprecated by Vercel); Hermes defaults to `/vercel/sandbox` as the remote workspace root.
+Authenticate with all three of `VERCEL_TOKEN`, `VERCEL_PROJECT_ID`, and `VERCEL_TEAM_ID`. This access-token setup is the supported path for deployments and normal long-running tuos processes on Render, Railway, Docker, and similar hosts. Fresh sandboxes start from `terminal.vercel_image` (default `vercel/sandbox/universal:latest`; the legacy `vercel_runtime` presets are deprecated by Vercel); tuos defaults to `/vercel/sandbox` as the remote workspace root.
 
-For one-off local development, Hermes also accepts short-lived Vercel OIDC tokens:
+For one-off local development, tuos also accepts short-lived Vercel OIDC tokens:
 
 ```bash
-VERCEL_OIDC_TOKEN="$(vc project token <project-name>)" hermes chat
+VERCEL_OIDC_TOKEN="$(vc project token <project-name>)" tuos chat
 ```
 
 From a linked Vercel project directory:
 
 ```bash
-VERCEL_OIDC_TOKEN="$(vc project token)" hermes chat
+VERCEL_OIDC_TOKEN="$(vc project token)" tuos chat
 ```
 
-With `container_persistent: true`, Hermes uses Vercel snapshots to preserve filesystem state across sandbox recreation for the same task. This can include Hermes-synced credentials, skills, and cache files inside the sandbox. Snapshots do not preserve live processes, PID space, or the same live sandbox identity.
+With `container_persistent: true`, tuos uses Vercel snapshots to preserve filesystem state across sandbox recreation for the same task. This can include tuos-synced credentials, skills, and cache files inside the sandbox. Snapshots do not preserve live processes, PID space, or the same live sandbox identity.
 
-Background terminal commands use Hermes' generic non-local process flow: spawn, poll, wait, log, and kill work through the normal process tool while the sandbox is alive, but Hermes does not provide native Vercel detached-process recovery after cleanup or restart.
+Background terminal commands use tuos' generic non-local process flow: spawn, poll, wait, log, and kill work through the normal process tool while the sandbox is alive, but tuos does not provide native Vercel detached-process recovery after cleanup or restart.
 
 Leave `container_disk` unset or at the shared default `51200`; custom disk sizing is unsupported for Vercel Sandbox and will fail diagnostics/backend creation.
 
@@ -258,20 +258,20 @@ approval checks as any background command. Shapes that mix in other commands
 (`server & curl ...`, `a; b &`, multi-line scripts), `nohup`/`disown`/`setsid`
 wrappers, command substitutions (`$(...)`, backticks, `<(...)`) and commands
 whose approval category would change without the `&` are still refused with
-guidance, because Hermes cannot safely tell which part should keep running.
+guidance, because tuos cannot safely tell which part should keep running.
 
 ### Repeated waits on a quiet process
 
 When the agent calls `process(action="wait")` or `process(action="poll")` twice in a row on a
-process that is still running and has printed nothing new, Hermes turns on `notify_on_complete`
+process that is still running and has printed nothing new, tuos turns on `notify_on_complete`
 for that process and the result tells the agent to stop checking: the exit (code and final output)
 arrives later as its own message, so the agent can do other work or end its turn instead of
 spending a model call on every unchanged check. New output, the process exiting, or any other
 action on that process resets the count.
 
 This applies where a completion can reach the agent: the interactive CLI (including interactive
-`hermes chat -q`), the TUI and desktop app, and messaging chats. Non-interactive `hermes chat -q`,
-one-shot `hermes -z`, cron jobs, Kanban workers, stateless API requests and delegated subagents keep the
+`tuos chat -q`), the TUI and desktop app, and messaging chats. Non-interactive `tuos chat -q`,
+one-shot `tuos -z`, cron jobs, Kanban workers, stateless API requests and delegated subagents keep the
 previous behaviour because they cannot receive a later completion, as does any profile with
 `display.background_process_notifications: off` (completions never start an agent turn there). Checking
 a process whose completion goes to someone else (another session's process, or a subagent's process
@@ -291,8 +291,8 @@ Unrelated conversations and requests without a bound owning session cannot read
 retained receipts, even with an exact process handle. `process(action="list")`
 also includes retained results for the current task or conversation.
 
-Hermes keeps the newest **64 completed results**, for up to **7 days after
-completion**, under `logs/process-results/` in the profile's Hermes home. Each
+tuos keeps the newest **64 completed results**, for up to **7 days after
+completion**, under `logs/process-results/` in the profile's tuos home. Each
 receipt contains at most the existing rolling **200,000-character output tail**,
 with terminal secret-redaction rules always applied, even when live-output
 redaction is disabled. Receipts expire on subsequent

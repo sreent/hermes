@@ -159,7 +159,7 @@ def _owe_for(root: Path, sha: str) -> None:
     except OSError as exc:
         logger.warning("Could not re-arm the update obligations for %s: %s", sha[:10], exc)
         print(f"  ⚠ Could not record the restart this update still owes for {sha[:10]} ({exc}); "
-              "run `hermes gateway restart` once the update is done.", file=sys.stderr)
+              "run `tuos gateway restart` once the update is done.", file=sys.stderr)
 
 
 def debt_sha_for_move(pre: str, target: str) -> str:

@@ -85,7 +85,7 @@ _DISPATCH = {
 def meet_command(args: argparse.Namespace) -> int:
     sub = args.meet_command
     if not sub:
-        print("usage: hermes meet {setup,auth,join,status,transcript,say,stop,node}")
+        print("usage: tuos meet {setup,auth,join,status,transcript,say,stop,node}")
         return 2
     handler = _DISPATCH.get(sub)
     if handler is None:
@@ -100,7 +100,7 @@ def _cmd_setup() -> int:
     system_ok = system in {"Linux", "Darwin"}
     print(f"  platform       : {system}  [{'ok' if system_ok else 'unsupported'}]")
     pw_ok = importlib.util.find_spec("playwright") is not None
-    print("  playwright     : " + ("installed" if pw_ok else "NOT installed — run: hermes meet install"))
+    print("  playwright     : " + ("installed" if pw_ok else "NOT installed — run: tuos meet install"))
     chromium_ok, chromium_msg = False, "unknown"
     if pw_ok:
         try:
@@ -113,10 +113,10 @@ def _cmd_setup() -> int:
             chromium_msg = f"probe failed: {e}"
     print(f"  chromium       : {chromium_msg}")
     auth_path = _auth_state_path()
-    print("  google auth    : " + (f"ok ({auth_path})" if auth_path.is_file() else "not saved — run: hermes meet auth"))
+    print("  google auth    : " + (f"ok ({auth_path})" if auth_path.is_file() else "not saved — run: tuos meet auth"))
     print()
     all_ok = system_ok and pw_ok and chromium_ok
-    print("ready. Join a meeting:  hermes meet join https://meet.google.com/abc-defg-hij" if all_ok
+    print("ready. Join a meeting:  tuos meet join https://meet.google.com/abc-defg-hij" if all_ok
           else "not ready yet — fix the items above.")
     return 0 if all_ok else 1
 
@@ -187,8 +187,8 @@ def _cmd_install(*, realtime: bool, assume_yes: bool) -> int:
                               "  brew install failed — install them manually")
             print("\n  NOTE: macOS does not auto-route audio. Open\n    System Settings → Sound → "
                   "Input\n  and select 'BlackHole 2ch' before starting a realtime meeting.\n  "
-                  "hermes will not switch your default input for you.")
-    print("\ndone. verify with: hermes meet setup")
+                  "tuos will not switch your default input for you.")
+    print("\ndone. verify with: tuos meet setup")
     return 0
 
 
@@ -197,7 +197,7 @@ def _cmd_auth() -> int:
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
-        print("playwright is not installed. Run: hermes meet install")
+        print("playwright is not installed. Run: tuos meet install")
         return 1
     path = _auth_state_path()
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -217,7 +217,7 @@ def _cmd_auth() -> int:
     except Exception as e:
         print(f"auth failed: {e}")
         return 1
-    print("saved. you can now run: hermes meet join <url>")
+    print("saved. you can now run: tuos meet join <url>")
     return 0
 
 

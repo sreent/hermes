@@ -212,7 +212,7 @@ def release_after_refused_rename(
     closable = [h for h in holders if h.exe]
     for holder in holders:
         if not holder.exe:
-            print(f"  Close {holder.name} (pid {holder.pid}) yourself: Hermes cannot close it.")
+            print(f"  Close {holder.name} (pid {holder.pid}) yourself: tuos cannot close it.")
     if not chosen and _ask_at_terminal(closable, input_fn):
         chosen = closable
     if not chosen:

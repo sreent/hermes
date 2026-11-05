@@ -2839,7 +2839,7 @@ def _validate_base_url(base_url: str) -> None:
     except ValueError as exc:
         raise RuntimeError(
             f"Malformed custom endpoint URL: {candidate!r}. "
-            "Run `hermes setup` or `hermes model` and enter a valid http(s) base URL."
+            "Run `tuos setup` or `tuos model` and enter a valid http(s) base URL."
         ) from exc
 
 

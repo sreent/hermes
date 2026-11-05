@@ -98,7 +98,7 @@ def register(ctx) -> None:
         standalone_send=StandaloneSendPolicy(label="Yuanbao", media=True, text_direct=True),
         name="yuanbao", label="Yuanbao", adapter_factory=YuanbaoAdapter,
         dashboard_label="Yuanbao (元宝)",
-        dashboard_description="Connect Hermes to Tencent Yuanbao.",
+        dashboard_description="Connect tuos to Tencent Yuanbao.",
         dashboard_required_env=(),
         check_fn=check_yuanbao_requirements, is_connected=_is_connected,
         config_connected_fn=config_connected_extra("app_id", "app_secret"),

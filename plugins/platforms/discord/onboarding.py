@@ -193,7 +193,7 @@ def _print_invite(check: DiscordBotCheck) -> None:
     if check.server_count == 0:
         print_info("📨 The bot isn't in any server yet. Open this link to add it to yours:")
     else:
-        print_info("📨 Invite link (adds the bot to a server with the permissions Hermes uses):")
+        print_info("📨 Invite link (adds the bot to a server with the permissions tuos uses):")
     print_info(f"   {check.invite_url}")
     print_info("   Once you share a server with the bot you can also DM it directly.")
 

@@ -16,21 +16,21 @@ Tracks [issue #7816](https://github.com/NousResearch/hermes-agent/issues/7816).
 
 ## How it runs
 
-The curator is triggered by an inactivity check, not a cron job. On CLI session start, during gateway housekeeping (which also covers a local Desktop, since it attaches to the gateway), and on the `hermes serve` maintenance timer, Hermes checks whether:
+The curator is triggered by an inactivity check, not a cron job. On CLI session start, during gateway housekeeping (which also covers a local Desktop, since it attaches to the gateway), and on the `tuos serve` maintenance timer, tuos checks whether:
 
 1. Enough time has passed since the last curator run (`interval_hours`, default **7 days**), and
 2. The agent has been idle long enough (`min_idle_hours`, default **2 hours**).
 
-`hermes serve` / `hermes dashboard` backends (for example a remote Desktop connection) share the existing hourly maintenance timer (first poll after 90 seconds), independently of cron jobs. They measure inactivity from process startup and the most recent chat activity in the same profile, retaining that activity timestamp after a session closes or is reaped, and skip curator while a turn in that profile is running. A connected but inactive window does not block maintenance. A running messaging gateway for the same profile owns these chores instead.
+`tuos serve` / `tuos dashboard` backends (for example a remote Desktop connection) share the existing hourly maintenance timer (first poll after 90 seconds), independently of cron jobs. They measure inactivity from process startup and the most recent chat activity in the same profile, retaining that activity timestamp after a session closes or is reaped, and skip curator while a turn in that profile is running. A connected but inactive window does not block maintenance. A running messaging gateway for the same profile owns these chores instead.
 
 The timer services its backend's profile. In-flight maintenance runs in a worker thread; closing the backend does not cooperatively interrupt that pass. Starting multiple independent serve processes for the same profile can still race the curator's interval check.
 
 If both are true, it spawns a background fork of `AIAgent` — the same pattern used by the memory/skill self-improvement nudges. The fork runs in its own prompt cache and never touches the active conversation.
 
 :::info First-run behavior
-On a brand-new install (or the first time a pre-curator install ticks after `hermes update`), the curator **does not run immediately**. The first observation seeds `last_run_at` to "now" and defers the first real pass by one full `interval_hours`. This gives you a full interval to review your skill library, pin anything important, or opt out entirely before the curator ever touches it.
+On a brand-new install (or the first time a pre-curator install ticks after `tuos update`), the curator **does not run immediately**. The first observation seeds `last_run_at` to "now" and defers the first real pass by one full `interval_hours`. This gives you a full interval to review your skill library, pin anything important, or opt out entirely before the curator ever touches it.
 
-If you want to see what the curator *would* do before it runs for real, run `hermes curator run --dry-run` — it produces the same review report without mutating the library.
+If you want to see what the curator *would* do before it runs for real, run `tuos curator run --dry-run` — it produces the same review report without mutating the library.
 :::
 
 A run has two phases:
@@ -41,7 +41,7 @@ A run has two phases:
 2. **LLM consolidation** (single aux-model pass with a high iteration ceiling — a full curation sweep typically takes 50–100 API calls) — **OFF by default**. When `curator.consolidate: true`, the forked agent surveys the agent-created skills, can read any of them with `skill_view`, and decides per-skill whether to keep, patch (via `skill_manage`), consolidate overlapping ones into class-level umbrellas, or archive (via `skill_manage action=delete` with an `absorbed_into` target — the pass has no terminal). The candidate list it is given contains only skills it can actually read and write: bundled built-ins (even with `prune_builtins: true`, which only affects the deterministic archival pass) and skills in `skills.disabled` (which `skill_view` refuses) are never offered to it, so the pass cannot burn its tool budget on refused reads or writes. Consolidation treats a skill as a full package: if a skill has `references/`, `templates/`, `scripts/`, `assets/`, or relative links to those paths, the curator must either keep it standalone, re-home the needed support files and rewrite paths, or archive the entire package unchanged — not flatten only `SKILL.md` into another skill's `references/` file.
 
 :::info Consolidation is opt-in
-By default the curator only **prunes** — the deterministic inactivity pass marks skills stale and archives long-unused ones. The opinionated LLM **consolidation** pass (umbrella-building, merging overlapping skills) is off by default because it costs aux-model tokens on every run and makes broad structural changes to your library. Turn it on with `curator.consolidate: true`, or run it once on demand with `hermes curator run --consolidate`.
+By default the curator only **prunes** — the deterministic inactivity pass marks skills stale and archives long-unused ones. The opinionated LLM **consolidation** pass (umbrella-building, merging overlapping skills) is off by default because it costs aux-model tokens on every run and makes broad structural changes to your library. Turn it on with `curator.consolidate: true`, or run it once on demand with `tuos curator run --consolidate`.
 :::
 
 Pinned skills are skipped by the curator's auto-transitions, and the agent's `skill_manage` tool refuses to **delete** them; edits and patches still go through. To stop the agent from changing a skill at all, lock it instead. See [Pinning a skill](#pinning-a-skill) and [Locking a skill](#locking-a-skill) below.
@@ -67,10 +67,10 @@ To disable entirely, set `curator.enabled: false`. To keep the always-on pruning
 
 The curator's LLM review pass is a regular auxiliary task slot — `auxiliary.curator` — alongside Vision, Compression, Session Search, etc. "Auto" means "use my main chat model"; override the slot to pin a specific provider + model for the review pass instead.
 
-**Easiest — `hermes model`:**
+**Easiest — `tuos model`:**
 
 ```bash
-hermes model                   # → "Auxiliary models — side-task routing"
+tuos model                   # → "Auxiliary models — side-task routing"
                                # → pick "Curator" → pick provider → pick model
 ```
 
@@ -89,56 +89,56 @@ auxiliary:
 Leaving `provider: auto` (the default) routes the review pass through whatever your main chat model is, matching the behavior of every other auxiliary task.
 
 :::note Legacy config
-Earlier releases used a one-off `curator.auxiliary.{provider,model}` block. That path still works but emits a deprecation log line — please migrate to `auxiliary.curator` above so the curator shares the same plumbing (`hermes model`, dashboard Models tab, `base_url`, `api_key`, `timeout`, `extra_body`) as every other aux task.
+Earlier releases used a one-off `curator.auxiliary.{provider,model}` block. That path still works but emits a deprecation log line — please migrate to `auxiliary.curator` above so the curator shares the same plumbing (`tuos model`, dashboard Models tab, `base_url`, `api_key`, `timeout`, `extra_body`) as every other aux task.
 :::
 
 ## CLI
 
 ```bash
-hermes curator status         # last run, counts, pinned list, LRU top 5
-hermes curator run            # trigger a run now (blocks until done). Prune-only unless curator.consolidate: true
-hermes curator run --consolidate # force the LLM consolidation pass on for this run, overriding the config default
-hermes curator run --background  # fire-and-forget: start the run in a background thread
-hermes curator run --dry-run  # preview only — report without any mutations
-hermes curator backup         # take a manual snapshot of ~/.hermes/skills/
-hermes curator rollback       # restore from the newest snapshot
-hermes curator rollback --list     # list available snapshots
-hermes curator rollback --id <ts>  # restore a specific snapshot
-hermes curator rollback -y         # skip the confirmation prompt
-hermes curator pause          # stop runs until resumed
-hermes curator resume
-hermes curator pin <skill>    # never auto-transition this skill
-hermes curator unpin <skill>
-hermes curator lock <skill>   # the agent may not change it
-hermes curator unlock <skill>
-hermes curator adopt <skill>    # hand an unmanaged skill to the curator
-hermes curator adopt --all-unmanaged   # hand over every unmanaged skill
-hermes curator list-unmanaged   # itemize skills with no provenance marker
-hermes curator restore <skill>  # move an archived skill back to active
-hermes curator list-archived    # list skills currently in ~/.hermes/skills/.archive/
-hermes curator archive <skill>  # manually archive a single skill now
-hermes curator prune [--days N] # bulk-archive agent-created skills idle >= N days (default: `archive_after_days`, 30)
-hermes curator ledger           # list the per-mutation audit ledger (all actors)
-hermes curator ledger --skill <name> --limit 50  # filter/paginate ledger entries
-hermes curator rollback <entry-id>  # undo a single mutation from the ledger
-hermes curator purge [--days N] [--dry-run]  # delete archived skills older than the TTL (explicit only)
+tuos curator status         # last run, counts, pinned list, LRU top 5
+tuos curator run            # trigger a run now (blocks until done). Prune-only unless curator.consolidate: true
+tuos curator run --consolidate # force the LLM consolidation pass on for this run, overriding the config default
+tuos curator run --background  # fire-and-forget: start the run in a background thread
+tuos curator run --dry-run  # preview only — report without any mutations
+tuos curator backup         # take a manual snapshot of ~/.hermes/skills/
+tuos curator rollback       # restore from the newest snapshot
+tuos curator rollback --list     # list available snapshots
+tuos curator rollback --id <ts>  # restore a specific snapshot
+tuos curator rollback -y         # skip the confirmation prompt
+tuos curator pause          # stop runs until resumed
+tuos curator resume
+tuos curator pin <skill>    # never auto-transition this skill
+tuos curator unpin <skill>
+tuos curator lock <skill>   # the agent may not change it
+tuos curator unlock <skill>
+tuos curator adopt <skill>    # hand an unmanaged skill to the curator
+tuos curator adopt --all-unmanaged   # hand over every unmanaged skill
+tuos curator list-unmanaged   # itemize skills with no provenance marker
+tuos curator restore <skill>  # move an archived skill back to active
+tuos curator list-archived    # list skills currently in ~/.hermes/skills/.archive/
+tuos curator archive <skill>  # manually archive a single skill now
+tuos curator prune [--days N] # bulk-archive agent-created skills idle >= N days (default: `archive_after_days`, 30)
+tuos curator ledger           # list the per-mutation audit ledger (all actors)
+tuos curator ledger --skill <name> --limit 50  # filter/paginate ledger entries
+tuos curator rollback <entry-id>  # undo a single mutation from the ledger
+tuos curator purge [--days N] [--dry-run]  # delete archived skills older than the TTL (explicit only)
 ```
 
 ## Backups and rollback
 
-Before a consolidation pass (`consolidate: true`, the only pass that rewrites skill content in place), Hermes takes a tar.gz snapshot of `~/.hermes/skills/` at `~/.hermes/skills/.curator_backups/<utc-iso>/skills.tar.gz`. The snapshot covers the live skill tree only: `.archive/`, the audit ledger, `.hub/`, and the backups themselves are never rolled in, and a rollback never rewinds them (an older copy would lose archived skills or ledger entries). If a pass archives or consolidates something you didn't want touched, you can undo the whole run with one command:
+Before a consolidation pass (`consolidate: true`, the only pass that rewrites skill content in place), tuos takes a tar.gz snapshot of `~/.hermes/skills/` at `~/.hermes/skills/.curator_backups/<utc-iso>/skills.tar.gz`. The snapshot covers the live skill tree only: `.archive/`, the audit ledger, `.hub/`, and the backups themselves are never rolled in, and a rollback never rewinds them (an older copy would lose archived skills or ledger entries). If a pass archives or consolidates something you didn't want touched, you can undo the whole run with one command:
 
 ```bash
-hermes curator rollback        # restore newest snapshot (with confirmation)
-hermes curator rollback -y     # skip the prompt
-hermes curator rollback --list # see all snapshots with reason + size
+tuos curator rollback        # restore newest snapshot (with confirmation)
+tuos curator rollback -y     # skip the prompt
+tuos curator rollback --list # see all snapshots with reason + size
 ```
 
-The rollback itself is reversible: before replacing the skills tree, Hermes takes another snapshot tagged `pre-rollback to <target-id>`, so a mistaken rollback can be undone by rolling forward to that one with `--id`.
+The rollback itself is reversible: before replacing the skills tree, tuos takes another snapshot tagged `pre-rollback to <target-id>`, so a mistaken rollback can be undone by rolling forward to that one with `--id`.
 
-You can also take manual snapshots at any time with `hermes curator backup --reason "before-refactor"`. The `--reason` string lands in the snapshot's `manifest.json` and is shown in `--list`.
+You can also take manual snapshots at any time with `tuos curator backup --reason "before-refactor"`. The `--reason` string lands in the snapshot's `manifest.json` and is shown in `--list`.
 
-The default prune-only pass takes no snapshot: it only moves whole directories into `.archive/`, which is its own undo (`hermes curator restore`), and every mutation is in the ledger below. Snapshots are pruned to `curator.backup.keep` (default 2) on every pass to keep disk usage bounded:
+The default prune-only pass takes no snapshot: it only moves whole directories into `.archive/`, which is its own undo (`tuos curator restore`), and every mutation is in the ledger below. Snapshots are pruned to `curator.backup.keep` (default 2) on every pass to keep disk usage bounded:
 
 ```yaml
 curator:
@@ -147,9 +147,9 @@ curator:
     keep: 2
 ```
 
-Set `curator.backup.enabled: false` to disable automatic snapshotting. The manual `hermes curator backup` command still works when backups are disabled only if you set `enabled: true` first — the flag gates both paths symmetrically so there's no way to accidentally skip the pre-run snapshot on mutating runs.
+Set `curator.backup.enabled: false` to disable automatic snapshotting. The manual `tuos curator backup` command still works when backups are disabled only if you set `enabled: true` first — the flag gates both paths symmetrically so there's no way to accidentally skip the pre-run snapshot on mutating runs.
 
-`hermes curator status` also lists the five least-recently-used skills — a quick way to see what's likely to become stale next.
+`tuos curator status` also lists the five least-recently-used skills — a quick way to see what's likely to become stale next.
 
 The same subcommands are available as the `/curator` slash command inside a running session (CLI or gateway platforms).
 
@@ -163,12 +163,12 @@ Whole-run snapshots answer "undo everything the last curator pass did" — but s
 - **before/after** — per-file `{path, sha256}` manifests. File contents are stored content-addressed (deduped by hash) under `~/.hermes/.curator_backups/blobs/`, so a hundred entries touching the same unchanged file cost one blob.
 
 ```bash
-hermes curator ledger                  # newest 20 entries
-hermes curator ledger --skill my-skill --limit 50
-hermes curator rollback <entry-id>     # restore that one mutation's before-state
+tuos curator ledger                  # newest 20 entries
+tuos curator ledger --skill my-skill --limit 50
+tuos curator rollback <entry-id>     # restore that one mutation's before-state
 ```
 
-Single-entry rollback restores exactly the files that mutation touched (and removes files it created) from the blob store — nothing else in the skills tree moves. Like whole-tree rollback, it takes a safety ledger entry of the current state first and **fails closed**: if the safety capture can't be written, nothing is changed. Because foreground deletes are ledgered too, `hermes curator rollback <entry-id>` can resurrect a hard-deleted skill.
+Single-entry rollback restores exactly the files that mutation touched (and removes files it created) from the blob store — nothing else in the skills tree moves. Like whole-tree rollback, it takes a safety ledger entry of the current state first and **fails closed**: if the safety capture can't be written, nothing is changed. Because foreground deletes are ledgered too, `tuos curator rollback <entry-id>` can resurrect a hard-deleted skill.
 
 The ledger is telemetry, never a gate — if writing an entry fails, the mutation still goes through. Disable it with:
 
@@ -177,7 +177,7 @@ skills:
   ledger: false
 ```
 
-The file is also size-bounded: once it grows past `skills.ledger_max_bytes` (default 5 MB), the next mutation first rewrites it through the unchanged-file dedup (exactly what `hermes curator ledger --compact` does) and, if genuinely-divergent entries still exceed the cap, drops the oldest ones regardless of shape — the newest entry always survives, lines in the retained tail are never rewritten or parsed (a malformed line there survives verbatim), and the sweep frees blobs nothing references anymore and older than an hour (a fresh unreferenced blob may belong to a capture another process has not yet recorded). Set it to `0` to keep the ledger append-only forever.
+The file is also size-bounded: once it grows past `skills.ledger_max_bytes` (default 5 MB), the next mutation first rewrites it through the unchanged-file dedup (exactly what `tuos curator ledger --compact` does) and, if genuinely-divergent entries still exceed the cap, drops the oldest ones regardless of shape — the newest entry always survives, lines in the retained tail are never rewritten or parsed (a malformed line there survives verbatim), and the sweep frees blobs nothing references anymore and older than an hour (a fresh unreferenced blob may belong to a capture another process has not yet recorded). Set it to `0` to keep the ledger append-only forever.
 
 ```yaml
 skills:
@@ -194,9 +194,9 @@ curator:
 ```
 
 ```bash
-hermes curator purge --dry-run   # preview what would be deleted
-hermes curator purge             # delete archives older than the TTL (with confirmation)
-hermes curator purge --days 90   # one-off TTL override
+tuos curator purge --dry-run   # preview what would be deleted
+tuos curator purge             # delete archives older than the TTL (with confirmation)
+tuos curator purge --days 90   # one-off TTL override
 ```
 
 ## What "agent-created" means
@@ -223,12 +223,12 @@ curator opt-in. They are considered user-directed and the curator intentionally
 leaves them alone.
 
 :::warning Your hand-written skills are NOT curated
-If you manually created a `SKILL.md` or pointed Hermes at an external skill
+If you manually created a `SKILL.md` or pointed tuos at an external skill
 directory, that skill will have a `.usage.json` entry with `created_by: null`
 (or the field absent). The curator will not touch it. The same applies to
 skills the foreground agent created at your request (`created_by: learn`).
 
-**To see which skills the curator actually manages**, run `hermes curator status`.
+**To see which skills the curator actually manages**, run `tuos curator status`.
 If the agent-created count is 0, no skills are currently in the curator's
 jurisdiction — the LLM review pass is skipped and the report will show
 `Model: (not resolved) via (not resolved)` with `Duration: 0s`.
@@ -236,7 +236,7 @@ jurisdiction — the LLM review pass is skipped and the report will show
 
 ### Adopting unmanaged skills
 
-`hermes curator status` reports an **unmanaged** count alongside the managed
+`tuos curator status` reports an **unmanaged** count alongside the managed
 one:
 
 ```
@@ -248,7 +248,7 @@ curator-managed skills: 43 total  (agent-created=43  bundled=0)
 unmanaged (no provenance marker): 112 total
   pre-dates marker    34
   foreground-created  78
-  never auto-staled or archived — `hermes curator adopt <name>` hands one over
+  never auto-staled or archived — `tuos curator adopt <name>` hands one over
 ```
 
 Those 112 are curation-*eligible* but permanently invisible to the lifecycle,
@@ -265,11 +265,11 @@ A large library can therefore look fully curated while most of it is
 untouchable. `adopt` closes that gap by **declaration**:
 
 ```bash
-hermes curator list-unmanaged                    # itemize them, with reasons
-hermes curator adopt <name> [<name> ...]         # hand specific skills over
-hermes curator adopt --all-unmanaged --dry-run   # preview the full list
-hermes curator adopt --all-unmanaged             # hand over everything (prompts)
-hermes curator adopt --all-unmanaged --yes       # skip the prompt
+tuos curator list-unmanaged                    # itemize them, with reasons
+tuos curator adopt <name> [<name> ...]         # hand specific skills over
+tuos curator adopt --all-unmanaged --dry-run   # preview the full list
+tuos curator adopt --all-unmanaged             # hand over everything (prompts)
+tuos curator adopt --all-unmanaged --yes       # skip the prompt
 ```
 
 Adoption writes the same `created_by: agent` marker the background review fork
@@ -286,21 +286,21 @@ in the skill ledger. It may archive (delete) only curator-managed skills, never
 pinned ones. To review those writes before they land, turn on
 `skills.write_approval` (see [Gating agent skill writes](./skills.md#gating-agent-skill-writes-skillswrite_approval)).
 A bundled or hub-installed skill the review has edited counts as locally
-modified, so `hermes update` / `hermes skills update` stop overwriting it.
+modified, so `tuos update` / `tuos skills update` stop overwriting it.
 
 :::note `created_by` is a policy flag, not a provenance claim
 The stored field is named `created_by`, but it is consumed as "may autonomous
 curation touch this?" — not "who wrote this file". Those are different
 questions, and for records predating the marker the authorship answer is simply
 unrecoverable. The name is kept because it is already on disk in every
-`.usage.json`; read it as policy. `hermes curator adopt` changes the policy, and
+`.usage.json`; read it as policy. `tuos curator adopt` changes the policy, and
 says nothing about who authored the file.
 :::
 
 :::note Provenance is declared, never inferred
 Adoption is deliberately manual. Telemetry cannot establish authorship: a skill
 with thousands of patches proves the agent **maintains** it, not that the agent
-**wrote** it — Hermes edits user-authored skills on your behalf constantly. An
+**wrote** it — tuos edits user-authored skills on your behalf constantly. An
 automatic "looks agent-made, adopt it" heuristic would eventually archive
 something you hand-wrote. `adopt` refuses bundled, hub-installed, external, and
 protected built-in skills, which have an owner other than you.
@@ -310,11 +310,11 @@ Skills that ARE agent-created follow the full lifecycle:
 
 - `active` → (30d unused) `stale` → (90d unused) `archived`
 - Pinned skills bypass all auto-transitions
-- Archives are recoverable via `hermes curator restore <name>`
+- Archives are recoverable via `tuos curator restore <name>`
 
 If you want to protect an agent-created skill from archival, use
-`hermes curator pin <name>`. If you want the agent to stop changing a skill at all —
-for example a hand-authored skill you rely on — use `hermes curator lock <name>`.
+`tuos curator pin <name>`. If you want the agent to stop changing a skill at all —
+for example a hand-authored skill you rely on — use `tuos curator lock <name>`.
 Both are described below.
 
 ## Pinning a skill
@@ -322,20 +322,20 @@ Both are described below.
 Pinning protects a skill from deletion — both the curator's automated archive passes and the agent's `skill_manage(action="delete")` tool call. Once a skill is pinned:
 
 - The **curator** skips it during auto-transitions (`active → stale → archived`), and its LLM review pass is instructed to leave it alone.
-- The **agent's `skill_manage` tool** refuses `delete` on it, pointing the user at `hermes curator unpin <name>`. Patches and edits still go through, so the agent can improve a pinned skill's content as pitfalls come up without a pin/unpin/re-pin dance.
+- The **agent's `skill_manage` tool** refuses `delete` on it, pointing the user at `tuos curator unpin <name>`. Patches and edits still go through, so the agent can improve a pinned skill's content as pitfalls come up without a pin/unpin/re-pin dance.
 
 Pin and unpin with:
 
 ```bash
-hermes curator pin <skill>
-hermes curator unpin <skill>
+tuos curator pin <skill>
+tuos curator unpin <skill>
 ```
 
 The flag is stored as `"pinned": true` on the skill's entry in `~/.hermes/skills/.usage.json`, so it survives across sessions.
 
 Skills named in any cron job's `skills:` list are protected the same way for **auto-transitions** (the curator never stales/archives them while the reference remains), even when the job is paused or disabled. Prefer an explicit pin when you also want `skill_manage delete` blocked.
 
-Only **agent-created** skills can be pinned — `hermes curator pin` refuses on bundled and hub-installed skills with an explanatory message if you try. Hub-installed skills are never subject to curator mutation. Bundled built-in skills are only touched when you opt in with `curator.prune_builtins: true`, and even then only archived after `archive_after_days` of non-use — never patched, consolidated, or deleted.
+Only **agent-created** skills can be pinned — `tuos curator pin` refuses on bundled and hub-installed skills with an explanatory message if you try. Hub-installed skills are never subject to curator mutation. Bundled built-in skills are only touched when you opt in with `curator.prune_builtins: true`, and even then only archived after `archive_after_days` of non-use — never patched, consolidated, or deleted.
 
 A small set of **protected built-ins** can be hardcoded as never-archivable and never-consolidatable, regardless of `curator.prune_builtins`, pin state, or LLM judgment. These back load-bearing UX, so silently archiving one would turn its slash command into an "Unknown command" error with no signal to you. (The set is currently empty — `plan`, its original member, graduated to a built-in `/plan` command with no skill on disk.) Protected built-ins are filtered out of the curator's candidate list entirely, so the consolidation pass never sees them.
 
@@ -346,9 +346,9 @@ If you want a stronger guarantee than "no deletion" — freezing a skill's conte
 Pinning stops archival. Locking stops **the agent from changing a skill at all**, while the skill stays readable, listed in the skill index, auto-loadable and usable exactly as before.
 
 ```bash
-hermes curator lock <skill>
-hermes curator unlock <skill>
-hermes curator status          # lists locked skills
+tuos curator lock <skill>
+tuos curator unlock <skill>
+tuos curator status          # lists locked skills
 ```
 
 In Desktop, open **Capabilities → Skills**, select the skill and use its lock switch.
@@ -359,17 +359,17 @@ Once a skill is locked, every way the agent can write refuses it, in normal turn
 - **`write_file` and `patch`** refuse any path inside the skill's directory (`SKILL.md`, `references/`, `scripts/`, …).
 - **`terminal`** refuses commands that write there: redirections and `tee`, `cp`/`mv`/`rm`/`touch`/`mkdir`/`chmod`, `sed -i`/`perl -i`, `git` changes in the skill's tree, archive extraction into it, and inline `python -c`/`bash -c` code naming it, including after a `cd` into the skill. Reading the skill and running its scripts keep working.
 - The curator never archives a locked skill.
-- The agent cannot unlock it: `terminal` refuses `hermes curator unlock`, and the lock record (`skills/.usage.json`) is protected the same way while any skill is locked. The refusal tells the agent to describe the change it wanted so you can decide.
+- The agent cannot unlock it: `terminal` refuses `tuos curator unlock`, and the lock record (`skills/.usage.json`) is protected the same way while any skill is locked. The refusal tells the agent to describe the change it wanted so you can decide.
 
-Your own edits are not gated: editing the files in your editor or in the Desktop skill editor always works. To let the agent change it again, run `hermes curator unlock <skill>` or flip the switch.
+Your own edits are not gated: editing the files in your editor or in the Desktop skill editor always works. To let the agent change it again, run `tuos curator unlock <skill>` or flip the switch.
 
-The flag is stored as `"locked": true` on the skill's entry in `~/.hermes/skills/.usage.json`, the same sidecar as `pinned`, so it is **per profile**: `hermes -p work curator lock deploy-runbook` locks that profile's copy only. Any skill that resolves in the profile can be locked (hand-written, agent-created, bundled or hub-installed); `lock` refuses a name it cannot resolve.
+The flag is stored as `"locked": true` on the skill's entry in `~/.hermes/skills/.usage.json`, the same sidecar as `pinned`, so it is **per profile**: `tuos -p work curator lock deploy-runbook` locks that profile's copy only. Any skill that resolves in the profile can be locked (hand-written, agent-created, bundled or hub-installed); `lock` refuses a name it cannot resolve.
 
 What a lock is not:
 
 - It is a **policy check, not a sandbox.** The terminal check reads the command's write targets; a script that writes into the skill through its own logic, or `execute_code`, is not inspected. Pair it with filesystem permissions if you need a hard boundary.
-- If `.usage.json` is corrupt, the background passes are refused (fail closed) while normal turns proceed, so one broken file does not freeze every skill edit. Repair it, or run `hermes curator unlock <skill>` to rewrite it.
-- It does **not** stop `hermes update` / `hermes skills update` from refreshing a bundled or hub skill you have not modified; those are your commands, not agent writes.
+- If `.usage.json` is corrupt, the background passes are refused (fail closed) while normal turns proceed, so one broken file does not freeze every skill edit. Repair it, or run `tuos curator unlock <skill>` to rewrite it.
+- It does **not** stop `tuos update` / `tuos skills update` from refreshing a bundled or hub skill you have not modified; those are your commands, not agent writes.
 
 ## Usage telemetry
 
@@ -424,14 +424,14 @@ runs and reports its counts normally.
 
 ### Rename map in the summary
 
-If a run consolidated multiple skills under an umbrella (or merged near-duplicates), the user-visible summary printed at the end of the run includes an explicit rename map showing every `old-name → new-name` pair the curator applied. This is in addition to per-skill transition lines, so when a wave of renames lands you can spot them at a glance without diffing the JSON report. The hint also surfaces under `hermes curator pin` so you can pin the umbrella name immediately if you want to lock the new label in.
+If a run consolidated multiple skills under an umbrella (or merged near-duplicates), the user-visible summary printed at the end of the run includes an explicit rename map showing every `old-name → new-name` pair the curator applied. This is in addition to per-skill transition lines, so when a wave of renames lands you can spot them at a glance without diffing the JSON report. The hint also surfaces under `tuos curator pin` so you can pin the umbrella name immediately if you want to lock the new label in.
 
 ## Restoring an archived skill
 
 If the curator archived something you still want:
 
 ```bash
-hermes curator restore <skill-name>
+tuos curator restore <skill-name>
 ```
 
 This moves the skill back from `~/.hermes/skills/.archive/` to the active tree and resets its state to `active`. The restore refuses if a bundled or hub-installed skill has since been installed under the same name (would shadow upstream).
@@ -441,7 +441,7 @@ This moves the skill back from `~/.hermes/skills/.archive/` to the active tree a
 The curator is on by default. To turn it off:
 
 - **For one profile only:** edit `~/.hermes/config.yaml` (or the active profile's config) and set `curator.enabled: false`.
-- **For just one run:** `hermes curator pause` — the pause persists across sessions; use `resume` to re-enable.
+- **For just one run:** `tuos curator pause` — the pause persists across sessions; use `resume` to re-enable.
 
 The curator also refuses to run if `min_idle_hours` hasn't elapsed, so on an active dev machine it naturally only runs during quiet stretches.
 

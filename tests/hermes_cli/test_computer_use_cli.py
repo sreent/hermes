@@ -65,7 +65,7 @@ def test_computer_use_status_reports_unusable_driver(monkeypatch, capsys, tmp_pa
         assert "custom binary from HERMES_CUA_DRIVER_CMD" in output
         assert "unset the override" in output
     else:
-        assert "Run: hermes computer-use install" in output
+        assert "Run: tuos computer-use install" in output
 
 
 @pytest.mark.parametrize("ready", [False, True])

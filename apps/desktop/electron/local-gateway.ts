@@ -245,7 +245,7 @@ export async function ensureLocalGateway(
     const detail = typeof payload.detail === 'string' && payload.detail.trim() ? ` ${payload.detail.trim().split(/\r?\n/)[0]}.` : ''
     const recovery = payload.reason_code === 'update_paused' ? 'restart' : 'status'
 
-    throw new Error(`Gateway ${payload.state || 'inaccessible'} (${payload.reason_code || 'ensure_failed'}).${detail} Use hermes gateway ${recovery} for recovery.`)
+    throw new Error(`Gateway ${payload.state || 'inaccessible'} (${payload.reason_code || 'ensure_failed'}).${detail} Use tuos gateway ${recovery} for recovery.`)
   }
 
   const endpoint: GatewayEndpoint = payload.endpoint
@@ -399,7 +399,7 @@ async function privateNode(file: string, kind: 'directory' | 'socket' | 'file' |
     // The socket, pointer and fallback directory are the gateway's to recreate; a home is not.
     throw new Error(kind === 'home'
       ? `Unsafe gateway control path: profile home ${quoted} is ${found}, not a directory: move it aside and recreate the profile`
-      : `Unsafe gateway control path: ${quoted} should be a ${kind} but is ${found}: remove it, then run hermes gateway restart`)
+      : `Unsafe gateway control path: ${quoted} should be a ${kind} but is ${found}: remove it, then run tuos gateway restart`)
   }
 
   if (node.uid !== uid) {

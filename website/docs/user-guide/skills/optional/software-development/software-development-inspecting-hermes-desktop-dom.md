@@ -1,23 +1,23 @@
 ---
-title: "Inspecting Hermes Desktop Dom — Read the live Hermes desktop DOM/CSS over CDP"
-sidebar_label: "Inspecting Hermes Desktop Dom"
-description: "Read the live Hermes desktop DOM/CSS over CDP"
+title: "Inspecting tuos Desktop Dom — Read the live tuos desktop DOM/CSS over CDP"
+sidebar_label: "Inspecting tuos Desktop Dom"
+description: "Read the live tuos desktop DOM/CSS over CDP"
 ---
 
 {/* This page is auto-generated from the skill's SKILL.md by website/scripts/generate-skill-docs.py. Edit the source SKILL.md, not this page. */}
 
-# Inspecting Hermes Desktop Dom
+# Inspecting tuos Desktop Dom {#inspecting-hermes-desktop-dom}
 
-Read the live Hermes desktop DOM/CSS over CDP.
+Read the live tuos desktop DOM/CSS over CDP.
 
 ## Skill metadata
 
 | | |
 |---|---|
-| Source | Optional — install with `hermes skills install official/software-development/inspecting-hermes-desktop-dom` |
+| Source | Optional — install with `tuos skills install official/software-development/inspecting-hermes-desktop-dom` |
 | Path | `optional-skills/software-development/inspecting-hermes-desktop-dom` |
 | Version | `1.0.0` |
-| Author | Hermes Agent |
+| Author | tuos |
 | License | MIT |
 | Platforms | linux, macos, windows |
 | Tags | `desktop`, `electron`, `cdp`, `dom`, `ui-verification`, `self-inspection` |
@@ -26,10 +26,10 @@ Read the live Hermes desktop DOM/CSS over CDP.
 ## Reference: full SKILL.md
 
 :::info
-The following is the complete skill definition that Hermes loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
+The following is the complete skill definition that tuos loads when this skill is triggered. This is what the agent sees as instructions when the skill is active.
 :::
 
-# Inspecting the live Hermes desktop DOM
+# Inspecting the live tuos desktop DOM {#inspecting-the-live-hermes-desktop-dom}
 
 ## Overview
 

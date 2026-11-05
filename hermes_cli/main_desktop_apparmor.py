@@ -208,7 +208,7 @@ def install_profile(packaged_executable: Path) -> bool:
     if verdict is False:
         print("✗ The profile is loaded, but Chromium's sandbox still cannot start for this binary.")
         return False
-    print(f"✓ AppArmor profile installed; Hermes Desktop can use Chromium's user-namespace sandbox ({target}).")
+    print(f"✓ AppArmor profile installed; tuos Desktop can use Chromium's user-namespace sandbox ({target}).")
     return True
 
 
@@ -223,8 +223,8 @@ def print_no_sandbox_fallback(packaged_executable: Path) -> None:
           " and the Electron sandbox helper could not be configured.")
     helper = shlex.quote(str(packaged_executable.parent / "chrome-sandbox"))
     print("  Ubuntu's AppArmor policy (kernel.apparmor_restrict_unprivileged_userns=1) blocks Chromium's")
-    print("  user-namespace sandbox for Hermes Desktop. To keep the sandbox on, run ONE of these:")
+    print("  user-namespace sandbox for tuos Desktop. To keep the sandbox on, run ONE of these:")
     print(f"    sudo chown root:root {helper} && sudo chmod 4755 {helper}")
     print("        Chromium's setuid sandbox helper (recommended; redo after each rebuild)")
-    print("    hermes desktop --install-apparmor-profile")
+    print("    tuos desktop --install-apparmor-profile")
     print("        AppArmor profile for this path (survives rebuilds; any program running as you can use it)")

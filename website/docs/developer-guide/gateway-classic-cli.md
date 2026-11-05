@@ -1,19 +1,19 @@
 ---
 title: Classic gateway client
-description: How hermes chat / --cli attach to the gateway authority
+description: How tuos chat / --cli attach to the gateway authority
 ---
 
 # Classic gateway client (initial migration)
 
-Normal `hermes --cli`, `hermes chat`, `hermes chat -q '…' -Q`, and top-level
-`hermes -z '…'` use the gateway authority. Direct `cli.main` chat launches also
+Normal `tuos --cli`, `tuos chat`, `tuos chat -q '…' -Q`, and top-level
+`tuos -z '…'` use the gateway authority. Direct `cli.main` chat launches also
 hand off before constructing a local agent. Local bootstrap uses the canonical
 ensure lifecycle and a single-use private control ticket, not service installation.
 An explicit `HERMES_TUI_GATEWAY_URL` remains remote-only: failed connection or
 authentication never launches a local replacement.
 
 The client prints the persisted `Session:` ID to stderr. Resume with
-`hermes --cli chat --resume ID`. Input is admitted with a fresh `input_id`; events
+`tuos --cli chat --resume ID`. Input is admitted with a fresh `input_id`; events
 and final replies come from the authority. `/quit`, `/exit`, `/detach`, EOF and
 closing the terminal detach only. `/stop` sends an execution-generation-fenced
 interrupt. Pending approvals display `/approve ID once|deny|…`; clarification
@@ -39,7 +39,7 @@ the `Resume this session with:` block (see Launch options); `-Q` prints the repl
 alone. Exit status is 0 for a completed
 admission, 1 for failed execution/connection, 2 for unsupported frontend options,
 3 for a pending control that requires interactive reattachment or a turn lost in a
-gateway crash (clear it with `hermes sessions discard <id> --yes`), and 130 for a
+gateway crash (clear it with `tuos sessions discard <id> --yes`), and 130 for a
 keyboard detach. A pending control does not imply cancellation. `-z` no longer
 implicitly bypasses approval policy.
 
@@ -68,21 +68,21 @@ stream-json`, `-z ... --usage-file`, bare `-c` (this terminal's breadcrumb sessi
 else the most recent CLI session), `--resume latest` (most recent CLI session, this
 workspace first; both resolved by the owner, `session.resume latest='cli'`) and
 `--list-tools` / `--list-toolsets` (print the catalog and exit; no session). `chat -q`
-without `-Q` ends with main's `Resume this session with: hermes --resume <id>` block.
+without `-Q` ends with main's `Resume this session with: tuos --resume <id>` block.
 
 **Refused with exit 2** (`_UNSUPPORTED` plus the selection checks in
 `validate_options`); the error names where each capability lives now:
 
 | Option | Why | Use instead |
 |---|---|---|
-| `-w` / `--worktree` | Worktree creation is a launcher-side step the authority does not expose | `hermes --tui -w` |
-| `--image` | No client-side attachment staging on this path | attach in `hermes --tui` or Desktop |
+| `-w` / `--worktree` | Worktree creation is a launcher-side step the authority does not expose | `tuos --tui -w` |
+| `--image` | No client-side attachment staging on this path | attach in `tuos --tui` or Desktop |
 | `--run-budget` | No per-launch run budget in the creation contract | `agent.run_budget_seconds` in config.yaml |
-| `-v` / `--verbose` | Display-only; the client has no verbose renderer | `hermes logs --follow` (the refusal also names `hermes chat --tui -v`, whose canonical Ink path does not yet carry the flag) |
+| `-v` / `--verbose` | Display-only; the client has no verbose renderer | `tuos logs --follow` (the refusal also names `tuos chat --tui -v`, whose canonical Ink path does not yet carry the flag) |
 | `--no-restore-cwd` | The gateway keeps the session's frozen cwd | `--in <dir>` |
 | `--create-if-missing` without `-c <name>` | Nothing to create by name | `-c <name> --create-if-missing` |
 
-`--compact` is not a `hermes chat` option (argparse rejects it); a direct `cli.main`
+`--compact` is not a `tuos chat` option (argparse rejects it); a direct `cli.main`
 hand-off refuses it and names `display.compact`.
 
 ## Current parity limits — not full classic CLI parity

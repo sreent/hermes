@@ -89,7 +89,7 @@ def test_format_turn_completion_corrupt_never_names_the_live_db():
     assert "sessions recover" in explanation
     assert 'sqlite3 ~/.hermes/state.db ".recover"' not in explanation
     # The replacement guidance names the safe command.
-    assert "hermes sessions recover --source" in explanation
+    assert "tuos sessions recover --source" in explanation
 
 
 

@@ -1190,7 +1190,7 @@ def rollback_migration(default_home: Optional[Path] = None) -> bool:
     live = _wait_for_live_gateway(default_home, _COMPENSATOR_WAIT_SECONDS)
     if live is None:
         print(f"  ✗ default: no gateway confirmed serving this host within {_COMPENSATOR_WAIT_SECONDS:.0f}s "
-              f"(check `hermes gateway status` and the gateway log)")
+              f"(check `tuos gateway status` and the gateway log)")
         print(incomplete)
         return False
     _manifest_path(default_home).unlink(missing_ok=True)

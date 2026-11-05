@@ -87,7 +87,7 @@ def slack_manifest_command(args) -> int:
     slashes_only = getattr(args, "slashes_only", False)
 
     def fail(msg: str) -> int:
-        print(f"hermes slack manifest: {msg}", file=sys.stderr)
+        print(f"tuos slack manifest: {msg}", file=sys.stderr)
         return 2
 
     if slashes_only and (long_description is not None or long_description_file is not None):
@@ -138,7 +138,7 @@ def slack_manifest_command(args) -> int:
     print(f"Slack manifest written to: {target}", file=sys.stderr)
     print(
         "\nNext steps:\n"
-        "  1. Open https://api.slack.com/apps and pick your Hermes app\n"
+        "  1. Open https://api.slack.com/apps and pick your tuos app\n"
         "     (or create a new one: Create New App → From an app manifest).\n"
         f"  2. Features → App Manifest → paste the contents of\n"
         f"     {target}\n"
@@ -146,5 +146,5 @@ def slack_manifest_command(args) -> int:
         "     slash commands changed.\n"
         "  4. Make sure Socket Mode is enabled and you have a bot token\n"
         "     (xoxb-...) and app token (xapp-...) configured via\n"
-        "     `hermes setup`.\n", file=sys.stderr)
+        "     `tuos setup`.\n", file=sys.stderr)
     return 0

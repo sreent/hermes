@@ -298,7 +298,7 @@ class OpenRouterVideoGenProvider(VideoGenProvider):
         except Exception as exc:
             return fail(f"Could not resolve OpenRouter credentials: {exc}", "missing_credentials")
         if not api_key:
-            return fail("No OpenRouter credential: set OPENROUTER_API_KEY or run `hermes auth add openrouter`",
+            return fail("No OpenRouter credential: set OPENROUTER_API_KEY or run `tuos auth add openrouter`",
                         "missing_credentials")
         # Resolved once: a rotating pool must not submit under one key and poll or download under another.
         headers = self._headers(api_key)

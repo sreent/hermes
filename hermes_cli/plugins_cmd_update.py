@@ -118,7 +118,7 @@ def update_one(name: str, target: Path, console, *, interactive: bool = True, fo
             if interactive:
                 _pc()._run_capability_consent(console, plugin_id, declared_caps, context="update")
             else:
-                console.print(f"[yellow]Plugin {plugin_id} has new capabilities; review them with `hermes plugins capabilities {plugin_id}`.[/yellow]")
+                console.print(f"[yellow]Plugin {plugin_id} has new capabilities; review them with `tuos plugins capabilities {plugin_id}`.[/yellow]")
 
     out = output.strip()
     if "Already up to date" in out:
@@ -304,8 +304,8 @@ def cmd_check_updates(args: Any | None = None) -> None:
     console.print()
     console.print(table)
     console.print()
-    console.print("[dim]Check-only. Apply with: hermes plugins update <name>, or "
-                  "hermes plugins update to update them all[/dim]")
+    console.print("[dim]Check-only. Apply with: tuos plugins update <name>, or "
+                  "tuos plugins update to update them all[/dim]")
 
 
 def dashboard_update_user_plugin(name: str, *, accept_capabilities: bool = False, force: bool = False) -> dict[str, Any]:

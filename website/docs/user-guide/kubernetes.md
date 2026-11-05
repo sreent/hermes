@@ -6,7 +6,7 @@ description: "Running tuos on Kubernetes with its Helm chart: one gateway pod wi
 
 # Running on Kubernetes
 
-The Helm chart in [`deploy/helm/tuos`](https://github.com/sreent/hermes/tree/main/deploy/helm/tuos) runs tuos in one pod, from the same image as [Docker](./docker.md). The pod runs the messaging gateway, which also runs scheduled jobs, and the web dashboard. tuos is built on Hermes Agent: its settings and environment variables keep Hermes's names, and the `hermes` command works wherever `tuos` does.
+The Helm chart in [`deploy/helm/tuos`](https://github.com/sreent/hermes/tree/main/deploy/helm/tuos) runs tuos in one pod, from the same image as [Docker](./docker.md). The pod runs the messaging gateway, which also runs scheduled jobs, and the web dashboard. tuos is built on Hermes Agent: its settings and environment variables keep tuos's names, and the `tuos` command works wherever `tuos` does.
 
 | Object | Purpose |
 |---|---|
@@ -140,7 +140,7 @@ config:
       endpoint_url: http://minio.minio.svc.cluster.local:9000
 ```
 
-The same settings work for AWS S3 (leave out `endpoint_url` and set `region`) and Cloudflare R2. Commands the agent runs in the pod see `AWS_*` variables (Hermes passes them through to its terminal on purpose), so give this access key rights to this bucket only.
+The same settings work for AWS S3 (leave out `endpoint_url` and set `region`) and Cloudflare R2. Commands the agent runs in the pod see `AWS_*` variables (tuos passes them through to its terminal on purpose), so give this access key rights to this bucket only.
 
 ## Dashboard
 
@@ -184,4 +184,4 @@ The pod is replaced; the volume and the bucket keep their contents.
 - One pod per release. For a second agent, install a second release, with its own memory `prefix` or the same one to share memory.
 - The chart creates no inbound route for chat platforms. Telegram, Discord and Slack connect outwards and need none; a platform that delivers messages by webhook needs a Service and Ingress of your own.
 - Several profiles in the pod work as in the [Docker image](./docker.md#multi-profile-support). With `gateway.multiplex_profiles` on, each profile reads its keys only from its own `.env` on the volume, not from the pod's environment.
-- The image starts as root to prepare the volume, then runs everything as the `hermes` user (UID 10000). Other start users are not supported, so policies that require `runAsNonRoot` rule it out.
+- The image starts as root to prepare the volume, then runs everything as the `tuos` user (UID 10000). Other start users are not supported, so policies that require `runAsNonRoot` rule it out.

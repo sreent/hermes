@@ -358,7 +358,7 @@ class VaultStore:
         except kc.KeychainUnavailable as exc:
             raise VaultError(
                 f"its key is in the OS keychain, which this session cannot use ({exc}). Clone from a session "
-                "that can reach the keychain, or run `hermes vault key migrate --to file` on the source first.") from exc
+                "that can reach the keychain, or run `tuos vault key migrate --to file` on the source first.") from exc
         try:
             kc.write_ref(self._keyref_path, mine)
         except OSError:

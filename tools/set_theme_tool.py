@@ -36,7 +36,7 @@ def set_theme_tool(accent: Optional[str] = None, mode: Optional[str] = None, lay
                    picker: Optional[str] = None, callback: Optional[Callable[[dict], dict]] = None) -> str:
     """Apply the given appearance values, or show one picker card and wait for the pick."""
     if callback is None:
-        return tool_error("set_theme is only available in the Hermes desktop app.")
+        return tool_error("set_theme is only available in the tuos desktop app.")
     values = {key: value.strip() for key, value in (("accent", accent), ("mode", mode), ("layout", layout))
               if isinstance(value, str) and value.strip()}
     if picker is not None:

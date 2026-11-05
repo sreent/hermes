@@ -79,7 +79,7 @@ def offer_agent_import(hermes_home: Path, from_setup: bool = True) -> str:
     # The menu clears the screen, so the question carries what it refers to ("any of them").
     if not prompt_yes_no(f"Import your setup from {names}?", default=True,
                          description="\n".join(f"  {w}" for line in context for w in textwrap.wrap(line, 76))):
-        print_info(f"Skipped. Import later with: hermes plugins install {PLUGIN}, then hermes import-agent")
+        print_info(f"Skipped. Import later with: tuos plugins install {PLUGIN}, then tuos import-agent")
         return ""
     picked = _pick_sources(found)
     if not picked or not _ensure_plugin(hermes_home):
@@ -109,7 +109,7 @@ def _ensure_plugin(hermes_home: Path) -> bool:
     from hermes_cli.setup import _info, print_warning
     present = plugin_present(PLUGIN, hermes_home)
     if not present:
-        _info(None, f"Importing is done by the '{PLUGIN}' plugin from the Hermes plugin catalog. "
+        _info(None, f"Importing is done by the '{PLUGIN}' plugin from the tuos plugin catalog. "
                     "Installing it now...")
     try:
         if present:
@@ -125,7 +125,7 @@ def _ensure_plugin(hermes_home: Path) -> bool:
             return True
     verb = "enabled" if present else "installed"
     print_warning(f"The '{PLUGIN}' plugin could not be {verb}, so nothing was imported. "
-                  f"Try again later with: hermes plugins {'enable' if present else 'install'} {PLUGIN}")
+                  f"Try again later with: tuos plugins {'enable' if present else 'install'} {PLUGIN}")
     return False
 
 
@@ -172,7 +172,7 @@ def _import_child(source: ImportSource, hermes_home: Path, extra_args: tuple[str
         returncode = subprocess.run(argv, env=env, check=False).returncode  # health: allow HX006 -- same child
     if returncode == 2:
         print_warning(f"The {source.label} import did not run. If the error names an invalid choice or "
-                      f"unrecognized arguments, update the plugin first: hermes plugins update {PLUGIN}")
+                      f"unrecognized arguments, update the plugin first: tuos plugins update {PLUGIN}")
     elif returncode:
         print_warning(f"The {source.label} import stopped with errors; see the report above.")
     return returncode
@@ -202,7 +202,7 @@ def migrate_from_agents(hermes_home: Path, source_name: str = "", extra_args: tu
             return 0
         print_info(("Found: " + ", ".join(s.label for s, _ in found) + ". " if found else
                     "No other agent setup found on this computer. ")
-                   + "Import one with: " + ", ".join(f"hermes migrate {s.name}" for s in IMPORT_SOURCES))
+                   + "Import one with: " + ", ".join(f"tuos migrate {s.name}" for s in IMPORT_SOURCES))
         return 0
     source = next(s for s in IMPORT_SOURCES if s.name == source_name)
     if not _ensure_plugin(hermes_home):

@@ -84,7 +84,7 @@ model couldn't produce valid JSON, `result.parsed` is `None` and
   objects.
 * **Host-owned credentials.** OAuth tokens, refresh flows, the
   credential pool, per-task aux overrides — every credential
-  concept Hermes already has applies. The plugin never sees a
+  concept tuos already has applies. The plugin never sees a
   token; the host attributes the call back through `result.audit`.
 * **Bounded.** Single sync or async call. No streaming, no tool
   loops, no conversation state to manage. State the input, get the
@@ -319,14 +319,14 @@ auxiliary:
 Plugins may supply provider/model registration defaults for their own
 tasks. Operator configuration in `auxiliary.<task>` overrides those
 defaults and controls the deployment choice. A registered task is a
-first-class slot on every model-assignment surface: the `hermes model` →
+first-class slot on every model-assignment surface: the `tuos model` →
 *Configure auxiliary models* picker, the dashboard Models page, and Desktop
 Settings → Models → Auxiliary all list it (after the built-in tasks, under
 the plugin's `display_name`) and can pin, reset, or flag it as a stale
 provider pin like any built-in. A plugin can only use a task
 it registered itself; unknown or foreign task names fail before provider
 invocation. `allow_task_override: true` is an explicit operator grant for
-using Hermes built-in auxiliary tasks; it does not permit another plugin's
+using tuos built-in auxiliary tasks; it does not permit another plugin's
 tasks. Omit `task=` (or use `"auto"`) to keep the active main provider/model.
 
 #### Inheriting a built-in slot
@@ -491,7 +491,7 @@ don't have to:
   active text model is text-only, the host falls back to the
   configured vision model automatically.
 * **Fallback chain.** If the user's primary provider 5xxs or 429s,
-  the request goes through Hermes' usual aggregator-aware fallback
+  the request goes through tuos' usual aggregator-aware fallback
   before it returns an error to the plugin.
 * **Timeout.** Honours your `timeout=` argument, falling back to
   `auxiliary.<task>.timeout` config or the global aux default.
@@ -610,7 +610,7 @@ plugin, and the turn-scoped `pre_api_request` /
 
 ## Where this fits in the plugin surface
 
-Existing `ctx.*` methods extend an existing Hermes subsystem:
+Existing `ctx.*` methods extend an existing tuos subsystem:
 
 | `ctx.register_tool` | adds a tool the agent can call |
 | `ctx.register_platform` | wires a new gateway adapter |

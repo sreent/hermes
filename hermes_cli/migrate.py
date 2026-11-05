@@ -23,7 +23,7 @@ def cmd_migrate(args: Any) -> int:
         from hermes_cli.setup_agent_import import migrate_from_agents
         return migrate_from_agents(get_hermes_home())
 
-    print("usage: hermes migrate [<agent> | xai [--apply] [--no-backup]]", file=sys.stderr)
+    print("usage: tuos migrate [<agent> | xai [--apply] [--no-backup]]", file=sys.stderr)
     return 2
 
 
@@ -81,7 +81,7 @@ def cmd_migrate_xai(args: Any) -> int:
     if not apply:
         print(color("Dry-run mode — no changes written.", Colors.DIM))
         print(color(
-            "Re-run with `hermes migrate xai --apply` to rewrite "
+            "Re-run with `tuos migrate xai --apply` to rewrite "
             f"{config_path} in-place (backup created automatically).",
             Colors.DIM))
         return 0
@@ -104,7 +104,7 @@ def cmd_migrate_xai(args: Any) -> int:
         f"  {color('✓', Colors.GREEN)} Updated {len(result.issues_resolved)} "
         f"slot(s) in {result.file_path}")
     print()
-    print(color("Run `hermes doctor` to confirm no retired xAI models remain.", Colors.DIM))
+    print(color("Run `tuos doctor` to confirm no retired xAI models remain.", Colors.DIM))
     return 0
 
 

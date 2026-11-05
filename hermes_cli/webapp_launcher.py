@@ -225,7 +225,7 @@ def _status(target: Path) -> int:
     except GatewayUnreachable:
         from gateway.webapp_listener import webapp_settings
         if webapp_settings(target).enabled:
-            print("The gateway is not running. Run hermes webapp to start it.")
+            print("The gateway is not running. Run tuos webapp to start it.")
         else:
             print(_off_message(target, "run hermes webapp"))
         return 1
@@ -243,7 +243,7 @@ def _status(target: Path) -> int:
             print(f"{target / 'config.yaml'} no longer turns the Webapp on: it stops at the next gateway restart "
                   f"({RESTART_COMMAND}).")
     elif status["state"] == "starting":
-        print("The gateway is still starting the Webapp. Run hermes webapp --status again in a moment.")
+        print("The gateway is still starting the Webapp. Run tuos webapp --status again in a moment.")
     elif status["state"] == "off":
         print(_off_message(target, f"run {RESTART_COMMAND}"))
     else:
@@ -324,7 +324,7 @@ def _sign_out(target: Path) -> int:
         # never reaches it: wait until it answers the sign-out itself.
         if attempt < _START_WAIT_ATTEMPTS:
             time.sleep(_START_WAIT_INTERVAL)
-    print(f"The gateway is still starting, so nobody was signed out. Run hermes webapp --sign-out again once "
+    print(f"The gateway is still starting, so nobody was signed out. Run tuos webapp --sign-out again once "
           f"it is up ({RESTART_COMMAND} if it never comes up).")
     return 1
 
@@ -374,7 +374,7 @@ def cmd_webapp(args) -> int:
         # A packaged bundle (HERMES_WEBAPP_DIST) is never built here, so no build can fix it.
         if packaged_webapp_dist() is None:
             print("  Build it explicitly:")
-            print("    hermes webapp --build-only")
+            print("    tuos webapp --build-only")
         return 1
     if args.build_only:
         print("Webapp bundle ready.")

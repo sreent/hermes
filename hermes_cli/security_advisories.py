@@ -53,7 +53,7 @@ ADVISORIES: tuple[Advisory, ...] = (
             "environment variables and credential files (~/.npmrc, ~/.pypirc, "
             "~/.aws/credentials, GitHub PATs, cloud SDK tokens) and exfils "
             "them to a hardcoded webhook. If you ran any Python process that "
-            "imported mistralai 2.4.6 — including hermes when configured "
+            "imported mistralai 2.4.6 — including tuos when configured "
             "with provider=mistral for TTS or STT — assume those credentials "
             "are exposed. PyPI has since removed 2.4.6 and the project ships "
             "clean releases again (2.4.7, 2.4.8); this advisory only fires if "

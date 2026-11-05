@@ -1555,7 +1555,7 @@ describe('applyBackendUpdate recovery', () => {
     // exit 1 stays a failed apply, but the committed run's debt is named, never as "re-run hermes update".
     expect(result).toMatchObject({ ok: false, error: 'apply-failed' })
     expect(result.message).toContain(`local_changes: ${instruction}`)
-    expect(result.message).not.toMatch(/Re-run `hermes update`/)
+    expect(result.message).not.toMatch(/Re-run `tuos update`/)
     expect($backendUpdateApply.get()).toMatchObject({ stage: 'error', message: result.message })
 
     // The status route attaches the latest receipt when this action has none: another run's debt is not ours.

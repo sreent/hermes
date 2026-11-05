@@ -36,15 +36,15 @@ The agent authenticates as itself:
   optionally `GATEWAY_RELAY_IDP_SCOPE`.
 
 These values, and the `HERMES_CONFIG_*` variables above, must come from
-`auth.json`, a `.env` file (the profile's, the project `.env` a Hermes command
+`auth.json`, a `.env` file (the profile's, the project `.env` a tuos command
 loads, or the managed one), or the process environment. If a `secrets:` source
-(1Password, Bitwarden, a command) supplies any of them, Hermes refuses to
+(1Password, Bitwarden, a command) supplies any of them, tuos refuses to
 start. The same holds for `HERMES_PORTAL_BASE_URL`, `NOUS_PORTAL_BASE_URL` and
 `HERMES_SHARED_AUTH_DIR` (they decide where the Cloud token is read and sent).
 A multi-profile process (gateway, dashboard) that serves a profile whose
 `secrets:` source supplies one of these names refuses to serve that profile.
 
-A Hermes process started for another profile (a `hermes -p <name>` worker, a
+A tuos process started for another profile (a `tuos -p <name>` worker, a
 profile's cron or bot child) keeps the `HERMES_CONFIG_*` deployment of the
 process that started it, so it reads that profile's config from the plane too.
 It does not inherit the plane credential: on-prem, put the
@@ -54,43 +54,43 @@ exits with an error rather than read a local file.
 
 ## What changes
 
-- **Startup fetches config and fails closed.** Every Hermes process (gateway,
+- **Startup fetches config and fails closed.** Every tuos process (gateway,
   dashboard, CLI, terminal children) fetches its profile's config when it
   loads `.env`. If the plane cannot be reached after about 30 seconds of
   retries, or refuses the agent, the process exits with an error. It never
   falls back to a local file or to defaults.
 - **No local config file.** `config.yaml` is neither read nor written, and
   there is no local cache. A running process keeps the config it last fetched
-  in memory. If the plane becomes unreachable while Hermes runs, the process
+  in memory. If the plane becomes unreachable while tuos runs, the process
   keeps its in-memory config and retries on the next poll.
 - **Changes arrive by polling.** Each process checks for changes every 5
   minutes. A change made in the plane reaches a running agent within one
   interval.
-- **Writes go to the profile's own level.** `hermes config set`, `/model`,
+- **Writes go to the profile's own level.** `tuos config set`, `/model`,
   the dashboard, and every other config writer send only the keys that changed,
   guarded against concurrent edits. If another process changed the profile
-  meanwhile, Hermes re-reads it and applies only its own change on top, never
+  meanwhile, tuos re-reads it and applies only its own change on top, never
   undoing the other one. Removing a key removes it from the profile level only:
-  if an upper level also sets it, that value still applies, and Hermes warns
+  if an upper level also sets it, that value still applies, and tuos warns
   you.
-- **Locked keys are refused.** `hermes config set` (and any setting changed
+- **Locked keys are refused.** `tuos config set` (and any setting changed
   in the TUI or desktop app, including the prompt, reasoning display and
   details-mode settings) on a locked key reports which level locks it and
   changes nothing. When a whole document is saved, locked keys are left
-  out, and Hermes prints a note listing them.
+  out, and tuos prints a note listing them.
 - **Secrets stay out of the plane.** A secret-shaped key such as `api_key`
   accepts only a `${VAR}` reference, never the secret itself. Put the value in
   `.env` or a secret source and set the reference:
 
   ```bash
-  hermes config set model.api_key '${OPENROUTER_API_KEY}'
+  tuos config set model.api_key '${OPENROUTER_API_KEY}'
   ```
 
 - **`secrets:` comes from the plane** like any other key, so administrators can
   manage and lock secret-source settings centrally.
-- **Schema migrations run in memory.** A document written by an older Hermes is
+- **Schema migrations run in memory.** A document written by an older tuos is
   migrated when it is read, and the result is not written back. A later write
-  from a newer Hermes keeps the profile's stored schema version unless that
+  from a newer tuos keeps the profile's stored schema version unless that
   data is already current, so every later reader still migrates it. These
   in-memory migrations change only the config document: steps that also
   tidy local files (removing a retired section from `SOUL.md`, clearing old
@@ -100,25 +100,25 @@ exits with an error rather than read a local file.
   stored at an older schema) is refused with a message naming the key: it would
   be saved and then never read back.
 - **Unknown keys** in the fetched document are ignored with a warning, for
-  example a key added by a newer Hermes.
+  example a key added by a newer tuos.
 
 ## Managed scope
 
 `/etc/hermes/config.yaml` (see [Managed Scope](./managed-scope.md)) is
-**ignored** in remote mode: config and locks come only from the plane. Hermes
-warns at startup, and `hermes doctor` flags the file. The managed
+**ignored** in remote mode: config and locks come only from the plane. tuos
+warns at startup, and `tuos doctor` flags the file. The managed
 `/etc/hermes/.env` still applies.
 
 ## Commands that work on the config file
 
 These commands copy or edit `config.yaml` and are refused in remote mode:
 
-- `hermes config edit` (use `hermes config set` instead)
+- `tuos config edit` (use `tuos config set` instead)
 - profile clone, profile rename (the plane keeps a profile's settings under its
   name), and profile distribution install
-- `hermes backup`, `hermes import`, and snapshot restore
-- `hermes gateway --config <file>`
+- `tuos backup`, `tuos import`, and snapshot restore
+- `tuos gateway --config <file>`
 
-`hermes doctor` reports the backend instead of the file: the plane URL, the
+`tuos doctor` reports the backend instead of the file: the plane URL, the
 profile, the profile level's version, the number of locks, and when the config
 was last fetched.

@@ -318,7 +318,7 @@ def _legacy_group_fence_error(rid, session, params):
     if hosted or peer:
         owner = "its gateway" if hosted else "its home host"
         return _err(
-            rid, 4122, f"This room is managed by {owner}. Update Hermes Desktop to continue it.")
+            rid, 4122, f"This room is managed by {owner}. Update tuos Desktop to continue it.")
     return None
 
 
@@ -348,7 +348,7 @@ def _parse_truncation_params(rid, sid, session, params, history):
         rid, 4029,
         "truncation parameters require confirm_truncate=true; "
         "an ordinary prompt.submit must not drop session history "
-        "(update your Hermes client if a rewind was intended)")
+        "(update your tuos client if a rewind was intended)")
 
 
 def _resolve_truncation_ordinal(rid, sid, session, params, history):

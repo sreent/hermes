@@ -211,7 +211,7 @@ def _backup_operation_lock(hermes_home: Path, timeout_seconds: float = 0.25):
                 acquired = True
             except OSError:
                 if time.monotonic() >= deadline:
-                    raise BackupInProgressError("another Hermes backup is already running")
+                    raise BackupInProgressError("another tuos backup is already running")
                 time.sleep(0.05)
         yield
     finally:
@@ -603,7 +603,7 @@ def run_backup(args) -> bool:
     hermes_root = get_default_hermes_root()
 
     if not hermes_root.is_dir():
-        print(f"Error: Hermes home directory not found at {hermes_root}")
+        print(f"Error: tuos home directory not found at {hermes_root}")
         sys.exit(1)
 
     try:
@@ -673,7 +673,7 @@ def _run_backup_locked(args, hermes_root: Path) -> bool:
     if errors:
         _print_capped(f"\n  Archive kept, but {len(errors)} file(s) could not be added:", errors, "  ")
     else:
-        print(f"\nRestore with: hermes import {out_path.name}")
+        print(f"\nRestore with: tuos import {out_path.name}")
     # Prune only after a complete archive: a timer hitting the same unreadable file every run must
     # not rotate the last good backups out in favour of incomplete ones.
     keep = getattr(args, "keep", 0)  # 0 / absent: never prune (non-CLI callers)
@@ -773,7 +773,7 @@ def run_import(args) -> Optional[int]:
 
         if (has_config or has_env) and not args.force:
             print()
-            print("Warning: Target directory already has Hermes configuration.")
+            print("Warning: Target directory already has tuos configuration.")
             print("Importing will overwrite existing files with backup contents.")
             print()
             try:
@@ -890,19 +890,19 @@ def run_import(args) -> Optional[int]:
                 # hermes_cli.profiles might not be available (fresh install)
                 if any(profiles_dir.iterdir()):
                     print("\n  Profiles detected but aliases could not be created.")
-                    print("  Run: hermes profile list  (after installing hermes)")
+                    print("  Run: tuos profile list  (after installing hermes)")
 
         # Guidance
         print()
         if not (hermes_root / "hermes-agent").is_dir():
             print("Note: The hermes-agent codebase was not included in the backup.")
-            print("  If this is a fresh install, run: hermes update")
+            print("  If this is a fresh install, run: tuos update")
 
         if restored_profiles:
             gw_profiles = [n for n, _ in restored_profiles]
             print("\nTo re-enable gateway services for profiles:")
             for pname in gw_profiles:
-                print(f"  hermes -p {pname} gateway install")
+                print(f"  tuos -p {pname} gateway install")
 
         _revive_gateway_after_import(hermes_root)
 
@@ -910,7 +910,7 @@ def run_import(args) -> Optional[int]:
             print(f"Import incomplete: {len(errors)} file(s) were not restored (see Warnings above). "
                   "Fix the cause and re-run the import.")
             return 1
-        print("Done. Your Hermes configuration has been restored.")
+        print("Done. Your tuos configuration has been restored.")
 
 
 def _import_members(
@@ -1082,7 +1082,7 @@ def _revive_gateway_after_import(hermes_root: Path) -> None:
             (native_default / marker).exists() for marker in ("config.yaml", ".env", "state.db")):
         print("\nRestored into a non-default home; leaving the gateway service alone to avoid clashing "
               f"with the install at {native_default}.\n"
-              "To start a gateway for this home, run:  hermes gateway run")
+              "To start a gateway for this home, run:  tuos gateway run")
         return
     try:
         from hermes_cli.gateway import _is_service_running
@@ -1094,7 +1094,7 @@ def _revive_gateway_after_import(hermes_root: Path) -> None:
         # Import boundary: the restore already succeeded; any service failure prints the
         # manual fallback instead of failing the import.
         logger.debug("gateway revive after import failed", exc_info=True)
-        print("\nStart the gateway to activate cron jobs and messaging:\n  hermes gateway run")
+        print("\nStart the gateway to activate cron jobs and messaging:\n  tuos gateway run")
 
 
 # --- Quick state snapshots (used by /snapshot slash command and hermes backup --quick) ---

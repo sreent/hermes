@@ -121,7 +121,7 @@ def _dispatch(node: Optional[str], op: str, remote, local) -> str:
     client, node_name = resolve_node(node)
     if client is None:
         return _err(f"no registered meet node matches {node!r} — "
-                    "run `hermes meet node approve <name> <url> <token>` first")
+                    "run `tuos meet node approve <name> <url> <token>` first")
     try:
         res = remote(client)
     except Exception as e:

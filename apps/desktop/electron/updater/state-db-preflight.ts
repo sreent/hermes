@@ -85,7 +85,7 @@ export async function preflightStateDb({
   } catch (error: unknown) {
     const message =
       `state.db pre-flight failed: ${error instanceof Error ? error.message : String(error)}. ` +
-      'Update cancelled before backend shutdown. Update the selected installation with its hermes update command, then retry.'
+      'Update cancelled before backend shutdown. Update the selected installation with its tuos update command, then retry.'
 
     log(`[updates] ${message}`)
     throw new Error(message, { cause: error })
