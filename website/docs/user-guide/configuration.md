@@ -921,6 +921,26 @@ memory:
 
 With `memory.write_approval: true`, memory writes need your approval before they land: interactive CLI turns prompt inline; messaging sessions and the background self-improvement review stage the write for `/memory pending` → `/memory approve <id>` / `/memory reject <id>` review. Toggle at runtime with `/memory approval on|off`. See [Controlling memory writes](./features/memory.md#controlling-memory-writes-write_approval).
 
+### Memory storage
+
+`memory.storage` chooses where `MEMORY.md` and `USER.md` are kept. `local` (the default) keeps them in the profile's `memories/` folder. `gcs` keeps them in a Google Cloud Storage bucket, and `s3` in any S3-compatible bucket (MinIO, AWS S3, Cloudflare R2):
+
+```yaml
+memory:
+  storage:
+    backend: s3                               # local | gcs | s3
+    bucket: tuos-memory
+    prefix: prod/                             # objects live under <prefix><profile>/memories/
+    endpoint_url: http://minio.minio.svc:9000 # s3: required for MinIO; gcs: an emulator only
+    region: us-east-1                         # s3 only
+```
+
+With a bucket, the bucket holds the truth and `memories/` becomes a cache: memory is read from the bucket when a session starts and written to it before the local copy changes. Every write is conditional (a GCS generation match, or an S3 `If-Match`), so two writers never silently overwrite each other; the one that loses re-applies its change to the newer copy. Existing local memory is uploaded the first time a profile uses an empty bucket.
+
+If the bucket is unreachable, sessions start with the cached copy and memory writes are refused (the agent is told nothing was saved) until it is back. A setting that cannot work (an unknown backend, no bucket, missing credentials) turns built-in memory off and logs why (`hermes logs errors`), rather than writing local files the bucket would later overwrite. `hermes memory reset` and the dashboard's memory reset delete the bucket copy too.
+
+Credentials never go in `config.yaml`. `s3` reads `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` (plus `AWS_SESSION_TOKEN` for temporary credentials) from the profile's `.env` or the environment, and the server must support conditional PUTs. `gcs` uses the metadata server (GKE workload identity, or a GCE service account) or the service-account key file named by `GOOGLE_APPLICATION_CREDENTIALS`; the account needs read and write access to the bucket's objects.
+
 ## Context File Truncation
 
 Controls how much content Hermes loads from each automatic context file before applying head/tail truncation. This applies to files injected into the system prompt such as `SOUL.md`, `.hermes.md`, `AGENTS.md`, `CLAUDE.md`, and `.cursorrules`. It does **not** affect the `read_file` tool.

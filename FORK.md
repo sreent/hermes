@@ -150,6 +150,27 @@ profile's `logs/debug-reports/` and reports its path:
 - Docs: the CLI and slash-command references (English and zh-Hans), the desktop guide and the
   command-parity table.
 
+### Memory storage: local, GCS or S3/MinIO
+
+`memory.storage` (config.yaml) chooses where built-in `MEMORY.md` / `USER.md` live: `local` (upstream's
+behaviour, the default), `gcs`, or `s3` (MinIO, AWS S3, R2). With a bucket, the bucket holds the truth
+and `memories/` is a cache; every write is conditional (GCS generation / S3 `If-Match`) and a lost race
+is re-applied to the newer copy, so two pods sharing a bucket never silently drop each other's
+entries. Documented in `website/docs/user-guide/configuration.md#memory-storage`.
+
+- `tools/memory_storage.py` (new): settings, the mirror, `reset_memory_files`; `tools/memory_storage_gcs.py`
+  (JSON API; metadata-server or key-file credentials) and `tools/memory_storage_s3.py` (SigV4), both
+  standard library + `cryptography`, so no new dependencies.
+- `tools/memory_tool_store.py`: `MemoryStore` takes the mirror; `load_from_disk` pulls first;
+  `_mutate` is now a retry loop around `_mutate_locked` (the old body) with a conditional push before
+  the local write. `tools/memory_tool.py` and `agent/agent_init.py` build the mirror from config; a bad
+  setting turns memory off (logged) instead of writing local files the bucket would undo.
+- `hermes memory reset` (`hermes_cli/main_agent_cmds.py`) and `POST /api/memory/reset`
+  (`hermes_cli/web_routers/ops.py`) delete the bucket copy too.
+- Credentials are read through `agent.secret_scope` (profile `.env`, then the environment), never
+  config.yaml. The keys are not in `DEFAULT_CONFIG` (a data module at its size cap); `storage_settings`
+  supplies the defaults.
+
 ### Planned: configurable memory sharing
 
 Configurable memory sharing per agent (`shared`, `per_user`, `hybrid`). The upstream code that configurable memory sharing per agent (`shared`, `per_user`, `hybrid`). The upstream code that

@@ -53,8 +53,14 @@ def load_on_disk_store() -> MemoryStore:
         config = load_config() or {}
         mem_cfg = get_builtin_memory_config(config)
         memory_enabled, user_profile_enabled = get_builtin_memory_store_flags(config)
+        from tools.memory_storage import MemoryStorageError
+        try:
+            mirror = memory_mirror(mem_cfg)
+        except (ValueError, MemoryStorageError):  # logged there; no writes the bucket would later undo
+            mirror, memory_enabled, user_profile_enabled = None, False, False
         store = MemoryStore(int(mem_cfg.get("memory_char_limit", 2200)), int(mem_cfg.get("user_char_limit", 1375)),
-                            memory_enabled=memory_enabled, user_profile_enabled=user_profile_enabled)
+                            memory_enabled=memory_enabled, user_profile_enabled=user_profile_enabled,
+                            mirror=mirror)
     except Exception:
         store = MemoryStore()  # config optional — fall back to defaults rather than break /memory
     store.load_from_disk()
@@ -287,6 +293,18 @@ def _memory_tool(action, target, content, old_text, new_text, operations, store)
     if invalid is not None:
         return "rejected", invalid
     return _applied(_STORE_ACTIONS[action][0](store, target, content, old_text))
+
+
+def memory_mirror(mem_config: Optional[dict[str, Any]]):
+    """The bucket mirror ``memory.storage`` names (None for local storage). A bad setting is logged
+    and raised: callers leave memory off rather than fall back to local files the bucket would
+    later overwrite."""
+    from tools.memory_storage import MemoryStorageError, mirror_for
+    try:
+        return mirror_for(mem_config)
+    except (ValueError, MemoryStorageError) as exc:
+        logger.error("Built-in memory is off: memory.storage is unusable: %s", exc)
+        raise
 
 
 def get_builtin_memory_config(config: Optional[dict[str, Any]] = None) -> dict[str, Any]:

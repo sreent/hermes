@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from utils import atomic_write_text
+from tools.memory_storage import MemoryStorageConflict, MemoryStorageError
 from tools.threat_patterns import first_threat_message as _first_threat_message
 
 logger = logging.getLogger("tools.memory_tool")
@@ -24,6 +25,7 @@ MEMORY_BLOCK_HEADERS = {
     "memory": "MEMORY (your personal notes)", "user": "USER PROFILE (who the user is)"}
 
 ENTRY_DELIMITER = "\n§\n"
+_STORAGE_RETRIES = 3  # conditional bucket writes that lost a race are re-applied this many times
 
 
 def _scan_memory_content(content: str) -> Optional[str]:
@@ -186,7 +188,9 @@ class MemoryStore:
     _MAX_CONSOLIDATION_FAILURES_PER_TURN = 3
 
     def __init__(self, memory_char_limit: int = 2200, user_char_limit: int = 1375, *,
-                 memory_enabled: bool = True, user_profile_enabled: bool = True):
+                 memory_enabled: bool = True, user_profile_enabled: bool = True, mirror: Any = None):
+        # ``mirror``: a ``tools.memory_storage.MemoryMirror`` when memory.storage names a bucket.
+        self._mirror = mirror
         self.memory_entries: list[str] = []
         self.user_entries: list[str] = []
         self.memory_char_limit, self.user_char_limit = memory_char_limit, user_char_limit
@@ -242,6 +246,7 @@ class MemoryStore:
             from hermes_constants import mkdir_under_hermes_home
 
             mkdir_under_hermes_home(path.parent)
+            self._pull_quietly(path)
             # Deduplicate (order-preserving, first occurrence wins).
             entries = list(dict.fromkeys(self._read_file(path)))
             self._set_entries(target, entries)
@@ -347,8 +352,37 @@ class MemoryStore:
                    usage=self._usage(target),
                    **({"closest_entries": closest_entries} if closest_entries else {})))
 
+    def _pull_quietly(self, path: Path) -> None:
+        """Refresh the cached file from the bucket before a load reads it. An unreachable bucket
+        keeps the cached copy for reading; writes refuse until it is back (``_mutate``)."""
+        if self._mirror is None:
+            return
+        try:
+            with self._file_lock(path):
+                self._mirror.pull(path)
+        except MemoryStorageError as exc:
+            logger.warning("Memory storage unreachable; reading the cached %s: %s", path.name, exc)
+
     def _mutate(self, target: str, mutate, *, skip_drift: bool = False) -> dict[str, Any]:
-        """Lock, re-read from disk, run ``mutate(entries, limit)`` -> ``(new_entries, message)``
+        """``_mutate_locked`` under the file lock. With a bucket (``memory.storage``) the bucket copy is
+        pulled first and written conditionally before the local file; when another writer changed it in
+        between, the change is re-applied to the newer copy."""
+        path = self._path_for(target)
+        for _ in range(_STORAGE_RETRIES):
+            with self._file_lock(path):
+                try:
+                    version = self._mirror.pull(path) if self._mirror is not None else None
+                    return self._mutate_locked(target, path, mutate, skip_drift=skip_drift, version=version)
+                except MemoryStorageConflict:
+                    continue
+                except MemoryStorageError as exc:
+                    return _error(f"Memory storage is unreachable, so nothing was saved: {exc}", "storage_unavailable")
+        return _error(f"{path.name} kept changing in memory storage; nothing was saved. Try again.",
+                      "storage_conflict")
+
+    def _mutate_locked(self, target: str, path: Path, mutate, *, skip_drift: bool,
+                       version: Optional[str]) -> dict[str, Any]:
+        """Re-read from disk, run ``mutate(entries, limit)`` -> ``(new_entries, message)``
         or an error dict, then persist and return the success response. The reload aborts
         on an existing-but-unreadable file (even append-only ``add`` rewrites the whole
         file) and, unless *skip_drift*, refuses a write that adds or rewrites text while an
@@ -358,41 +392,41 @@ class MemoryStore:
         convention) — e.g. the full text a replace overwrote (#117952). ANY dict the closure
         returns is passed through verbatim and nothing is persisted: error dicts, or the
         success payload of a read-only closure (``resolve_entry``, ``resolve_batch_entries``)."""
-        path = self._path_for(target)
-        with self._file_lock(path):
-            raw, read_ok = self._read_raw_checked(path)
-            if not read_ok:
-                return _read_failed_error(path)
-            oversized = not skip_drift and self._has_oversized_entry(target, raw)
-            before = list(dict.fromkeys(self._parse_entries(raw)))
-            self._set_entries(target, before)
-            FAILURE_CLASS.set("other")  # read below: only this closure's refusal counts
-            result = mutate(self._entries_for(target), self._char_limit(target))
-            if isinstance(result, dict):
-                # Over budget beside an oversized entry: that entry is the obstacle, so report
-                # the drift (with its snapshot) rather than a budget the model cannot meet.
-                if oversized and result.get("success") is False and FAILURE_CLASS.get() == "over_budget":
-                    return _drift_error(path, self._drift_backup(target, raw))
-                return result
-            extra_fields = dict(result[2]) if len(result) > 2 else {}
-            # An oversized entry is either free text appended without a delimiter or an entry written before the limit was lowered. Pruning is the way
-            # back under a lowered limit, so a write that only deletes entries proceeds; one that
-            # drops an oversized entry keeps the snapshot first, as it may hold appended text.
-            if oversized:
-                if not set(result[0]) <= set(before):
-                    return _drift_error(path, self._drift_backup(target, raw))
-                limit = self._char_limit(target)
-                if any(len(e) > limit for e in before if e not in result[0]):
-                    bak = self._drift_backup(target, raw)
-                    if bak.endswith(_BACKUP_FAILED):  # no copy, no delete of possibly glued text
-                        return _drift_error(path, bak)
-                    extra_fields["drift_backup"] = bak
-            self._set_entries(target, result[0])
-            from hermes_constants import mkdir_under_hermes_home
+        raw, read_ok = self._read_raw_checked(path)
+        if not read_ok:
+            return _read_failed_error(path)
+        oversized = not skip_drift and self._has_oversized_entry(target, raw)
+        before = list(dict.fromkeys(self._parse_entries(raw)))
+        self._set_entries(target, before)
+        FAILURE_CLASS.set("other")  # read below: only this closure's refusal counts
+        result = mutate(self._entries_for(target), self._char_limit(target))
+        if isinstance(result, dict):
+            # Over budget beside an oversized entry: that entry is the obstacle, so report
+            # the drift (with its snapshot) rather than a budget the model cannot meet.
+            if oversized and result.get("success") is False and FAILURE_CLASS.get() == "over_budget":
+                return _drift_error(path, self._drift_backup(target, raw))
+            return result
+        extra_fields = dict(result[2]) if len(result) > 2 else {}
+        # An oversized entry is either free text appended without a delimiter or an entry written before the limit was lowered. Pruning is the way
+        # back under a lowered limit, so a write that only deletes entries proceeds; one that
+        # drops an oversized entry keeps the snapshot first, as it may hold appended text.
+        if oversized:
+            if not set(result[0]) <= set(before):
+                return _drift_error(path, self._drift_backup(target, raw))
+            limit = self._char_limit(target)
+            if any(len(e) > limit for e in before if e not in result[0]):
+                bak = self._drift_backup(target, raw)
+                if bak.endswith(_BACKUP_FAILED):  # no copy, no delete of possibly glued text
+                    return _drift_error(path, bak)
+                extra_fields["drift_backup"] = bak
+        if self._mirror is not None:  # the bucket first: a lost race raises before anything changes here
+            self._mirror.push(path, ENTRY_DELIMITER.join(result[0]).encode("utf-8"), version)
+        self._set_entries(target, result[0])
+        from hermes_constants import mkdir_under_hermes_home
 
-            mkdir_under_hermes_home(path.parent)
-            self._write_file(path, result[0])
-            return self._success_response(target, result[1], **extra_fields)
+        mkdir_under_hermes_home(path.parent)
+        self._write_file(path, result[0])
+        return self._success_response(target, result[1], **extra_fields)
 
     def add(self, target: str, content: str) -> dict[str, Any]:
         """Append a new entry. Returns error if it would exceed the char limit."""

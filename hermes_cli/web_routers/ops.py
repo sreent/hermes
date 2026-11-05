@@ -540,16 +540,14 @@ async def reset_memory(body: MemoryReset, profile: Optional[str] = None):
     profile = destructive_profile(profile, "POST /api/memory/reset")
 
     def _run():
+        # Through memory.storage: a bucket copy left behind would come back on the next pull.
+        from tools.memory_storage import MemoryStorageError, reset_memory_files
         mem_dir = get_hermes_home() / "memories"
-        deleted = []
-        for fname, key in _MEMORY_FILES:
-            path = mem_dir / fname
-            if target in {"all", key} and path.exists():
-                try:
-                    path.unlink()
-                    deleted.append(fname)
-                except OSError as exc:
-                    raise HTTPException(status_code=500, detail=f"Could not delete {fname}: {exc}")
+        paths = [mem_dir / fname for fname, key in _MEMORY_FILES if target in {"all", key}]
+        try:
+            deleted = reset_memory_files(paths)
+        except (OSError, ValueError, MemoryStorageError) as exc:
+            raise HTTPException(status_code=500, detail=f"Could not reset memory: {exc}")
         return {"ok": True, "deleted": deleted}
 
     return await config_scoped_to_thread(profile, _run)

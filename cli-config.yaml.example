@@ -1045,6 +1045,20 @@ memory:
   # every N user turns. Set to 0 to disable. Only active when memory is enabled.
   nudge_interval: 10        # Nudge every 10 user turns (0 = disabled)
 
+  # Where MEMORY.md / USER.md are kept. "local" keeps them in this profile's
+  # memories/ folder. "gcs" or "s3" (MinIO, AWS S3, R2) keeps them in a bucket,
+  # under <prefix><profile>/memories/; memories/ becomes a cache. Writes are
+  # conditional, so two writers never silently overwrite each other.
+  # Credentials stay out of this file: s3 reads AWS_ACCESS_KEY_ID and
+  # AWS_SECRET_ACCESS_KEY from the environment; gcs uses workload identity
+  # (GKE) or the key file named by GOOGLE_APPLICATION_CREDENTIALS.
+  storage:
+    backend: local          # local | gcs | s3
+    bucket: ""
+    prefix: ""
+    endpoint_url: ""        # s3: required for MinIO, e.g. http://minio.minio.svc:9000
+    region: us-east-1       # s3 only
+
 # =============================================================================
 # Session Continuity (Messaging Platforms)
 # =============================================================================
