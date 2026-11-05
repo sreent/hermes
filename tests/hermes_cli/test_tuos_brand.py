@@ -12,6 +12,8 @@ from hermes_cli.distribution import PRODUCT_NAME, brand
     ("Welcome to Hermes Agent!", "Welcome to tuos!"),
     ("Hermes-Sitzung", "tuos-Sitzung"),
     ("Hermesを再起動", "tuosを再起動"),
+    ("Run `hermes setup`, then hermes -p work chat", "Run `tuos setup`, then tuos -p work chat"),
+    ("then run hermes {profile_arg}sessions recover", "then run tuos {profile_arg}sessions recover"),
 ])
 def test_copy_written_for_hermes_names_tuos(text, shown):
     assert brand(text) == shown
@@ -23,7 +25,11 @@ def test_copy_written_for_hermes_names_tuos(text, shown):
     "Hermes-4-405B",
     "Toggle the 'Hey Hermes' wake word",  # what the voice listener hears
     "Built on Hermes Agent by Nous Research",  # credit to upstream
-    "Run `hermes setup`, then edit ~/.hermes/config.yaml or HERMES_HOME",  # internal names
+    "Edit ~/.hermes/config.yaml or HERMES_HOME; pip install hermes-agent; python -m hermes_cli",  # internal names
+    "Logs are in ~/Library/Application Support/Hermes/logs; quit Hermes.app first",  # paths and app names
+    "Certificate name (default: Hermes Local Signing)",  # the keychain certificate's name
+    "Send the X-Hermes-Session-Id header",  # a hyphenated name
+    "Load the `hermes-agent` skill with skill_view(name='hermes-agent')",  # the skill keeps its name
 ])
 def test_names_that_are_not_the_product_stay(text):
     assert brand(text) == text
@@ -109,3 +115,21 @@ def test_shell_completion_covers_tuos():
     assert "complete -F _hermes_completion hermes tuos" in generate_bash(parser)
     assert "compdef _hermes hermes tuos" in generate_zsh(parser)
     assert "complete -c tuos -w hermes" in generate_fish(parser)
+
+
+@pytest.mark.platforms("linux", "macos")
+def test_tuos_console_script_starts_the_hermes_installed_beside_it(tmp_path, monkeypatch):
+    """pip and Nix installs: the process becomes that hermes, with the arguments as given."""
+    import os
+    import sys
+
+    from hermes_cli import tuos_command
+
+    bin_dir = tmp_path / "venv" / "bin"
+    bin_dir.mkdir(parents=True)
+    (bin_dir / "hermes").write_text("#!/bin/sh\n", encoding="utf-8")
+    calls = []
+    monkeypatch.setattr(sys, "argv", [str(bin_dir / "tuos"), "gateway", "run"])
+    monkeypatch.setattr(os, "execv", lambda path, argv: calls.append((path, argv)))
+    tuos_command.main()
+    assert calls == [(str(bin_dir / "hermes"), [str(bin_dir / "hermes"), "gateway", "run"])]

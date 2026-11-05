@@ -28,6 +28,28 @@ conflict throughout.
 The more files we change, the more each sync conflicts. Where we can, add new modules next to upstream's
 rather than editing upstream files heavily, and list each change below.
 
+### Renamed copy
+
+`scripts/fork/rename.py` renames the copy written into upstream's code and docs ("Rebranded as tuos"), so
+a merge conflicts wherever upstream changed a line we renamed, and brings in upstream's new strings
+unrenamed. Let the script handle both:
+
+```bash
+npm ci                                     # once per clone: the apps' half parses TypeScript
+git merge upstream/main
+python scripts/fork/rename.py --resolve    # settle the conflicts the rename caused, then rename again
+```
+
+`--resolve` takes upstream's side of each conflicted file whose only change on our side is the rename
+(Python tests included), then renames everything again. It lists the conflicted files it left: they carry other changes of ours
+too. Resolve those by hand, taking upstream's wording in renamed lines, and run the script again.
+
+The script exits with status 3 when the rename would break a match: text renamed in one place that code
+elsewhere compares against, searches for or lists, or that a regular expression in the desktop app or
+TUI reads from a backend message. Keep that wording (`KEEP` in `rename.py` or `rename_ts.mjs`) or make the
+matcher accept both (as `hermes_cli/console_engine.py` does), rerun until it exits 0, and commit with the
+merge. `python scripts/fork/rename.py --check` exits 1 while anything is left to rename.
+
 ### Keeping removed files out
 
 A merge brings back any file upstream **adds** under a folder we deleted, with no conflict to warn us, and
@@ -195,11 +217,14 @@ the desktop app's packaging identity, and the `hermes` command.
 
 - **The rule**: `brand()` in `hermes_cli/distribution.py` and its TypeScript twin in `apps/shared/src/brand.ts`
   (keep them identical; both are tested). In user-facing copy, "Hermes Agent" and "Hermes" become "tuos",
-  except:
+  and so does the command where copy tells someone to run it (`hermes setup`, `` `hermes` ``), except:
   - "Hermes Cloud", Nous's hosted service;
   - Nous model names such as "Hermes 3";
   - the wake word "Hey Hermes";
-  - credit to upstream ("built on / based on Hermes Agent").
+  - credit to upstream ("built on / based on Hermes Agent");
+  - paths, packages, modules and file or app names (`~/.hermes`, `hermes-agent`, `hermes_cli`,
+    `hermes.exe`, `Hermes.app`, `Application Support/Hermes`);
+  - "Hermes Local Signing", the macOS signing certificate's name in the keychain.
 - **Applied where copy is loaded, not in the strings themselves**, so upstream's strings merge untouched and
   its new ones are rebranded too:
   - Gateway messages, and the translations the TUI fetches from the backend: `agent/i18n.py` `_load_bundled`.
@@ -207,10 +232,44 @@ the desktop app's packaging identity, and the `hermes` command.
     - `apps/desktop/src/i18n/en.ts` and `define-locale.ts`;
     - runtime packs in `registry.ts`;
     - plugin strings in `plugin-i18n.ts`.
+    - `brandCatalog` brands what a message function returns but not the values it interpolates: a
+      profile called "Hermes Lab", or a backend's own message, reads as given.
   - Web dashboard: `web/src/i18n/en.ts` and `context.tsx`.
   - TUI: its English in `ui-tui/src/i18n/en.ts`, packs in `runtime.ts`.
   - CLI help: `HermesArgumentParser.format_help` in `hermes_cli/_parser.py`. Its `prog` is now `tuos`.
   - The dashboard's sign-in pages: `hermes_cli/dashboard_auth/login_page.py`.
+- **Copy written into code and docs**: `scripts/fork/rename.py` applies the rule to the files themselves.
+  Rerun it after every upstream merge ("Renamed copy", above); `--report` lists the strings it left.
+  - Python (`hermes_cli`, `gateway`, `tui_gateway`, `cron`, `tools`, `agent`, `plugins`, `acp_adapter`,
+    `cli.py`): what `print`, `input` and the CLI's output helpers show, doctor checks, writes to
+    `sys.stdout`/`sys.stderr`, messages of anything raised, slash-command descriptions (`CommandDef`), and
+    keyword arguments named for copy (`help=`, `description=`, `detail=`, `install_hint=`, ...). Not logs,
+    docstrings, prompts, comparisons, dictionary keys or other data.
+  - The desktop app, web dashboard, TUI and the docs site's own pages (`scripts/fork/rename_ts.mjs`): JSX
+    text, error messages, and attributes, properties, variables and function results whose names say they
+    hold copy (title, label, message, description, hint, ...). Not logs, keys, headers, commands the code
+    runs or scripts it sends to a shell.
+  - Docs pages (`website/docs` and the zh-Hans translation): prose, front-matter titles and descriptions,
+    and shell blocks. Other code blocks, and lines that credit Nous Research, stay. A renamed heading keeps
+    its old anchor (`{#...}`), so links into the page still land.
+  - Tests follow: an expectation that quotes copy the code now shows renamed is renamed with it.
+    - Python: text a test searches output for (`"..." in out`, `not in`, `any(...)`, `.count(...)`),
+      passes to a mock's `assert_*` as a message naming the product, or matches in
+      `pytest.raises(match=...)`.
+    - The apps: `expect(...)` matchers, Testing Library text queries and `node:test` asserts. An exact
+      match follows only when it is prose naming the product.
+    - Not when the test passes the same copy in itself (it checks its own input comes through), nor when
+      the code still keeps that wording somewhere (a log, a JSON field: the test may be reading that).
+      Messages pieced together from several strings, expected values held in variables or parameter
+      lists, and wording the code keeps in one place but shows renamed in another are fixed by hand.
+  - `KEEP` in each script holds wording that stays: code matches on it, or it names something else
+    (Nous's models, a service, the `hermes` executable, upstream's community showcase).
+  - Hand edits where code reads renamed wording: `hermes_cli/console_engine.py` (the status footer),
+    `apps/desktop/src/lib/provider-setup-errors.ts` ("No tuos provider is configured") and
+    `apps/desktop/electron/local-runtime-version.ts` (reads `tuos v...` from `--version`, and upstream's
+    `Hermes Agent v...` from older installs and remote hosts).
+  - Default names people see: the Slack app manifest (`hermes_cli/slack_cli.py`) and the Photon project
+    (`plugins/platforms/photon/auth.py`) are called tuos.
 - **The agent's identity**: "You are tuos, built on Nous Research's open-source Hermes Agent."
   - Set by `brand_identity()` in a block at the end of `agent/prompt_builder.py`. The same block brands the
     help guidance and the TUI and desktop surface hints.
@@ -232,7 +291,8 @@ the desktop app's packaging identity, and the `hermes` command.
     table). On Windows, `tuos.cmd` sits beside `hermes.exe` in `%HERMES_HOME%\bin`.
   - The Docker image has `/opt/hermes/bin/tuos` (`docker/tuos.sh`, `Dockerfile`).
   - Shell completion covers it (`completion.py`), and uninstall removes it (`uninstall.py`).
-  - pip and Nix installs have only `hermes`.
+  - pip and Nix installs get it as a console script (`pyproject.toml`): `hermes_cli/tuos_command.py`
+    starts the `hermes` installed beside it, with the arguments as given.
 - **Desktop and web literals**:
   - Desktop window titles, tray, notification fallbacks and browser tab titles.
   - The intro wordmark, now lowercase: `.wordmark` lost its `text-transform`.
@@ -243,12 +303,19 @@ the desktop app's packaging identity, and the `hermes` command.
   logo), and the README's title and opening.
 
 Not rebranded yet:
-- English hard-coded outside the catalogs: about 1,500 Python strings (setup wizard, doctor, status output,
-  errors), and roughly 300 literals in the desktop renderer and Electron main process.
+- Strings outside the contexts above: Python's returned values, constants and dictionaries (API responses,
+  config field descriptions, platform cards built as data), and the apps' strings whose names don't say
+  they hold copy. A message built from both can mix the names ("run `tuos gateway install` ... fold this
+  profile with `hermes gateway migrate --multiplex`"); both commands work. `--report` lists what is left;
+  some of it feeds the agent or matchers in other processes (`[hermes note: ...]` markers, the internal
+  notification footer), so extend the scripts' rules with care.
+- What only the agent reads, such as skills and tool descriptions, still says Hermes. Its identity, help
+  guidance and surface hints say tuos.
 - The desktop app's packaging identity (`product-identity.cjs`): app and executable name, appId, MSIX
   identity, the macOS menu's app name and the About panel. That belongs with this fork's own builds and
   signing.
-- Docs pages, translated READMEs, favicons and images, and the TUI's translated taglines.
+- Translated READMEs, favicons and images, the TUI's translated taglines, and upstream's community
+  stories on the docs site.
 
 ### Memory sharing per agent: shared, per_user, hybrid
 

@@ -1,5 +1,7 @@
 import { execFile } from 'node:child_process'
 
+import { PRODUCT_NAME } from '../../shared/src/brand'
+
 import { appVersionInfo } from './app-version'
 import { buildDesktopBackendEnv } from './backend-env'
 import { PROBE_TIMEOUT_MS } from './backend-probes'
@@ -26,9 +28,12 @@ const DEFAULT_CACHE_TTL_MS = 5_000
 let cached: { key: string; version: string; expiresAt: number } | null = null
 let inFlight: { key: string; promise: Promise<string> } | null = null
 
+// `--version` names the product: "tuos v1.2.3 (...)" here, "Hermes Agent v1.2.3 (...)" from upstream's CLI.
+const VERSION_LINE = new RegExp(`^\\s*(?:Hermes Agent|${PRODUCT_NAME})\\s+([^\\s(]+)`, 'm')
+
 /** Extract the client version printed by the exact local installation launcher. */
 export function parseLocalRuntimeVersion(output: string): string {
-  const match = output.match(/^\s*Hermes Agent\s+([^\s(]+)/m)
+  const match = output.match(VERSION_LINE)
 
   return match?.[1]?.replace(/^v/, '') ?? ''
 }

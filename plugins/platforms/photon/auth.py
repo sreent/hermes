@@ -27,6 +27,7 @@ except ImportError:  # pragma: no cover - httpx is a hermes dependency
     httpx = None  # type: ignore[assignment]
 
 from gateway.platforms._shared import get_scoped_secret as _get_scoped_secret
+from hermes_cli.distribution import PRODUCT_NAME
 from hermes_constants import get_hermes_home
 import contextlib
 
@@ -43,7 +44,7 @@ DEFAULT_CLIENT_ID = "photon-cli"
 DEFAULT_SCOPE = "openid profile email"
 DEFAULT_DASHBOARD_HOST = "https://app.photon.codes"
 DEFAULT_SPECTRUM_HOST = "https://spectrum.photon.codes"
-DEFAULT_PROJECT_NAME = "Hermes Agent"
+DEFAULT_PROJECT_NAME = PRODUCT_NAME  # FORK.md, "Rebranded as tuos"
 DEFAULT_POLL_INTERVAL = 5  # RFC 8628 polling defaults; Photon's `interval` / `expires_in` win
 DEFAULT_POLL_TIMEOUT = 1800
 E164_RE = re.compile(r"^\+[1-9]\d{6,14}$")

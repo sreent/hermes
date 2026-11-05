@@ -8,6 +8,8 @@ describe('brand', () => {
     expect(brand('Welcome to Hermes Agent!')).toBe('Welcome to tuos!')
     expect(brand('Hermes-Sitzung')).toBe('tuos-Sitzung')
     expect(brand('Hermesを再起動')).toBe('tuosを再起動')
+    expect(brand('Run `hermes setup`, then hermes -p work chat')).toBe('Run `tuos setup`, then tuos -p work chat')
+    expect(brand('then run hermes {profile_arg}sessions recover')).toBe('then run tuos {profile_arg}sessions recover')
   })
 
   it('keeps Nous services and models, the wake word, credit to upstream and internal names', () => {
@@ -17,7 +19,11 @@ describe('brand', () => {
       'Hermes-4-405B',
       "Toggle the 'Hey Hermes' wake word",
       'Built on Hermes Agent by Nous Research',
-      'Run `hermes setup` and edit ~/.hermes/config.yaml or HERMES_HOME',
+      'Edit ~/.hermes/config.yaml or HERMES_HOME; pip install hermes-agent; python -m hermes_cli',
+      'Logs are in ~/Library/Application Support/Hermes/logs; quit Hermes.app first',
+      'Certificate name (default: Hermes Local Signing)',
+      'Send the X-Hermes-Session-Id header',
+      "Load the `hermes-agent` skill with skill_view(name='hermes-agent')",
       'HermesDesktop'
     ]) {
       expect(brand(text)).toBe(text)
@@ -33,5 +39,15 @@ describe('brand', () => {
     expect(catalog.title).toBe(PRODUCT_NAME)
     expect(catalog.nested.placeholders).toEqual(['Ask tuos…'])
     expect(catalog.nested.sessions(2)).toBe('2 tuos sessions')
+  })
+
+  it('leaves the values a catalog function interpolates as they are', () => {
+    const catalog = brandCatalog({
+      renamed: (name: string) => `Hermes renamed the profile to ${name}`,
+      failed: (reason: string) => `The gateway couldn't restart: ${reason}`
+    })
+
+    expect(catalog.renamed('Hermes Lab')).toBe('tuos renamed the profile to Hermes Lab')
+    expect(catalog.failed('run `hermes pm repair`')).toBe("The gateway couldn't restart: run `hermes pm repair`")
   })
 })

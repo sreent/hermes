@@ -6,6 +6,8 @@ import json
 import sys
 from pathlib import Path
 
+from hermes_cli.distribution import PRODUCT_NAME
+
 SLACK_LONG_DESCRIPTION_MIN_CHARACTERS = 175
 SLACK_LONG_DESCRIPTION_MAX_CHARACTERS = 4000
 
@@ -78,8 +80,8 @@ def _build_full_manifest(
 
 def slack_manifest_command(args) -> int:
     """Print or write a Slack app manifest JSON (flags documented in ``hermes_cli/main.py``)."""
-    name = getattr(args, "name", None) or "Hermes"
-    description = getattr(args, "description", None) or "Your Hermes agent on Slack"
+    name = getattr(args, "name", None) or PRODUCT_NAME
+    description = getattr(args, "description", None) or f"Your {PRODUCT_NAME} agent on Slack"
     long_description = getattr(args, "long_description", None)
     long_description_file = getattr(args, "long_description_file", None)
     slashes_only = getattr(args, "slashes_only", False)

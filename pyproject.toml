@@ -585,6 +585,7 @@ build-backend = "setuptools.build_meta"
 
 [project.scripts]
 hermes = "hermes_cli.main:main"
+tuos = "hermes_cli.tuos_command:main"  # starts hermes (FORK.md, "Rebranded as tuos")
 hermes-agent = "agent.legacy_cli:main"
 hermes-acp = "acp_adapter.entry:main"
 

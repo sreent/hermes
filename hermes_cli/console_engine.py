@@ -16,6 +16,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Callable, Iterable, Literal, NoReturn, Sequence
 
+from hermes_cli.distribution import brand
 from tools.ansi_strip import strip_ansi as _strip_ansi
 
 
@@ -93,7 +94,8 @@ def _strip_console_status_footer(text: str) -> str:
     if len(lines) < 2:
         return text.rstrip()
     last, prev = (_strip_ansi(lines[i]).strip() for i in (-1, -2))
-    if not (prev.startswith("Run 'hermes doctor'") and last.startswith("Run 'hermes setup'")):
+    # The footer `hermes status` prints, in the wording it prints it (FORK.md, "Rebranded as tuos").
+    if not (prev.startswith(brand("Run 'hermes doctor'")) and last.startswith(brand("Run 'hermes setup'"))):
         return text.rstrip()
     lines = lines[:-2]
     _drop_trailing_blank(lines)

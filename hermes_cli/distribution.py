@@ -34,17 +34,24 @@ _WORD = "A-Za-z0-9_"
 # Not "Hermes Cloud", Nous Research's hosted service; a Nous model such as "Hermes 3" or "Hermes-4-405B";
 # the wake word "Hey Hermes", the phrase the voice listener actually hears; or credit to upstream
 # ("built on Hermes Agent", "based on Hermes Agent").
+# Nor a path or app name ("Application Support/Hermes", "Hermes.app", "Hermes.exe"), the middle of a
+# hyphenated name such as the X-Hermes-Session-Id header, or the macOS signing certificate's name in the
+# keychain ("Hermes Local Signing").
 _PRODUCT_RE = re.compile(
-    rf"(?<![{_WORD}])(?<!Hey )(?<![Bb]uilt on )(?<![Bb]ased on )"
-    rf"Hermes(?:[ -]Agent(?![{_WORD}]))?(?![{_WORD}])(?![ -]?(?:Cloud|\d))")
+    rf"(?<![{_WORD}/\\])(?<!Hey )(?<![Bb]uilt on )(?<![Bb]ased on )(?!(?<=[{_WORD}]-)Hermes-[{_WORD}])"
+    rf"Hermes(?:[ -]Agent(?![{_WORD}]))?(?![{_WORD}/\\])(?!\.[A-Za-z])(?![ -]?(?:Cloud|\d)| Local Signing)")
+# The command, wherever copy tells someone to run it: `hermes setup`, `hermes -p work ...`, a template's
+# `hermes {profile_arg}doctor`, `hermes` in backticks, "the hermes command". Not a path, package or module
+# (~/.hermes, /opt/hermes/, hermes-agent, hermes_cli, hermes.exe).
+_COMMAND_RE = re.compile(rf"(?<![{_WORD}./\\`-])hermes(?=\s(?:-{{1,2}}[A-Za-z]|[a-z{{])|`)|(?<=`)hermes(?=`|\s)")
 
 _HERMES_IDENTITY = "You are Hermes Agent, built by Nous Research."
 IDENTITY = f"You are {PRODUCT_NAME}, built on Nous Research's open-source Hermes Agent."
 
 
 def brand(text: str) -> str:
-    """``text`` (user-facing copy written for Hermes) naming the product tuos."""
-    return _PRODUCT_RE.sub(PRODUCT_NAME, text)
+    """``text`` (user-facing copy written for Hermes) naming the product, and its command, tuos."""
+    return _COMMAND_RE.sub(PRODUCT_NAME, _PRODUCT_RE.sub(PRODUCT_NAME, text))
 
 
 def brand_identity(text: str) -> str:
