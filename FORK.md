@@ -119,13 +119,36 @@ Deliberately still upstream's:
   checkouts follow `main` (the code's existing rule for forks). Packaged desktop builds, the Termux APT
   package and the stable/canary channels are Nous's; this fork doesn't build them yet.
 - **Nous's services**, which are product features: Nous Portal sign-in, inference and billing, the Tool
-  Gateway, the plugin catalog and Skills Hub, the opt-in telemetry endpoint (off unless a user consents),
-  and `hermes debug share` / the desktop's "send diagnostics", which upload to Nous's support portal.
+  Gateway, the plugin catalog and Skills Hub, and the opt-in telemetry endpoint (off unless a user consents).
 - **Documentation links** to `hermes-agent.nousresearch.com/docs` throughout the CLI, app and docs. Those pages
   still describe this code; repoint them once this fork hosts its own docs (the site's `url` and `baseUrl`
   are unchanged for that reason).
 - **Packaging identity**: the desktop app's signing publisher, MSIX identity and Linux package maintainer
   ("Nous Research"). Builds of this fork need their own certificates and maintainer before publishing.
+
+### Diagnostics stay on the machine running Hermes
+
+Upstream uploads debug reports: `hermes debug share` to paste.rs (dpaste.com as fallback), `--nous` and
+the desktop's "Send diagnostics" to Nous's support portal, chat `/debug` to a paste link. This fork uploads
+nothing. Every surface saves the same redacted report + full logs as an owner-only zip under the
+profile's `logs/debug-reports/` and reports its path:
+
+- `hermes_cli/debug_archive.py` (new) writes the archive. `hermes_cli/debug.py` lost the paste and Nous
+  upload code (`upload_to_pastebin`, `build_debug_share`, `build_nous_bundle` and the rest);
+  `hermes_cli/diagnostics_upload.py` is deleted. Removing them, rather than only their callers, makes an
+  upstream merge that adds a new upload call fail loudly instead of uploading.
+- `hermes debug share` saves the archive (`--local` still prints the report); `--nous`, `--expire` and
+  `--yes` are gone (`hermes_cli/subcommands/debug.py`). `hermes debug delete` and the hourly sweep stay:
+  they only delete pastes that an earlier version uploaded.
+- CLI `/debug` (`cli_commands_mixin.py`), chat `/debug` (`gateway/slash_commands.py`), the dashboard's
+  `POST /api/ops/debug-share` (`hermes_cli/web_routers/status.py`) and the desktop RPC, renamed
+  `diagnostics.save` (`tui_gateway/methods_config.py`, contracts regenerated), save locally.
+- UI: the desktop's "Save diagnostics" dialog, update-error report and maintenance action, and the web
+  dashboard's System page show the saved path. The rewritten desktop strings fall back to English in the
+  other languages (`apps/desktop/src/i18n/overlay-gaps.json`); the chat strings are translated in all 17
+  gateway languages (`locales/*.yaml`).
+- Docs: the CLI and slash-command references (English and zh-Hans), the desktop guide and the
+  command-parity table.
 
 ### Planned: configurable memory sharing
 

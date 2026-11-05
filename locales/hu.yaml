@@ -164,13 +164,8 @@ gateway:
     codex_compacted: "🗜️ A Codex app-server szál tömörítve (thread/compact). Az átirat tükre szándékosan változatlan — a tömörített kontextust mostantól az app-server hordozza."
     codex_incomplete: "⚠️ A Codex app-server tömörítése nem fejeződött be — a szál változatlan. Nézd meg az app-server naplóit, próbáld újra a /compress parancsot, vagy /reset a tiszta munkamenethez."
   debug:
-    upload_failed: "✗ Nem sikerült feltölteni a hibakeresési jelentést: {error}"
-    header: "**Hibakeresési jelentés feltöltve:**"
-    auto_delete: "⏱ A beillesztések 6 óra múlva automatikusan törlődnek."
-    full_logs_hint: "Teljes naplók feltöltéséhez használd a `hermes debug share` parancsot a CLI-ből."
-    share_hint: "Oszd meg ezeket a hivatkozásokat a Hermes csapattal támogatásért."
-    report_label: "Jelentés"
-    local_refused: "A `/debug local` azon a gépen tartja a jelentést, amelyen a Hermes fut, ezért csevegésből nem érhető el. Küldd el a `/debug` parancsot az összefoglaló jelentés feltöltéséhez."
+    saved: "🗂 A hibakeresési jelentés mentve azon a gépen, amelyen a Hermes fut:\n`{path}`\nSemmi sem lett feltöltve. Beszélgetések tartalmát is tartalmazhatja; megosztás előtt érdemes átnézni."
+    save_failed: "✗ Nem sikerült menteni a hibakeresési jelentést: {error}"
   deny:
     stale: "❌ Parancs elutasítva (a jóváhagyás elavult)."
     no_pending: "Nincs elutasítható függőben lévő parancs."
@@ -1714,7 +1709,7 @@ slash:
   version:
     description: "A Hermes Agent verziójának megjelenítése"
   debug:
-    description: "Hibakeresési jelentés (rendszerinfó + naplók) feltöltése és megosztható linkek kérése"
+    description: "Hibakeresési jelentés (rendszerinfó + naplók) mentése azon a gépen, amelyen a Hermes fut"
   quit:
     description: "Kilépés a CLI-ből (a --delete a munkamenet előzményeit is törli)"
 cli:
@@ -3909,7 +3904,7 @@ tips:
   t343: "A /voice tts a csak-TTS módot kapcsolja — az ügynök hangosan válaszol, de a promptjaidat továbbra is gépeled."
   t344: "A /reload-skills újraolvassa a ~/.hermes/skills/ mappát, így a bemásolt skillek a munkamenet újraindítása nélkül megjelennek."
   t345: "A /indicator kaomoji|emoji|unicode|ascii kiválasztja a TUI elfoglaltságjelzőjének stílusát, amely az ügynök futása alatt látszik."
-  t346: "A /debug feltölt egy támogatási csomagot (rendszerinfó + naplók), és megosztható linkeket ad vissza — chatben is működik."
+  t346: "A /debug támogatási jelentést (rendszerinfó + naplók) ment azon a gépen, amelyen a Hermes fut — chatben is működik."
   t347: "A hermes -z \"<prompt>\" a legtisztább egylövetű mód: csak a végső válasz a stdout-on, semmi más — ideális szkriptekben csövezéshez."
   t348: "A hermes chat --pass-session-id beszúrja a munkamenet-azonosítót a rendszerpromptba, hogy az ügynök hivatkozhasson rá."
   t349: "A hermes chat --image path/to/pic.png helyi képet csatol egyetlen -q lekérdezéshez külön feltöltési lépés nélkül."

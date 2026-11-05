@@ -89,7 +89,6 @@ export const arOverrides = {
   firstRun: arFirstRun,
   externalOpenFailed: arChrome.externalOpenFailed,
   sessionImport: arConnectors.sessionImport,
-  sendDiagnostics: arDiagnostics.sendDiagnostics,
   common: arCommon.common,
   fileMenu: arChrome.fileMenu,
   boot: arBoot.boot,

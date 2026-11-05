@@ -27,8 +27,8 @@ afterEach((): void => {
   vi.restoreAllMocks()
 })
 
-it('a failed backend update shares its output from the backend and shows the link in the error box', async () => {
-  const request = vi.fn().mockResolvedValue({ ok: true, upload_id: 'u1', view_url: 'https://nas.example/view/u1' })
+it('a failed backend update saves its output on the backend and shows the archive path in the error box', async () => {
+  const request = vi.fn().mockResolvedValue({ ok: true, path: '/data/logs/debug-reports/hermes-debug-u1.zip' })
   $gateway.set({ request } as never)
   $updateOverlayTarget.set('backend')
   $updateOverlayOpen.set(true)
@@ -58,19 +58,19 @@ it('a failed backend update shares its output from the backend and shows the lin
   expect(screen.getByText(/venv rebuild failed \(exit 3\)/)).toBeTruthy()
 
   fireEvent.click(screen.getByRole('button', { name: en.errors.sendDiagnostics }))
-  // Consent is still explicit and per-upload, inline — not a second modal.
+  // Consent is still explicit and per-save, inline — not a second modal.
   expect(request).not.toHaveBeenCalled()
   expect(screen.queryByText(en.sendDiagnostics.title)).toBeNull()
 
   await act(async () => {
-    fireEvent.click(screen.getByRole('button', { name: en.sendDiagnostics.upload }))
+    fireEvent.click(screen.getByRole('button', { name: en.sendDiagnostics.save }))
   })
 
   const [method, params] = request.mock.calls[0]
-  expect(method).toBe('diagnostics.share_nous')
+  expect(method).toBe('diagnostics.save')
   expect(params.error_context).toContain('Backend update failed.')
   expect(params.extra_files['update-output.log']).toContain('venv rebuild failed (exit 3)')
-  expect(screen.getByText('https://nas.example/view/u1')).toBeTruthy()
+  expect(screen.getByText('/data/logs/debug-reports/hermes-debug-u1.zip')).toBeTruthy()
   expect(screen.getByText(en.updates.errorTitle)).toBeTruthy()
 })
 
@@ -106,6 +106,6 @@ it('a report never outlives its failure: switching the update target drops it', 
   await act(async () => $updateOverlayTarget.set('client'))
 
   expect($sendDiagnostics.get()).toBeNull()
-  expect(screen.queryByRole('button', { name: en.sendDiagnostics.upload })).toBeNull()
+  expect(screen.queryByRole('button', { name: en.sendDiagnostics.save })).toBeNull()
   expect(screen.getByRole('button', { name: en.errors.sendDiagnostics })).toBeTruthy()
 })

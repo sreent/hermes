@@ -1,18 +1,17 @@
-"""diagnostics.share_nous RPC — Desktop "Send Diagnostics" upload path.
+"""diagnostics.save RPC — Desktop "Save diagnostics" path. Nothing is uploaded (FORK.md).
 
 Contract pinned:
-* Reuses the CLI ``--nous`` pipeline (collect_share_bundle → build_nous_bundle
-  → share_to_nous) with redaction FORCED on — the client cannot disable it.
+* Reuses the CLI ``hermes debug share`` pipeline (collect_share_bundle → save_debug_archive) with
+  redaction FORCED on — the client cannot disable it.
 * ``error_context`` and ``extra_files`` are redacted server-side, labels
   sanitized, sizes capped.
-* Upload failures return a structured ``{ok: False, error}`` envelope, never a
+* Save failures return a structured ``{ok: False, error}`` envelope, never a
   JSON-RPC error (the desktop renders them inline in the modal).
 """
 
 from __future__ import annotations
 
-import gzip
-import json
+import zipfile
 
 import pytest
 
@@ -20,63 +19,43 @@ from tui_gateway import server
 
 
 def _handler():
-    fn = server._methods.get("diagnostics.share_nous")
-    assert fn is not None, "diagnostics.share_nous not registered"
+    fn = server._methods.get("diagnostics.save")
+    assert fn is not None, "diagnostics.save not registered"
     return fn
 
 
-@pytest.fixture()
-def captured_upload(monkeypatch, tmp_path):
-    """Mock ONLY the network leg; the bundle pipeline runs for real."""
-    captured: dict = {}
-
-    def _fake_share(blob: bytes) -> dict:
-        captured["blob"] = blob
-        return {
-            "viewUrl": "https://nas.example/view/abc123",
-            "id": "abc123",
-            "expiresAt": "2026-09-05T00:00:00Z",
-        }
-
-    import hermes_cli.diagnostics_upload as du
-
-    monkeypatch.setattr(du, "share_to_nous", _fake_share)
-    return captured
-
-
-def _envelope(blob: bytes) -> dict:
-    return json.loads(gzip.decompress(blob).decode("utf-8"))
-
-
-def test_share_nous_uploads_redacted_bundle(captured_upload):
-    result = _handler()("rid-1", {})
+def _files(result: dict) -> dict[str, str]:
+    """The archive a successful call saved, as entry name -> text."""
     payload = result["result"]
-
-    assert payload["ok"] is True
-    assert payload["view_url"] == "https://nas.example/view/abc123"
-    assert payload["upload_id"] == "abc123"
-
-    envelope = _envelope(captured_upload["blob"])
-    assert envelope["format"].startswith("hermes-debug-share/")
-    assert envelope["redacted"] is True
-    assert "report" in envelope["files"]
+    assert payload["ok"] is True, payload
+    with zipfile.ZipFile(payload["path"]) as archive:
+        return {name: archive.read(name).decode("utf-8") for name in archive.namelist()}
 
 
-def test_share_nous_attaches_redacted_error_context(captured_upload):
+def test_save_writes_a_redacted_archive_under_the_profile():
+    from hermes_constants import get_hermes_home
+
+    result = _handler()("rid-1", {})
+    files = _files(result)
+
+    reports = get_hermes_home() / "logs" / "debug-reports"
+    assert result["result"]["path"].startswith(str(reports))
+    assert "secrets redacted when this report was collected" in files["report.txt"]
+
+
+def test_save_attaches_redacted_error_context():
     secret = "sk-abc123def456ghi789jkl012mno345pqr678"
     result = _handler()(
         "rid-2",
         {"error_context": f"layer: provider\ncode: rate_limit\nkey was {secret}"},
     )
-    assert result["result"]["ok"] is True
-
-    files = _envelope(captured_upload["blob"])["files"]
+    files = _files(result)
     context = files.get("error-context.txt", "")
     assert "layer: provider" in context
     assert secret not in context, "secret leaked through error_context redaction"
 
 
-def test_share_nous_client_text_gets_upload_safe_log_redaction(captured_upload):
+def test_save_client_text_gets_support_safe_log_redaction():
     """Client artifacts must ride the SAME redactor as backend logs
     (redact_debug_support_text): secrets AND email addresses — not just the bare
     secret pass, which leaves emails through (review finding on #92020)."""
@@ -88,18 +67,14 @@ def test_share_nous_client_text_gets_upload_safe_log_redaction(captured_upload):
             "extra_files": {"desktop.log": f"login bob@example.com token={secret}"},
         },
     )
-    assert result["result"]["ok"] is True
-
-    files = _envelope(captured_upload["blob"])["files"]
+    files = _files(result)
     assert "alice@example.com" not in files["error-context.txt"]
     assert "[REDACTED_EMAIL]" in files["error-context.txt"]
     assert "bob@example.com" not in files["client/desktop.log"]
     assert secret not in files["client/desktop.log"]
 
 
-def test_redacted_support_egress_scrubs_structured_values_and_errors(
-    captured_upload, monkeypatch
-):
+def test_redacted_support_report_scrubs_structured_values_and_errors(monkeypatch):
     from hermes_constants import get_hermes_home
 
     canaries = {
@@ -137,10 +112,9 @@ def test_redacted_support_egress_scrubs_structured_values_and_errors(
         {"error_context": structured, "extra_files": {"desktop.log": structured}},
     )
 
-    assert result["result"]["ok"] is True
-    envelope = _envelope(captured_upload["blob"])
-    assert envelope["redacted"] is True
-    rendered = json.dumps(envelope, sort_keys=True)
+    files = _files(result)
+    assert "secrets redacted when this report was collected" in files["report.txt"]
+    rendered = "\n".join(f"{name}\n{text}" for name, text in sorted(files.items()))
     assert "support-fixture" in rendered
     assert not [canary for canary in canaries.values() if canary in rendered]
 
@@ -156,9 +130,9 @@ def test_redacted_support_egress_scrubs_structured_values_and_errors(
 
     line = f"cookie={canaries['header']} " + "x" * 40 + "\n"
     monkeypatch.setattr(dr, "redact_debug_support_text", _spy)
-    assert _handler()("rid-big", {"error_context": line * 2_000})["result"]["ok"] is True
+    big = _handler()("rid-big", {"error_context": line * 2_000})
     monkeypatch.setattr(dr, "redact_debug_support_text", real_redact)
-    big_context = _envelope(captured_upload["blob"])["files"]["error-context.txt"]
+    big_context = _files(big)["error-context.txt"]
     assert max(scrubbed_sizes) <= 2 * 8_000 + len(line)
     assert big_context == real_redact((line * 2_000).strip(), max_chars=8_000)
     scrubbed_sizes.clear()
@@ -168,13 +142,13 @@ def test_redacted_support_egress_scrubs_structured_values_and_errors(
     monkeypatch.setattr(dr, "redact_debug_support_text", real_redact)
     assert max(scrubbed_sizes) <= 3 * 8_000
 
-    import hermes_cli.diagnostics_upload as du
+    import hermes_cli.debug_archive as da
 
-    def _fail(_blob: bytes) -> dict:
+    def _fail(_bundle: dict) -> str:
         # The tail is already scrubbed (a wrapped inner error); re-scrubbing it
         # must be idempotent, not turn ``[REDACTED]`` into ``[REDACTED]]``.
         raise RuntimeError(
-            "PUT https://upload.invalid/?X-Amz-Security-Token="
+            "write https://storage.invalid/?X-Amz-Security-Token="
             f"{canaries['error']} headers={{'X-API-Key': '{canaries['header']}'}} "
             f"x-api-key: Basic {canaries['header']} "
             + real_redact(f"cookie={canaries['error']}; --api-key {canaries['error']} "
@@ -182,7 +156,7 @@ def test_redacted_support_egress_scrubs_structured_values_and_errors(
             + " --header X-API-Key Basic [REDACTED]"
         )
 
-    monkeypatch.setattr(du, "share_to_nous", _fail)
+    monkeypatch.setattr(da, "save_debug_archive", _fail)
     failure = _handler()("rid-structured-error", {})["result"]
     assert failure["ok"] is False
     assert canaries["error"] not in failure["error"]
@@ -215,20 +189,7 @@ def test_redacted_support_egress_scrubs_structured_values_and_errors(
         assert key not in real_redact(leaky)
 
 
-def test_share_nous_linkless_success_is_a_failure(monkeypatch):
-    """ok:true with neither view_url nor id would strand the user with an
-    unreferencable upload — surface it as a structured failure instead."""
-    import hermes_cli.diagnostics_upload as du
-
-    monkeypatch.setattr(du, "share_to_nous", lambda blob: {})
-
-    result = _handler()("rid-2c", {})
-    payload = result["result"]
-    assert payload["ok"] is False
-    assert payload["error"]
-
-
-def test_share_nous_extra_files_sanitized_and_redacted(captured_upload):
+def test_save_extra_files_sanitized_and_redacted():
     secret = "sk-abc123def456ghi789jkl012mno345pqr678"
     result = _handler()(
         "rid-3",
@@ -242,9 +203,7 @@ def test_share_nous_extra_files_sanitized_and_redacted(captured_upload):
             }
         },
     )
-    assert result["result"]["ok"] is True
-
-    files = _envelope(captured_upload["blob"])["files"]
+    files = _files(result)
     assert "client/desktop.log" in files
     assert secret not in files["client/desktop.log"]
     # Path separators are stripped from labels; traversal shapes can't survive.
@@ -255,15 +214,15 @@ def test_share_nous_extra_files_sanitized_and_redacted(captured_upload):
     assert "client/empty" not in files
 
 
-def test_share_nous_upload_failure_is_structured(monkeypatch):
-    import hermes_cli.diagnostics_upload as du
+def test_save_failure_is_structured(monkeypatch):
+    import hermes_cli.debug_archive as da
 
-    def _boom(blob: bytes) -> dict:
-        raise RuntimeError("NAS unavailable")
+    def _boom(bundle: dict) -> str:
+        raise OSError("disk full")
 
-    monkeypatch.setattr(du, "share_to_nous", _boom)
+    monkeypatch.setattr(da, "save_debug_archive", _boom)
 
     result = _handler()("rid-4", {})
     payload = result["result"]
     assert payload["ok"] is False
-    assert "NAS unavailable" in payload["error"]
+    assert "disk full" in payload["error"]

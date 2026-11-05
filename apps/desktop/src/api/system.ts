@@ -276,7 +276,7 @@ export function getElevenLabsVoices(profile?: null | string): Promise<ElevenLabs
 // Every one carries the ambient profile: Electron pins the whole /api/ops
 // family to the shared primary backend (connection-config's
 // LOCAL_PRIMARY_SCOPED_ROUTES), so an unprofiled call acts on that backend's
-// LAUNCH profile — and debug share uploads a home's logs and config.
+// LAUNCH profile — and debug share archives a home's logs and config.
 // ---------------------------------------------------------------------------
 
 export function runDoctor(): Promise<ActionResponse> {
@@ -307,7 +307,7 @@ export function runDebugShare(): Promise<DebugShareResponse> {
     path: '/api/ops/debug-share',
     method: 'POST',
     body: {},
-    // Synchronous upload of report + logs to the paste service.
+    // Synchronous: saves the report + logs as an archive on the backend's machine.
     timeoutMs: 120_000
   })
 }

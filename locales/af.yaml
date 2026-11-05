@@ -161,13 +161,8 @@ gateway:
     codex_compacted: "🗜️ Codex app-server-draad saamgepers (thread/compact). Die transkripsie-spieël is doelbewus onveranderd — die app-server dra nou die saamgeperste konteks."
     codex_incomplete: "⚠️ Codex app-server-saampersing is nie voltooi nie — die draad is onveranderd. Kyk na die app-server-logs, probeer /compress weer, of /reset vir 'n skoon sessie."
   debug:
-    upload_failed: "✗ Kon nie ontfoutverslag oplaai nie: {error}"
-    header: "**Ontfoutverslag opgelaai:**"
-    auto_delete: "⏱ Plakke sal outomaties oor 6 uur uitgevee word."
-    full_logs_hint: "Vir volledige loglae, gebruik `hermes debug share` vanaf die CLI."
-    share_hint: "Deel hierdie skakels met die Hermes-span vir ondersteuning."
-    report_label: "Verslag"
-    local_refused: "`/debug local` hou die verslag op die masjien waarop Hermes loop, so dit is nie vanuit 'n klets beskikbaar nie. Stuur `/debug` om die opsommingsverslag op te laai."
+    saved: "🗂 Ontfoutverslag gestoor op die masjien waarop Hermes loop:\n`{path}`\nNiks is opgelaai nie. Dit kan gesprekinhoud bevat; gaan dit na voordat jy dit deel."
+    save_failed: "✗ Kon nie ontfoutverslag stoor nie: {error}"
   deny:
     stale: "❌ Opdrag geweier (goedkeuring was verouderd)."
     no_pending: "Geen hangende opdrag om te weier nie."
@@ -1697,7 +1692,7 @@ slash:
   version:
     description: "Wys Hermes Agent-weergawe"
   debug:
-    description: "Laai ontfoutverslag op (stelselinligting + loglae) en kry deelbare skakels"
+    description: "Stoor ontfoutverslag (stelselinligting + loglae) op die masjien waarop Hermes loop"
   quit:
     description: "Verlaat die CLI (gebruik --delete om ook sessiegeskiedenis te verwyder)"
 cli:
@@ -3892,7 +3887,7 @@ tips:
   t343: "/voice tts skakel slegs-TTS-modus aan of af — die agent antwoord hardop, maar jy tik steeds jou prompte."
   t344: "/reload-skills skandeer ~/.hermes/skills/ weer sodat inprop-vaardighede verskyn sonder om die sessie te herbegin."
   t345: "/indicator kaomoji|emoji|unicode|ascii kies die styl van die TUI-besig-aanwyser wat tydens agent-lopies gewys word."
-  t346: "/debug laai 'n ondersteuningsbundel (stelselinligting + logs) op en gee deelbare skakels terug — werk ook in die klets."
+  t346: "/debug stoor 'n ondersteuningsverslag (stelselinligting + logs) op die masjien waarop Hermes loop — werk ook in die klets."
   t347: "hermes -z \"<prompt>\" is die suiwerste eenmalige lopie: finale antwoord op stdout, niks anders nie — ideaal om in skripte te pyp."
   t348: "hermes chat --pass-session-id spuit die sessie-ID in die stelselprompt in sodat die agent daarna kan verwys."
   t349: "hermes chat --image path/to/pic.png heg 'n plaaslike beeld aan 'n enkele -q-navraag sonder 'n aparte oplaaistap."

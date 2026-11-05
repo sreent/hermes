@@ -4,7 +4,6 @@ import {
   Activity,
   Brain,
   Check,
-  Clock,
   Copy,
   Cpu,
   Database,
@@ -12,7 +11,6 @@ import {
   Globe,
   HardDrive,
   KeyRound,
-  Link2,
   Play,
   Plus,
   Power,
@@ -541,10 +539,10 @@ export default function SystemPage() {
     }
   };
 
-  // ── Debug share ────────────────────────────────────────────────────
-  // Unlike the fire-and-forget ops above, `debug share` produces shareable
-  // paste URLs that are the whole point — so we surface them as real,
-  // copyable links rather than a log tail.
+  // ── Debug report ───────────────────────────────────────────────────
+  // Unlike the fire-and-forget ops above, `debug share` returns where it saved
+  // the archive on the machine running Hermes (nothing is uploaded, FORK.md),
+  // so we surface that path, copyable, rather than a log tail.
   const [shareRedact, setShareRedact] = useState(true);
   const [sharing, setSharing] = useState(false);
   const [shareResult, setShareResult] = useState<DebugShareResponse | null>(
@@ -573,15 +571,12 @@ export default function SystemPage() {
     try {
       const res = await api.runDebugShare({ redact: shareRedact });
       setShareResult(res);
-      const n = Object.keys(res.urls).length;
       showToast(
-        `Uploaded ${n} paste${n === 1 ? "" : "s"}${
-          res.redacted ? " (redacted)" : ""
-        }`,
+        `Saved debug report${res.redacted ? " (redacted)" : ""}`,
         "success",
       );
     } catch (e) {
-      showToast(`Debug share failed: ${errorMessage(e)}`, "error");
+      showToast(`Saving the debug report failed: ${errorMessage(e)}`, "error");
     } finally {
       setSharing(false);
     }
@@ -1400,20 +1395,19 @@ export default function SystemPage() {
           </CardContent>
         </Card>
 
-        {/* Debug share — uploads a redacted report + logs, returns shareable
-            links. Separated from the buttons above because its output is
-            persistent, copyable URLs, not a fire-and-forget log tail. */}
+        {/* Debug report — saves a redacted report + logs as an archive on the
+            machine running Hermes and shows its path. Nothing is uploaded. */}
         <Card>
           <CardContent className="flex flex-col gap-3 py-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-start gap-2">
                 <Share2 className="h-4 w-4 mt-0.5 text-muted-foreground" />
                 <div className="flex flex-col">
-                  <span className="text-sm font-medium">Share debug report</span>
+                  <span className="text-sm font-medium">Save debug report</span>
                   <span className="text-xs text-muted-foreground max-w-prose">
-                    Uploads system info + logs to a public paste service and
-                    returns links to send the Hermes team. Pastes auto-delete
-                    after 6 hours.
+                    Saves system info + logs as a zip archive on the machine
+                    running Hermes. Nothing is uploaded: review it, then attach
+                    it to an issue if you are reporting a problem.
                   </span>
                 </div>
               </div>
@@ -1429,7 +1423,7 @@ export default function SystemPage() {
                 }
                 onClick={() => void runDebugShare()}
               >
-                {sharing ? "Uploading…" : "Generate share link"}
+                {sharing ? "Saving…" : "Save debug report"}
               </Button>
             </div>
 
@@ -1445,84 +1439,37 @@ export default function SystemPage() {
                 className="cursor-pointer select-none text-xs font-normal normal-case tracking-normal text-muted-foreground"
                 htmlFor="share-redact"
               >
-                Redact credential-shaped tokens before upload (recommended)
+                Redact credential-shaped tokens in the report (recommended)
               </Label>
             </div>
 
             {shareResult && (
               <div className="flex flex-col gap-2 border-t border-border pt-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Badge tone="success">uploaded</Badge>
-                    {shareResult.redacted ? (
-                      <Badge tone="outline">redacted</Badge>
-                    ) : (
-                      <Badge tone="warning">not redacted</Badge>
-                    )}
-                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Clock className="h-3 w-3" />
-                      auto-deletes in{" "}
-                      {Math.round(shareResult.auto_delete_seconds / 3600)}h
-                    </span>
-                  </div>
-                  {Object.keys(shareResult.urls).length > 1 && (
-                    <Button
-                      size="sm"
-                      ghost
-                      prefix={
-                        copiedLabel === "__all__" ? (
-                          <Check className="h-3.5 w-3.5" />
-                        ) : (
-                          <Copy className="h-3.5 w-3.5" />
-                        )
-                      }
-                      onClick={() =>
-                        void copyToClipboard(
-                          Object.entries(shareResult.urls)
-                            .map(([label, url]) => `${label}: ${url}`)
-                            .join("\n"),
-                          "__all__",
-                        )
-                      }
-                    >
-                      Copy all
-                    </Button>
+                <div className="flex items-center gap-2">
+                  <Badge tone="success">saved</Badge>
+                  {shareResult.redacted ? (
+                    <Badge tone="outline">redacted</Badge>
+                  ) : (
+                    <Badge tone="warning">not redacted</Badge>
                   )}
                 </div>
 
-                {Object.entries(shareResult.urls).map(([label, url]) => (
-                  <div
-                    key={label}
-                    className="flex items-center gap-2 bg-background/50 border border-border px-3 py-2"
+                <div className="flex items-center gap-2 bg-background/50 border border-border px-3 py-2">
+                  <span
+                    className="font-mono text-xs truncate flex-1"
+                    title={shareResult.path}
                   >
-                    <Link2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                    <span className="font-mono text-xs shrink-0 w-24 truncate text-muted-foreground">
-                      {label}
-                    </span>
-                    <a
-                      href={url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="font-mono text-xs truncate flex-1 text-primary hover:underline"
-                    >
-                      {url}
-                    </a>
-                    <Button
-                      ghost
-                      size="icon"
-                      aria-label={`Copy ${label} link`}
-                      onClick={() => void copyToClipboard(url, label)}
-                    >
-                      {copiedLabel === label ? <Check /> : <Copy />}
-                    </Button>
-                  </div>
-                ))}
-
-                {shareResult.failures.length > 0 && (
-                  <span className="text-xs text-destructive">
-                    Some logs failed to upload: {shareResult.failures.join("; ")}
+                    {shareResult.path}
                   </span>
-                )}
+                  <Button
+                    ghost
+                    size="icon"
+                    aria-label="Copy archive path"
+                    onClick={() => void copyToClipboard(shareResult.path, "path")}
+                  >
+                    {copiedLabel === "path" ? <Check /> : <Copy />}
+                  </Button>
+                </div>
               </div>
             )}
           </CardContent>

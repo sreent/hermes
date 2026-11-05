@@ -763,20 +763,20 @@
       }
     },
     {
-      "name": "diagnostics.share_nous",
-      "summary": "Upload a force-redacted debug bundle to Nous-internal diagnostics storage.",
+      "name": "diagnostics.save",
+      "summary": "Save a force-redacted debug bundle as an archive on the machine running Hermes.",
       "params": [
         {
           "name": "params",
           "schema": {
-            "$ref": "#/components/schemas/DiagnosticsShareNousParams"
+            "$ref": "#/components/schemas/DiagnosticsSaveParams"
           }
         }
       ],
       "result": {
         "name": "result",
         "schema": {
-          "$ref": "#/components/schemas/DiagnosticsShareNousResult"
+          "$ref": "#/components/schemas/DiagnosticsSaveResult"
         }
       }
     },
@@ -16638,7 +16638,7 @@
         "title": "DelegationStatusResult",
         "type": "object"
       },
-      "DiagnosticsShareNousParams": {
+      "DiagnosticsSaveParams": {
         "additionalProperties": false,
         "properties": {
           "error_context": {
@@ -16681,10 +16681,10 @@
             "title": "Log Lines"
           }
         },
-        "title": "DiagnosticsShareNousParams",
+        "title": "DiagnosticsSaveParams",
         "type": "object"
       },
-      "DiagnosticsShareNousResult": {
+      "DiagnosticsSaveResult": {
         "additionalProperties": false,
         "description": "Structured envelope: ``ok=False`` + ``error`` renders inline instead of failing the RPC.",
         "properties": {
@@ -16692,7 +16692,7 @@
             "title": "Ok",
             "type": "boolean"
           },
-          "view_url": {
+          "path": {
             "anyOf": [
               {
                 "type": "string"
@@ -16702,31 +16702,7 @@
               }
             ],
             "default": null,
-            "title": "View Url"
-          },
-          "upload_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null,
-            "title": "Upload Id"
-          },
-          "expires_at": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "default": null,
-            "title": "Expires At"
+            "title": "Path"
           },
           "error": {
             "anyOf": [
@@ -16744,7 +16720,7 @@
         "required": [
           "ok"
         ],
-        "title": "DiagnosticsShareNousResult",
+        "title": "DiagnosticsSaveResult",
         "type": "object"
       },
       "DiscoveredRepo": {

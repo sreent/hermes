@@ -1517,12 +1517,9 @@ export interface ActionResponse {
 
 export interface DebugShareResponse {
   ok: boolean;
-  // label -> paste URL, e.g. { Report: "https://paste.rs/abc", "agent.log": "..." }
-  urls: Record<string, string>;
-  // "label: error" strings for optional full-log uploads that failed.
-  failures: string[];
+  // Where the archive was saved on the machine running Hermes (nothing is uploaded).
+  path: string;
   redacted: boolean;
-  auto_delete_seconds: number;
 }
 
 export interface SessionStoreStats {

@@ -530,21 +530,18 @@ export interface Translations extends NoticeTranslations {
   sendDiagnostics: {
     title: string
     privacyNotice: string
-    upload: string
-    uploading: string
+    save: string
+    saving: string
     cancel: string
     close: string
-    copyLink: string
-    uploadIdFallback: (id: string) => string
+    copyPath: string
     doneTitle: string
     doneDescription: string
     failedTitle: string
     failedHint: string
     handoffLead: string
     links: {
-      discord: string
       github: string
-      portal: string
     }
   }
 
@@ -2242,8 +2239,8 @@ export interface Translations extends NoticeTranslations {
       debugShareRunning: string
       debugShareLinks: string
       debugShareFailed: string
-      copyLink: string
-      linkCopied: string
+      copyPath: string
+      pathCopied: string
       curator: string
       curatorDesc: string
       curatorPaused: string

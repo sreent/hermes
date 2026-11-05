@@ -49,13 +49,8 @@ describe('send-diagnostics store', () => {
     }
   })
 
-  it('uploads on confirm, attaching error context and the local desktop log', async () => {
-    const request = vi.fn().mockResolvedValue({
-      ok: true,
-      view_url: 'https://nas.example/view/x1',
-      upload_id: 'x1',
-      expires_at: '2026-09-05T00:00:00Z'
-    })
+  it('saves on confirm, attaching error context and the local desktop log', async () => {
+    const request = vi.fn().mockResolvedValue({ ok: true, path: '/data/logs/debug-reports/hermes-debug-x1.zip' })
 
     const restoreGateway = stubGateway(request)
     const restoreDesktop = stubDesktopLogs(['boot ok', 'ws connected'])
@@ -67,14 +62,14 @@ describe('send-diagnostics store', () => {
       expect(request).toHaveBeenCalledTimes(1)
       const [method, params] = request.mock.calls[0]
 
-      expect(method).toBe('diagnostics.share_nous')
+      expect(method).toBe('diagnostics.save')
       expect(params.error_context).toContain('stream_drop')
       expect(params.extra_files['desktop.log']).toContain('ws connected')
 
       const state = $sendDiagnostics.get()
 
       expect(state?.phase).toBe('done')
-      expect(state?.result?.viewUrl).toBe('https://nas.example/view/x1')
+      expect(state?.result?.path).toBe('/data/logs/debug-reports/hermes-debug-x1.zip')
     } finally {
       restoreDesktop()
       restoreGateway()
@@ -82,7 +77,7 @@ describe('send-diagnostics store', () => {
   })
 
   it('omits extra_files when the desktop IPC is unavailable (browser dashboard)', async () => {
-    const request = vi.fn().mockResolvedValue({ ok: true, view_url: 'https://nas.example/view/x2' })
+    const request = vi.fn().mockResolvedValue({ ok: true, path: '/data/logs/debug-reports/hermes-debug-x2.zip' })
     const restoreGateway = stubGateway(request)
     const restoreDesktop = stubDesktopLogs(null)
 
@@ -101,8 +96,8 @@ describe('send-diagnostics store', () => {
     }
   })
 
-  it('surfaces upload failures inline and keeps the dialog open', async () => {
-    const request = vi.fn().mockResolvedValue({ ok: false, error: 'NAS unavailable' })
+  it('surfaces save failures inline and keeps the dialog open', async () => {
+    const request = vi.fn().mockResolvedValue({ ok: false, error: 'disk full' })
     const restoreGateway = stubGateway(request)
     const restoreDesktop = stubDesktopLogs(null)
 
@@ -113,15 +108,31 @@ describe('send-diagnostics store', () => {
       const state = $sendDiagnostics.get()
 
       expect(state?.phase).toBe('error')
-      expect(state?.error).toContain('NAS unavailable')
+      expect(state?.error).toContain('disk full')
     } finally {
       restoreDesktop()
       restoreGateway()
     }
   })
 
-  it('confirm is a no-op outside the consent phase (no double upload)', async () => {
+  it('treats a success without a saved path as a failure', async () => {
     const request = vi.fn().mockResolvedValue({ ok: true })
+    const restoreGateway = stubGateway(request)
+    const restoreDesktop = stubDesktopLogs(null)
+
+    try {
+      requestSendDiagnostics()
+      await confirmSendDiagnostics()
+
+      expect($sendDiagnostics.get()?.phase).toBe('error')
+    } finally {
+      restoreDesktop()
+      restoreGateway()
+    }
+  })
+
+  it('confirm is a no-op outside the consent phase (no double save)', async () => {
+    const request = vi.fn().mockResolvedValue({ ok: true, path: '/p.zip' })
     const restoreGateway = stubGateway(request)
     const restoreDesktop = stubDesktopLogs(null)
 
@@ -137,7 +148,7 @@ describe('send-diagnostics store', () => {
     }
   })
 
-  it('dismissal mid-upload is immediate and a stale completion cannot resurrect the dialog', async () => {
+  it('dismissal mid-save is immediate and a stale completion cannot resurrect the dialog', async () => {
     let resolveRequest: (value: unknown) => void = () => {}
 
     const request = vi.fn().mockImplementation(() => new Promise(resolve => (resolveRequest = resolve)))
@@ -154,8 +165,8 @@ describe('send-diagnostics store', () => {
       dismissSendDiagnostics()
       expect($sendDiagnostics.get()).toBeNull()
 
-      // The upload completes AFTER dismissal — it must not write back.
-      resolveRequest({ ok: true, view_url: 'https://nas.example/view/stale' })
+      // The save completes AFTER dismissal — it must not write back.
+      resolveRequest({ ok: true, path: '/stale.zip' })
       await pending
 
       expect($sendDiagnostics.get()).toBeNull()

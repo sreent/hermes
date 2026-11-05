@@ -1,25 +1,24 @@
-// "Send Diagnostics" — the error card's consent-gated debug-bundle upload.
+// "Save Diagnostics" — the error card's consent-gated debug-bundle archive.
 //
 // Flow: an error card (or any surface) calls requestSendDiagnostics() with
 // optional error context → the modal host renders the privacy notice → the
-// user explicitly clicks Upload → diagnostics.share_nous runs backend-side
-// (collect + force-redact + Nous-S3 upload) → the modal shows the private
-// view link plus the support handoff (GitHub Issues · Nous Portal Support ·
-// Discord).
+// user explicitly clicks Save → diagnostics.save runs backend-side (collect +
+// force-redact + write a zip under the profile's logs) → the modal shows the
+// archive's path plus where to report the problem. Nothing is uploaded
+// (FORK.md).
 //
-// Consent is per-upload and explicit — no "always allow", mirroring the CLI's
-// `hermes debug share --nous` confirmation contract. On a remote connection
-// the backend bundles ITS OWN logs (the runtime that owns the failure); the
-// local desktop.log is attached as a client-side extra so support sees both
-// halves in one bundle.
+// Consent is per-save and explicit, mirroring `hermes debug share`. On a
+// remote connection the backend bundles ITS OWN logs (the runtime that owns
+// the failure) and saves the archive on that machine; the local desktop.log
+// is attached as a client-side extra so the archive holds both halves.
+
 import { atom } from 'nanostores'
 
 import { $gateway } from '@/store/gateway'
 
 export interface SendDiagnosticsResult {
-  expiresAt?: string
-  uploadId?: string
-  viewUrl?: string
+  /** Where the backend saved the archive (on the machine running Hermes). */
+  path?: string
 }
 
 export interface SendDiagnosticsState {
@@ -31,9 +30,9 @@ export interface SendDiagnosticsState {
    *  the update output it showed. Redacted and size-capped server-side. */
   extraFiles?: Record<string, string>
   /** The requesting surface renders the flow itself (the update error box
-   *  shows the link where the failure is), so the global modal stays closed. */
+   *  shows the result where the failure is), so the global modal stays closed. */
   inline?: boolean
-  phase: 'consent' | 'done' | 'error' | 'uploading'
+  phase: 'consent' | 'done' | 'error' | 'saving'
   result?: SendDiagnosticsResult
 }
 
@@ -45,14 +44,14 @@ export interface SendDiagnosticsOptions {
 export const $sendDiagnostics = atom<SendDiagnosticsState | null>(null)
 
 // Generation token: bumped on every open AND every dismiss. An in-flight
-// upload captures the generation it started under and only writes its
-// completion back when the token still matches — so dismissing mid-upload is
+// save captures the generation it started under and only writes its
+// completion back when the token still matches — so dismissing mid-save is
 // immediate and a stale completion can't resurrect or overwrite the dialog.
 // Request cancellation stays best-effort (the WS call runs to completion
 // server-side; we just ignore the result).
 let generation = 0
 
-/** Open the consent modal. No network I/O happens until the user confirms. */
+/** Open the consent modal. Nothing is collected until the user confirms. */
 export function requestSendDiagnostics(errorContext?: string, options: SendDiagnosticsOptions = {}): void {
   generation += 1
   $sendDiagnostics.set({ errorContext, phase: 'consent', ...options })
@@ -63,12 +62,10 @@ export function dismissSendDiagnostics(): void {
   $sendDiagnostics.set(null)
 }
 
-interface ShareNousResponse {
+interface SaveDiagnosticsResponse {
   error?: string
-  expires_at?: string
   ok: boolean
-  upload_id?: string
-  view_url?: string
+  path?: string
 }
 
 /** Read the LOCAL desktop log via Electron so a remote backend's bundle still
@@ -85,11 +82,11 @@ async function collectLocalExtras(): Promise<Record<string, string>> {
   }
 }
 
-// Bundle collection + upload legitimately takes a while (log reads + gzip +
-// S3 leg); the default WS timeout is too tight for slow disks/links.
-const SHARE_TIMEOUT_MS = 120_000
+// Bundle collection + archive write legitimately takes a while (log reads +
+// zip); the default WS timeout is too tight for slow disks.
+const SAVE_TIMEOUT_MS = 120_000
 
-/** User confirmed — run the upload. Transitions consent → uploading → done/error. */
+/** User confirmed — save the archive. Transitions consent → saving → done/error. */
 export async function confirmSendDiagnostics(): Promise<void> {
   const current = $sendDiagnostics.get()
 
@@ -98,11 +95,10 @@ export async function confirmSendDiagnostics(): Promise<void> {
   }
 
   const startedGeneration = generation
-
-  // Only write back while the dialog the upload belongs to is still open.
+  // Only write back while the dialog the save belongs to is still open.
   const stillCurrent = () => generation === startedGeneration
 
-  $sendDiagnostics.set({ ...current, phase: 'uploading' })
+  $sendDiagnostics.set({ ...current, phase: 'saving' })
 
   try {
     const gateway = $gateway.get()
@@ -117,32 +113,24 @@ export async function confirmSendDiagnostics(): Promise<void> {
       return
     }
 
-    const response = await gateway.request<ShareNousResponse>(
-      'diagnostics.share_nous',
+    const response = await gateway.request<SaveDiagnosticsResponse>(
+      'diagnostics.save',
       {
         ...(current.errorContext ? { error_context: current.errorContext } : {}),
         ...(Object.keys(extraFiles).length ? { extra_files: extraFiles } : {})
       },
-      SHARE_TIMEOUT_MS
+      SAVE_TIMEOUT_MS
     )
 
     if (!stillCurrent()) {
       return
     }
 
-    if (!response.ok) {
-      throw new Error(response.error || 'upload failed')
+    if (!response.ok || !response.path) {
+      throw new Error(response.error || 'save failed')
     }
 
-    $sendDiagnostics.set({
-      ...current,
-      phase: 'done',
-      result: {
-        expiresAt: response.expires_at,
-        uploadId: response.upload_id,
-        viewUrl: response.view_url
-      }
-    })
+    $sendDiagnostics.set({ ...current, phase: 'done', result: { path: response.path } })
   } catch (error) {
     if (!stillCurrent()) {
       return

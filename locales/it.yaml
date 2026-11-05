@@ -161,13 +161,8 @@ gateway:
     codex_compacted: "🗜️ Thread dell'app-server Codex compattato (thread/compact). La copia della trascrizione resta invariata per design — ora è l'app-server a contenere il contesto compattato."
     codex_incomplete: "⚠️ La compattazione dell'app-server Codex non è stata completata — il thread è invariato. Controlla i log dell'app-server, riprova /compress oppure usa /reset per una sessione pulita."
   debug:
-    upload_failed: "✗ Caricamento del report di debug non riuscito: {error}"
-    header: "**Report di debug caricato:**"
-    auto_delete: "⏱ I paste verranno eliminati automaticamente tra 6 ore."
-    full_logs_hint: "Per il caricamento dei log completi, usa `hermes debug share` dalla CLI."
-    share_hint: "Condividi questi link con il team Hermes per ricevere supporto."
-    report_label: "Report"
-    local_refused: "`/debug local` mantiene il report sulla macchina che esegue Hermes, quindi non è disponibile da una chat. Invia `/debug` per caricare il report riepilogativo."
+    saved: "🗂 Report di debug salvato sulla macchina su cui gira Hermes:\n`{path}`\nNon è stato caricato nulla. Può contenere contenuti delle conversazioni; controllalo prima di condividerlo."
+    save_failed: "✗ Impossibile salvare il report di debug: {error}"
   deny:
     stale: "❌ Comando negato (l'approvazione era obsoleta)."
     no_pending: "Nessun comando in attesa da negare."
@@ -1697,7 +1692,7 @@ slash:
   version:
     description: "Mostra la versione di Hermes Agent"
   debug:
-    description: "Carica un report di debug (info di sistema + log) e ottieni link condivisibili"
+    description: "Salva un report di debug (info di sistema + log) sulla macchina su cui gira Hermes"
   quit:
     description: "Esci dalla CLI (usa --delete per eliminare anche la cronologia della sessione)"
 cli:
@@ -3892,7 +3887,7 @@ tips:
   t343: "/voice tts attiva o disattiva la modalità solo TTS — l'agente risponde a voce ma tu continui a digitare i prompt."
   t344: "/reload-skills riesamina ~/.hermes/skills/ così le skill aggiunte a mano compaiono senza riavviare la sessione."
   t345: "/indicator kaomoji|emoji|unicode|ascii sceglie lo stile dell'indicatore di attività della TUI mostrato durante le esecuzioni dell'agente."
-  t346: "/debug carica un bundle di supporto (info di sistema + log) e restituisce link condivisibili — funziona anche in chat."
+  t346: "/debug salva un report di supporto (info di sistema + log) sulla macchina su cui gira Hermes — funziona anche in chat."
   t347: "hermes -z \"<prompt>\" è il one-shot più puro: risposta finale su stdout e nient'altro — ideale per le pipe negli script."
   t348: "hermes chat --pass-session-id inietta l'ID di sessione nel prompt di sistema così l'agente può farvi riferimento."
   t349: "hermes chat --image path/to/pic.png allega un'immagine locale a una singola query -q senza un passaggio di upload separato."

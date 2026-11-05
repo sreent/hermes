@@ -1,13 +1,14 @@
-// Send Diagnostics — the consent-gated debug-bundle upload dialog.
+// Save Diagnostics — the consent-gated debug-bundle archive dialog.
 //
 // Rendered globally (wiring.tsx, beside ConfirmHost) and driven by the
 // $sendDiagnostics store: any surface (the failed-turn error card today)
 // opens it via requestSendDiagnostics(). Three faces:
-//   consent   — privacy notice (what's collected, who can see it, retention)
-//               with an explicit Upload button; nothing is sent before it.
-//   uploading — spinner while the backend collects, redacts and uploads.
-//   done      — the private view link (copyable) + where to pick up the
-//               discussion: GitHub Issues · Nous Portal Support · Discord.
+//   consent — privacy notice (what's collected, where it is saved) with an
+//             explicit Save button; nothing is collected before it.
+//   saving  — spinner while the backend collects, redacts and writes the zip.
+//   done    — the archive's path (copyable) + where to report the problem.
+// Nothing is uploaded (FORK.md).
+
 import { useStore } from '@nanostores/react'
 
 import { Button } from '@/components/ui/button'
@@ -21,7 +22,7 @@ import {
   DialogTitle
 } from '@/components/ui/dialog'
 import { useI18n } from '@/i18n'
-import { ExternalLink as ExternalLinkAnchor, openExternalLink } from '@/lib/external-link'
+import { openExternalLink } from '@/lib/external-link'
 import { ExternalLink, Loader2Icon, Lock } from '@/lib/icons'
 import {
   $sendDiagnostics,
@@ -30,11 +31,7 @@ import {
   type SendDiagnosticsResult
 } from '@/store/send-diagnostics'
 
-const SUPPORT_LINKS = [
-  { key: 'github', url: 'https://github.com/NousResearch/hermes-agent/issues' },
-  { key: 'portal', url: 'https://portal.nousresearch.com/help' },
-  { key: 'discord', url: 'https://discord.gg/NousResearch' }
-] as const
+const SUPPORT_LINKS = [{ key: 'github', url: 'https://github.com/sreent/hermes/issues' }] as const
 
 export function SendDiagnosticsHost() {
   const { t } = useI18n()
@@ -45,16 +42,16 @@ export function SendDiagnosticsHost() {
     return null
   }
 
-  const busy = state.phase === 'uploading'
+  const busy = state.phase === 'saving'
 
   return (
-    // Dismissal is allowed in EVERY phase, including mid-upload: the store's
-    // generation guard makes a dismissed upload's completion a no-op, so Esc/
+    // Dismissal is allowed in EVERY phase, including mid-save: the store's
+    // generation guard makes a dismissed save's completion a no-op, so Esc/
     // backdrop/Cancel are always an immediate way out (cancellation of the
     // in-flight request itself stays best-effort).
     <Dialog onOpenChange={open => (!open ? dismissSendDiagnostics() : undefined)} open>
       <DialogContent className="max-w-[30rem]">
-        {state.phase === 'consent' || state.phase === 'uploading' ? (
+        {state.phase === 'consent' || state.phase === 'saving' ? (
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
@@ -71,10 +68,10 @@ export function SendDiagnosticsHost() {
                 {busy ? (
                   <span className="flex items-center gap-1.5">
                     <Loader2Icon className="size-3.5 animate-spin" />
-                    {copy.uploading}
+                    {copy.saving}
                   </span>
                 ) : (
-                  copy.upload
+                  copy.save
                 )}
               </Button>
             </DialogFooter>
@@ -101,7 +98,7 @@ export function SendDiagnosticsHost() {
               <DialogTitle>{copy.doneTitle}</DialogTitle>
               <DialogDescription className="text-left">{copy.doneDescription}</DialogDescription>
             </DialogHeader>
-            <DiagnosticsLinkRow result={state.result} />
+            <DiagnosticsPathRow result={state.result} />
             <div className="text-[0.8rem] text-(--ui-text-secondary)">{copy.handoffLead}</div>
             <div className="flex flex-wrap gap-1.5">
               {SUPPORT_LINKS.map(link => (
@@ -123,13 +120,12 @@ export function SendDiagnosticsHost() {
   )
 }
 
-/** The uploaded bundle's private view link (copyable), or the upload id when
- *  the service returned no link. Shared by the modal and the update error box. */
-export function DiagnosticsLinkRow({ result }: { result?: SendDiagnosticsResult }) {
+/** The saved archive's path (copyable). Shared by the modal and the update error box. */
+export function DiagnosticsPathRow({ result }: { result?: SendDiagnosticsResult }) {
   const { t } = useI18n()
   const copy = t.sendDiagnostics
 
-  if (!result?.viewUrl && !result?.uploadId) {
+  if (!result?.path) {
     return null
   }
 
@@ -138,31 +134,10 @@ export function DiagnosticsLinkRow({ result }: { result?: SendDiagnosticsResult 
       className="flex min-w-0 items-center gap-2 rounded-md border border-(--ui-stroke-tertiary) px-3 py-2"
       data-selectable-text="true"
     >
-      {result.viewUrl ? (
-        // A real anchor, not a <code> span: right-click resolves the link
-        // context menu (open / copy URL), left-click opens it, and the row's
-        // data-selectable-text keeps drag-to-select working. `truncate` only
-        // clips the paint — selection and copy still carry the full URL.
-        // `native` because the in-app preview pane would open BEHIND a modal.
-        <ExternalLinkAnchor
-          className="min-w-0 flex-1 truncate font-mono text-[0.78rem] text-(--ui-text-secondary)"
-          href={result.viewUrl}
-          native
-          title={result.viewUrl}
-        >
-          {result.viewUrl}
-        </ExternalLinkAnchor>
-      ) : (
-        <code className="min-w-0 flex-1 truncate text-[0.78rem] text-(--ui-text-secondary)">
-          {copy.uploadIdFallback(result.uploadId ?? '')}
-        </code>
-      )}
-      <CopyButton
-        appearance="inline"
-        className="shrink-0"
-        label={copy.copyLink}
-        text={result.viewUrl ?? result.uploadId ?? ''}
-      />
+      <code className="min-w-0 flex-1 truncate text-[0.78rem] text-(--ui-text-secondary)" title={result.path}>
+        {result.path}
+      </code>
+      <CopyButton appearance="inline" className="shrink-0" label={copy.copyPath} text={result.path} />
     </div>
   )
 }

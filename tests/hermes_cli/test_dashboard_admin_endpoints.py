@@ -877,11 +877,11 @@ class TestUpdateCheckEndpoint:
 
 
 class TestDebugShareEndpoint:
-    """POST /api/ops/debug-share returns the paste URLs synchronously so the
-    dashboard can render them as copyable links (not a backgrounded log tail)."""
+    """POST /api/ops/debug-share saves the report + logs as an archive on the machine running
+    Hermes and returns its path synchronously; nothing is uploaded (FORK.md)."""
 
     @pytest.fixture(autouse=True)
-    def _setup(self, _isolate_hermes_home):
+    def _setup(self, _isolate_hermes_home, monkeypatch):
         self.client, self.header = _client()
         from hermes_constants import get_hermes_home
 
@@ -890,51 +890,35 @@ class TestDebugShareEndpoint:
         (logs / "agent.log").write_text("agent line\n")
         (logs / "errors.log").write_text("err line\n")
         (logs / "gateway.log").write_text("gw line\n")
-
-
-    def test_redact_false_is_honored(self, monkeypatch):
-        import hermes_cli.debug as dbg
-
-        monkeypatch.setattr(
-            dbg, "upload_to_pastebin", lambda c, expiry_days=7: "https://paste.rs/x"
-        )
-        monkeypatch.setattr(dbg, "_schedule_auto_delete", lambda *a, **k: None)
-        monkeypatch.setattr(dbg, "_best_effort_sweep_expired_pastes", lambda: None)
         monkeypatch.setattr("hermes_cli.dump.run_dump", lambda a: None)
 
+    def test_redact_false_is_honored(self):
         r = self.client.post("/api/ops/debug-share", json={"redact": False})
         assert r.status_code == 200
         assert r.json()["redacted"] is False
 
-    def test_default_body_redacts(self, monkeypatch):
-        import hermes_cli.debug as dbg
+    def test_default_body_redacts_and_returns_the_saved_archive(self):
+        import zipfile
 
-        monkeypatch.setattr(
-            dbg, "upload_to_pastebin", lambda c, expiry_days=7: "https://paste.rs/x"
-        )
-        monkeypatch.setattr(dbg, "_schedule_auto_delete", lambda *a, **k: None)
-        monkeypatch.setattr(dbg, "_best_effort_sweep_expired_pastes", lambda: None)
-        monkeypatch.setattr("hermes_cli.dump.run_dump", lambda a: None)
+        from hermes_constants import get_hermes_home
 
         # No JSON body at all — should default redact=True.
         r = self.client.post("/api/ops/debug-share")
         assert r.status_code == 200
-        assert r.json()["redacted"] is True
+        body = r.json()
+        assert body["redacted"] is True
+        archive, = (get_hermes_home() / "logs" / "debug-reports").glob("hermes-debug-*.zip")
+        assert body["path"] == str(archive)
+        with zipfile.ZipFile(archive) as saved:
+            assert {"report.txt", "agent.log", "gateway.log"} <= set(saved.namelist())
 
-    def test_upload_failure_returns_502(self, monkeypatch):
-        import hermes_cli.debug as dbg
-
-        monkeypatch.setattr(
-            dbg,
-            "upload_to_pastebin",
-            lambda c, expiry_days=7: (_ for _ in ()).throw(RuntimeError("down")),
-        )
-        monkeypatch.setattr(dbg, "_schedule_auto_delete", lambda *a, **k: None)
-        monkeypatch.setattr(dbg, "_best_effort_sweep_expired_pastes", lambda: None)
-        monkeypatch.setattr("hermes_cli.dump.run_dump", lambda a: None)
+    def test_save_failure_returns_500(self, monkeypatch):
+        monkeypatch.setattr("hermes_cli.debug_archive.save_debug_archive",
+                            lambda bundle: (_ for _ in ()).throw(PermissionError("read-only")))
 
         r = self.client.post("/api/ops/debug-share", json={"redact": True})
-        assert r.status_code == 502
+        assert r.status_code == 500
+        assert "read-only" in r.json()["detail"]
 
 
 class TestToolsConfigEndpoints:

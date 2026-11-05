@@ -499,26 +499,23 @@ export const en: Translations = {
   ...enBilling,
 
   sendDiagnostics: {
-    title: 'Send diagnostics to Nous',
+    title: 'Save diagnostics',
     privacyNotice:
-      'This uploads a debug bundle to Nous-internal storage (not a public paste). It includes system info (OS, versions, provider, which API keys are configured — never the keys themselves) and full agent, gateway, and desktop logs (up to 512 KB each), which likely contain conversation content, tool outputs, and file paths. Secrets are redacted before upload. The bundle is viewable only by Nous staff and allowlisted Discord moderators, and auto-deletes after 14 days.',
-    upload: 'Upload',
-    uploading: 'Uploading…',
+      'This saves a debug bundle as a zip archive on the machine running Hermes — nothing is uploaded. It includes system info (OS, versions, provider, which API keys are configured — never the keys themselves) and full agent, gateway, and desktop logs (up to 512 KB each), which likely contain conversation content, tool outputs, and file paths. Secrets are redacted. Review the archive before you share it with anyone.',
+    save: 'Save',
+    saving: 'Saving…',
     cancel: 'Cancel',
     close: 'Close',
-    copyLink: 'Copy link',
-    uploadIdFallback: id => `No view link returned — quote upload ID ${id} to support`,
-    doneTitle: 'Diagnostics sent',
+    copyPath: 'Copy path',
+    doneTitle: 'Diagnostics saved',
     doneDescription:
-      'Your bundle was uploaded privately. Share the link below in your support thread so the team can see your logs.',
-    failedTitle: 'Upload failed',
+      'The archive is on the machine running Hermes. Review it, then attach it to an issue if you are reporting a problem.',
+    failedTitle: 'Could not save diagnostics',
     failedHint:
-      'You can also run `hermes debug share --nous` from a terminal, or `hermes debug share --local` to print the report without uploading.',
-    handoffLead: 'Pick up the discussion in:',
+      'You can also run `hermes debug share` from a terminal to save the archive, or `hermes debug share --local` to print the report.',
+    handoffLead: 'Report a problem:',
     links: {
-      github: 'GitHub Issues',
-      portal: 'Nous Portal Support',
-      discord: 'Discord'
+      github: 'GitHub Issues'
     }
   },
 
@@ -2469,13 +2466,13 @@ export const en: Translations = {
       securityAuditDesc: 'Scan config and skills for risky settings',
       backup: 'Create backup',
       backupDesc: 'Zip config, memories, skills, and sessions',
-      debugShare: 'Debug share',
-      debugShareDesc: 'Upload a redacted report + logs, get shareable links (auto-deletes in 6h)',
-      debugShareRunning: 'Uploading debug report...',
-      debugShareLinks: 'Share links',
-      debugShareFailed: 'Debug share failed',
-      copyLink: 'Copy link',
-      linkCopied: 'Link copied',
+      debugShare: 'Save debug report',
+      debugShareDesc: 'Save a redacted report + logs as an archive on the machine running Hermes',
+      debugShareRunning: 'Saving debug report...',
+      debugShareLinks: 'Saved to',
+      debugShareFailed: 'Could not save the debug report',
+      copyPath: 'Copy path',
+      pathCopied: 'Path copied',
       curator: 'Skill curator',
       curatorDesc: 'Background review that archives stale agent-created skills',
       curatorPaused: 'Paused',
@@ -4884,7 +4881,7 @@ export const en: Translations = {
     boundaryTitle: 'Something broke in the interface',
     boundaryDesc: 'The view hit an unexpected error. Your chats and settings are safe.',
     boundaryDetails: 'Details',
-    sendDiagnostics: 'Send diagnostics',
+    sendDiagnostics: 'Save diagnostics',
     reloadWindow: 'Reload window',
     openLogs: 'Open logs'
   },

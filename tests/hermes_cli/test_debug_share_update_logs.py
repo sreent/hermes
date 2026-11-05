@@ -145,7 +145,7 @@ class TestCollectDebugReport:
 
 
 class TestCollectShareBundle:
-    """The upload bundle (paste.rs + --nous) carries the full update logs."""
+    """The report bundle (the saved archive and --local) carries the full update logs."""
 
     def test_bundle_includes_update_logs_when_present(self, home_with_update_logs):
         from hermes_cli.debug import collect_share_bundle
@@ -167,26 +167,26 @@ class TestCollectShareBundle:
 
         assert "update.log" not in bundle
         assert "desktop-update-handoff.log" not in bundle
-        # The classic five keep uploading.
+        # The classic five stay in the bundle.
         assert "agent.log" in bundle
 
 
-class TestFullLogUploadLabels:
-    """build_debug_share uploads every bundle log — including the new pair."""
+class TestFullLogLabels:
+    """Every bundle log reaches the saved archive and --local — including the new pair."""
 
-    def test_upload_label_list_includes_update_logs(self):
-        """The paste-upload loop must not silently skip the new labels.
+    def test_saved_archive_includes_update_logs(self, home_with_update_logs):
+        import zipfile
+        from types import SimpleNamespace
+        from unittest.mock import patch
 
-        Asserts the label tuple (source-derived behavior contract: the
-        bundle keys are only reachable for upload if listed here).
-        """
-        import inspect
+        from hermes_cli.debug import run_debug_share
 
-        from hermes_cli import debug
+        with patch("hermes_cli.dump.run_dump"):
+            run_debug_share(SimpleNamespace(lines=50, local=False, no_redact=False))
 
-        source = inspect.getsource(debug.build_debug_share)
-        assert '"update.log"' in source
-        assert '"desktop-update-handoff.log"' in source
+        archive = next((home_with_update_logs / "logs" / "debug-reports").glob("hermes-debug-*.zip"))
+        with zipfile.ZipFile(archive) as saved:
+            assert {"update.log", "desktop-update-handoff.log"} <= set(saved.namelist())
 
     def test_local_print_label_list_includes_update_logs(self):
         """run_debug_share --local prints bundle logs by the same contract."""

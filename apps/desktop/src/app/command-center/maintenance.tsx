@@ -230,28 +230,26 @@ export function MaintenancePanel() {
           onRun={() => void shareDebug()}
         />
 
-        {share && Object.keys(share.urls).length > 0 && (
+        {share?.path && (
           <div className="mt-2 rounded-lg border border-(--ui-stroke-tertiary) bg-(--ui-bg-quinary) p-3">
             <div className="mb-1.5 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
               {mm.debugShareLinks}
             </div>
-            {Object.entries(share.urls).map(([key, url]) => (
-              <div className="flex items-center justify-between gap-2 py-1" key={key}>
-                <span className="min-w-0 truncate font-mono text-[0.7rem]">
-                  {key}: {url}
-                </span>
-                <Button
-                  onClick={() => {
-                    void window.hermesDesktop.writeClipboard(url)
-                    notify({ durationMs: 1500, kind: 'success', message: mm.linkCopied })
-                  }}
-                  size="xs"
-                  variant="text"
-                >
-                  {mm.copyLink}
-                </Button>
-              </div>
-            ))}
+            <div className="flex items-center justify-between gap-2 py-1">
+              <span className="min-w-0 truncate font-mono text-[0.7rem]" title={share.path}>
+                {share.path}
+              </span>
+              <Button
+                onClick={() => {
+                  void window.hermesDesktop.writeClipboard(share.path)
+                  notify({ durationMs: 1500, kind: 'success', message: mm.pathCopied })
+                }}
+                size="xs"
+                variant="text"
+              >
+                {mm.copyPath}
+              </Button>
+            </div>
           </div>
         )}
 

@@ -237,7 +237,7 @@ class LearningNodeEdit(BaseModel):
     profile: Optional[str] = None
 
 class DebugShareRequest(BaseModel):
-    # Redaction scrubs credential-shaped tokens before logs leave the machine; opt-out only.
+    # Redaction scrubs credential-shaped tokens from the saved report; opt-out only.
     redact: bool = True
     lines: int = 200  # recent log lines in the summary tail (full logs are separate)
 

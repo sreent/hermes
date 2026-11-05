@@ -161,13 +161,8 @@ gateway:
     codex_compacted: "🗜️ Codex app-server thread'i sıkıştırıldı (thread/compact). Transkript aynası tasarım gereği değişmedi — sıkıştırılmış bağlamı artık app-server taşıyor."
     codex_incomplete: "⚠️ Codex app-server sıkıştırması tamamlanmadı — thread değişmedi. App-server günlüklerini kontrol edin, /compress komutunu yeniden deneyin veya temiz bir oturum için /reset kullanın."
   debug:
-    upload_failed: "✗ Hata ayıklama raporu yüklenemedi: {error}"
-    header: "**Hata ayıklama raporu yüklendi:**"
-    auto_delete: "⏱ Paste'ler 6 saat içinde otomatik olarak silinecek."
-    full_logs_hint: "Tam günlük yüklemeleri için CLI'dan `hermes debug share` kullanın."
-    share_hint: "Destek için bu bağlantıları Hermes ekibiyle paylaşın."
-    report_label: "Rapor"
-    local_refused: "`/debug local` raporu Hermes'in çalıştığı makinede tutar, bu yüzden sohbetten kullanılamaz. Özet raporu yüklemek için `/debug` gönderin."
+    saved: "🗂 Hata ayıklama raporu, Hermes'in çalıştığı makineye kaydedildi:\n`{path}`\nHiçbir şey yüklenmedi. Sohbet içeriği barındırabilir; paylaşmadan önce gözden geçirin."
+    save_failed: "✗ Hata ayıklama raporu kaydedilemedi: {error}"
   deny:
     stale: "❌ Komut reddedildi (onay geçersizdi)."
     no_pending: "Reddedilecek bekleyen komut yok."
@@ -1697,7 +1692,7 @@ slash:
   version:
     description: "Hermes Agent sürümünü göster"
   debug:
-    description: "Hata ayıklama raporunu (sistem bilgisi + günlükler) yükle ve paylaşılabilir bağlantılar al"
+    description: "Hata ayıklama raporunu (sistem bilgisi + günlükler) Hermes'in çalıştığı makineye kaydet"
   quit:
     description: "CLI'dan çık (oturum geçmişini de silmek için --delete kullanın)"
 cli:
@@ -3892,7 +3887,7 @@ tips:
   t343: "/voice tts, yalnızca TTS modunu açıp kapatır — ajan yanıtlarını sesli okur ama istemlerinizi yine siz yazarsınız."
   t344: "/reload-skills, ~/.hermes/skills/ dizinini yeniden tarar; böylece eklenen skill'ler oturumu yeniden başlatmadan görünür."
   t345: "/indicator kaomoji|emoji|unicode|ascii, ajan çalışırken TUI'de gösterilen meşgul göstergesi stilini seçer."
-  t346: "/debug, bir destek paketi (sistem bilgisi + günlükler) yükler ve paylaşılabilir bağlantılar döndürür — sohbette de çalışır."
+  t346: "/debug, bir destek raporunu (sistem bilgisi + günlükler) Hermes'in çalıştığı makineye kaydeder — sohbette de çalışır."
   t347: "hermes -z \"<prompt>\" en saf tek seferlik kullanımdır: stdout'a yalnızca nihai yanıt, başka hiçbir şey yok — betiklerde borulamak için idealdir."
   t348: "hermes chat --pass-session-id, oturum kimliğini sistem istemine ekler; böylece ajan kendi oturumuna atıfta bulunabilir."
   t349: "hermes chat --image path/to/pic.png, ayrı bir yükleme adımı olmadan tek bir -q sorgusuna yerel bir görüntü ekler."

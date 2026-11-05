@@ -573,27 +573,27 @@ config_overrides:
 
 ```bash
 hermes debug share [options]
+hermes debug delete <url> [<url> ...]
 ```
 
-将调试报告（系统信息 + 近期日志）上传到粘贴服务并获取可分享的 URL。适用于快速支持请求——包含帮助者诊断问题所需的一切信息。
+`hermes debug share` 将调试报告（系统信息 + 近期日志）保存为本机上的 zip 归档并打印其路径。不会上传任何内容：请先检查归档，如需报告问题，再将其附加到 issue 中。
 
 | 选项 | 说明 |
 |--------|-------------|
 | `--lines <N>` | 每个日志文件包含的日志行数（默认：200）。 |
-| `--expire <days>` | 粘贴过期天数（默认：7）。 |
-| `--local` | 在本地打印报告而非上传。 |
+| `--local` | 在终端打印报告，而不保存归档。 |
+| `--no-redact` | 在报告中保留密钥。默认会脱敏。 |
 
-报告包含系统信息（操作系统、Python 版本、Hermes 版本）、近期 agent 和 gateway 日志（每文件 512 KB 限制）以及脱敏的 API 密钥状态。密钥始终脱敏——不会上传任何密钥；这也涵盖系统 dump（包括 `fallback_providers` 条目及其 URL 中的凭据）和 gateway 的 `/debug` 报告。
+归档写入 `HERMES_HOME/logs/debug-reports/`（仅你本人可读）。其中包含摘要报告——系统信息（操作系统、Python 版本、Hermes 版本）、近期日志片段和脱敏的 API 密钥状态——以及完整的 agent、gateway、GUI/仪表板和桌面日志（每文件 512 KB 限制），存在时还包括更新日志和桌面更新交接日志。脱敏涵盖系统 dump（包括 `fallback_providers` 条目及其 URL 中的凭据）和日志。日志仍可能包含对话内容、工具输出和文件路径，分享前请先阅读归档。
 
-依次尝试的粘贴服务：paste.rs、dpaste.com。
+CLI 或聊天中的 `/debug`、仪表板的“保存调试报告”以及桌面应用的“保存诊断信息”都会在运行 Hermes 的机器上保存同样的归档，并告诉你保存位置。`hermes debug delete` 用于删除旧版 Hermes 的 `hermes debug share` 上传到 paste.rs 的内容。
 
 ### 示例
 
 ```bash
-hermes debug share              # 上传调试报告，打印 URL
+hermes debug share              # 保存调试报告归档，打印其路径
 hermes debug share --lines 500  # 包含更多日志行
-hermes debug share --expire 30  # 粘贴保留 30 天
-hermes debug share --local      # 在终端打印报告（不上传）
+hermes debug share --local      # 在终端打印报告
 ```
 
 ## `hermes backup`

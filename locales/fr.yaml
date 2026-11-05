@@ -187,13 +187,8 @@ gateway:
     codex_compacted: "🗜️ Fil app-server Codex compacté (thread/compact). Le miroir de la transcription est volontairement inchangé — c'est désormais l'app-server qui porte le contexte compacté."
     codex_incomplete: "⚠️ La compaction app-server Codex ne s'est pas terminée — le fil est inchangé. Consultez les journaux de l'app-server, relancez /compress, ou /reset pour une session propre."
   debug:
-    upload_failed: "✗ Échec de l'envoi du rapport de débogage : {error}"
-    header: "**Rapport de débogage envoyé :**"
-    auto_delete: "⏱ Les pastes s'effaceront automatiquement dans 6 heures."
-    full_logs_hint: "Pour envoyer les journaux complets, utilisez `hermes debug share` depuis la CLI."
-    share_hint: "Partagez ces liens avec l'équipe Hermes pour obtenir de l'aide."
-    report_label: "Rapport"
-    local_refused: "`/debug local` garde le rapport sur la machine qui exécute Hermes ; il n'est donc pas disponible depuis une discussion. Envoyez `/debug` pour téléverser le rapport de synthèse."
+    saved: "🗂 Rapport de débogage enregistré sur la machine qui exécute Hermes :\n`{path}`\nRien n'a été envoyé. Il peut contenir le contenu de conversations ; relisez-le avant de le partager."
+    save_failed: "✗ Impossible d'enregistrer le rapport de débogage : {error}"
   deny:
     stale: "❌ Commande refusée (l'approbation était périmée)."
     no_pending: "Aucune commande en attente de refus."
@@ -1949,7 +1944,7 @@ slash:
   version:
     description: "Afficher la version de Hermes Agent"
   debug:
-    description: "Envoyer un rapport de débogage (infos système + journaux) et obtenir des liens partageables"
+    description: "Enregistrer un rapport de débogage (infos système + journaux) sur la machine qui exécute Hermes"
   quit:
     description: "Quitter la CLI (--delete supprime aussi l'historique de session)"
 cli:
@@ -4217,7 +4212,7 @@ tips:
   t343: "/voice tts bascule en mode TTS seul — l'agent répond à voix haute mais vous continuez à taper vos prompts."
   t344: "/reload-skills rescanne ~/.hermes/skills/ pour que les skills déposées apparaissent sans redémarrer la session."
   t345: "/indicator kaomoji|emoji|unicode|ascii choisit le style de l'indicateur d'activité de la TUI affiché pendant les exécutions de l'agent."
-  t346: "/debug téléverse un bundle de support (infos système + journaux) et renvoie des liens partageables — fonctionne aussi dans le chat."
+  t346: "/debug enregistre un rapport d'assistance (infos système + journaux) sur la machine qui exécute Hermes — fonctionne aussi dans le chat."
   t347: "hermes -z \"<prompt>\" est le one-shot le plus pur : la réponse finale sur stdout, rien d'autre — idéal pour les pipes dans des scripts."
   t348: "hermes chat --pass-session-id injecte l'ID de session dans le prompt système pour que l'agent puisse y faire référence lui-même."
   t349: "hermes chat --image path/to/pic.png joint une image locale à une requête -q unique, sans étape de téléversement séparée."

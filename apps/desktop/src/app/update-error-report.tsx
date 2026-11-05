@@ -1,12 +1,13 @@
 // The update error box's support affordances: the updater output the user
-// just watched scroll by, and a one-click debug share whose private link lands
-// right here instead of in a terminal (`hermes debug share --nous`). The upload
-// runs backend-side (diagnostics.share_nous collects that runtime's update.log
-// and hand-off log); the output shown here rides along as a client file.
+// just watched scroll by, and a one-click diagnostics archive whose path lands
+// right here instead of in a terminal (`hermes debug share`). The save runs
+// backend-side (diagnostics.save collects that runtime's update.log and
+// hand-off log); the output shown here rides along as a client file. Nothing
+// is uploaded (FORK.md).
 import { useStore } from '@nanostores/react'
 import { type SyntheticEvent, useEffect, useRef } from 'react'
 
-import { DiagnosticsLinkRow } from '@/components/send-diagnostics-dialog'
+import { DiagnosticsPathRow } from '@/components/send-diagnostics-dialog'
 import { Button } from '@/components/ui/button'
 import { CopyButton } from '@/components/ui/copy-button'
 import { useI18n } from '@/i18n'
@@ -88,21 +89,21 @@ export function UpdateErrorReport({ log, message }: { log: readonly string[]; me
         <Button onClick={startReport} variant="text">
           {t.errors.sendDiagnostics}
         </Button>
-      ) : report.phase === 'consent' || report.phase === 'uploading' ? (
+      ) : report.phase === 'consent' || report.phase === 'saving' ? (
         <div className="grid gap-2 rounded-md border border-border/70 px-3 py-2" ref={reportRef}>
           <p className="text-[0.6875rem] leading-4 text-muted-foreground">{copy.privacyNotice}</p>
           <div className="flex justify-end gap-2">
             <Button onClick={dismissSendDiagnostics} size="sm" variant="ghost">
               {copy.cancel}
             </Button>
-            <Button disabled={report.phase === 'uploading'} onClick={() => void confirmSendDiagnostics()} size="sm">
-              {report.phase === 'uploading' ? (
+            <Button disabled={report.phase === 'saving'} onClick={() => void confirmSendDiagnostics()} size="sm">
+              {report.phase === 'saving' ? (
                 <span className="flex items-center gap-1.5">
                   <Loader2Icon className="size-3.5 animate-spin" />
-                  {copy.uploading}
+                  {copy.saving}
                 </span>
               ) : (
-                copy.upload
+                copy.save
               )}
             </Button>
           </div>
@@ -120,7 +121,7 @@ export function UpdateErrorReport({ log, message }: { log: readonly string[]; me
         <div className="grid gap-2" ref={reportRef}>
           <p className="text-center text-xs font-medium">{copy.doneTitle}</p>
           <p className="text-xs text-muted-foreground">{copy.doneDescription}</p>
-          <DiagnosticsLinkRow result={report.result} />
+          <DiagnosticsPathRow result={report.result} />
         </div>
       )}
     </div>

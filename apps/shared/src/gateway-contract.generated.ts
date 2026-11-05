@@ -653,17 +653,15 @@ export interface SetupRuntimeCheckResult {
   free_tier_route?: boolean | null
   profile?: string | null
 }
-export interface DiagnosticsShareNousParams {
+export interface DiagnosticsSaveParams {
   error_context?: string | null
   extra_files?: Record<string, string> | null
   log_lines?: number | null
 }
 /** Structured envelope: ``ok=False`` + ``error`` renders inline instead of failing the RPC. */
-export interface DiagnosticsShareNousResult {
+export interface DiagnosticsSaveResult {
   ok: boolean
-  view_url?: string | null
-  upload_id?: string | null
-  expires_at?: string | null
+  path?: string | null
   error?: string | null
 }
 /** ``available`` = an identity exists AND the tier is on; whether inference runs on it is ``setup.runtime_check.free_tier_route``'s question. */
@@ -6176,8 +6174,8 @@ export interface RpcMethods {
   'delegation.pause': { params: DelegationPauseParams; result: DelegationPauseResult }
   /** Running subagent tree plus the spawn pause flag and limits. */
   'delegation.status': { params: ProfileParams; result: DelegationStatusResult }
-  /** Upload a force-redacted debug bundle to Nous-internal diagnostics storage. */
-  'diagnostics.share_nous': { params: DiagnosticsShareNousParams; result: DiagnosticsShareNousResult }
+  /** Save a force-redacted debug bundle as an archive on the machine running Hermes. */
+  'diagnostics.save': { params: DiagnosticsSaveParams; result: DiagnosticsSaveResult }
   /** Run the distro package install on the gateway host; progress streams as display.install.log/.done. */
   'display.install': { params: ProfileParams; result: DisplayInstallResult }
   /** Take over: the human named by a viewer id this connection minted controls the screen. */
@@ -6655,7 +6653,7 @@ export const RPC_METHODS = [
   'cron.manage',
   'delegation.pause',
   'delegation.status',
-  'diagnostics.share_nous',
+  'diagnostics.save',
   'display.install',
   'display.lease.acquire',
   'display.lease.release',

@@ -142,7 +142,6 @@ export const zhHantOverrides = {
   promptNotices: zhHantBoot.promptNotices,
   keepAwakeOffer: zhHantBoot.keepAwakeOffer,
   billingBlock: zhHantCommon.billingBlock,
-  sendDiagnostics: zhHantDiagnostics.sendDiagnostics,
   titlebar: zhHantChrome.titlebar,
   language: zhHantSettings.language,
   settings: zhHantSettings.settings,

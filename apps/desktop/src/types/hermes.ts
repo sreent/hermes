@@ -1957,13 +1957,12 @@ export interface CuratorStatusResponse {
   archive_after_days: number | null
 }
 
-/** `POST /api/ops/debug-share` — shareable diagnostics upload result. */
+/** `POST /api/ops/debug-share` — where the diagnostics archive was saved (nothing is uploaded). */
 export interface DebugShareResponse {
   ok: boolean
-  urls: Record<string, string>
-  failures: Record<string, string>
+  /** The archive's path on the machine running the backend. */
+  path: string
   redacted: boolean
-  auto_delete_seconds: number | null
 }
 
 export interface ModelAssignmentResponse {
