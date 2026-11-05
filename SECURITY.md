@@ -4,6 +4,12 @@ This document describes Hermes Agent's trust model, names the one
 security boundary the project treats as load-bearing, and defines the
 scope for vulnerability reports.
 
+> **This fork:** report vulnerabilities in this repository privately through
+> [GitHub's private vulnerability reporting](https://github.com/sreent/hermes/security/advisories/new),
+> never in a public issue. If upstream Hermes Agent has the same flaw, also report it to
+> Nous Research as §1 describes, so the fix reaches upstream. The trust model and scope
+> below apply to this fork unchanged.
+
 ## 1. Reporting a Vulnerability
 
 Report privately via [GitHub Security Advisories](https://github.com/NousResearch/hermes-agent/security/advisories/new)

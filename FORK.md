@@ -78,16 +78,58 @@ We have no CI of our own yet: run `python scripts/check` and `scripts/run_tests.
 
 ## Upstream process documents
 
-`AGENTS.md`, `CONTRIBUTING.md` and `SECURITY.md` describe Nous Research's process, including where to
-report security issues (to Nous, for upstream code). They apply to upstream; update them here as our own
-process takes shape. Coding agents read `AGENTS.md` files automatically, so its code rules (size ratchets,
-profile-scope rules, `scripts/run_tests.sh`) still shape changes made here.
+`AGENTS.md`, `CONTRIBUTING.md` and `SECURITY.md` are upstream's. Each now opens with a short note for this
+fork (report vulnerabilities privately here, and to Nous too when upstream has the flaw; contribute through
+pull requests here), and otherwise describes Nous Research's process. Coding agents read `AGENTS.md` files
+automatically, so its code rules (size ratchets, profile-scope rules, `scripts/run_tests.sh`) still shape
+changes made here.
 
 ## Our changes
 
-None yet. Record each feature that departs from upstream here, with the upstream files it touches.
+Record each feature that departs from upstream here, with the upstream files it touches.
 
-Planned: configurable memory sharing per agent (`shared`, `per_user`, `hybrid`). The upstream code that
+### Installs, updates and links point at this repository
+
+So that installing or updating this fork never fetches Nous Research's version instead:
+
+- `hermes_cli/distribution.py` (new) names this repository, its installer URLs and its issue tracker, for
+  the Python code below.
+- **Installers**: `scripts/install.sh`, `install.ps1` and `install.cmd` clone this repository by default
+  (`HERMES_REPO_URL` still overrides) and fetch each other from it.
+- **`hermes update`**: `hermes_cli/update_cmd_git.py` treats checkouts of this repository as the
+  distribution's own, so their users are no longer asked to add Nous's repository as `upstream` (syncing
+  upstream is the maintainers' job, above). Its repair hints, and the reinstall hints in `update_cmd.py`,
+  `update_cmd_maint.py`, `update_cmd_zip.py`, `uninstall.py` and `hermes_constants.py`, name this
+  repository's installers. A ZIP update with no recorded source downloads this repository.
+- **Desktop app**: the first-run bootstrap (`apps/desktop/electron/bootstrap-runner.ts`, and the Tauri
+  installer's `install_script.rs`) downloads the install script from this repository at the app's own
+  commit. `electron-builder.config.cjs` publishes to, and so updates from, this repository's releases.
+  Release-notes, commit, installer and issue links, `package.json` and the desktop README point here.
+- **Docker and Nix**: `docker-compose.windows.yml` builds from the checkout like `docker-compose.yml`, instead
+  of pulling Nous's published image; the Nix packages' `homepage` points here.
+- **Docs**: the docs site's repository, "edit this page", GitHub, issue and download links
+  (`website/docusaurus.config.ts`); the install and clone commands in the README and its translations, the
+  docs pages that show them (English and zh-Hans), and the bundled `hermes-agent` skill. The README files
+  open with a note saying this is a fork.
+
+Deliberately still upstream's:
+
+- **Nous Research's release infrastructure.** `hermes_cli/source_releases.OFFICIAL_REPOSITORY` and the
+  installers' stable-channel checks keep naming Nous's repository. This fork publishes no releases, so its
+  checkouts follow `main` (the code's existing rule for forks). Packaged desktop builds, the Termux APT
+  package and the stable/canary channels are Nous's; this fork doesn't build them yet.
+- **Nous's services**, which are product features: Nous Portal sign-in, inference and billing, the Tool
+  Gateway, the plugin catalog and Skills Hub, the opt-in telemetry endpoint (off unless a user consents),
+  and `hermes debug share` / the desktop's "send diagnostics", which upload to Nous's support portal.
+- **Documentation links** to `hermes-agent.nousresearch.com/docs` throughout the CLI, app and docs. Those pages
+  still describe this code; repoint them once this fork hosts its own docs (the site's `url` and `baseUrl`
+  are unchanged for that reason).
+- **Packaging identity**: the desktop app's signing publisher, MSIX identity and Linux package maintainer
+  ("Nous Research"). Builds of this fork need their own certificates and maintainer before publishing.
+
+### Planned: configurable memory sharing
+
+Configurable memory sharing per agent (`shared`, `per_user`, `hybrid`). The upstream code that configurable memory sharing per agent (`shared`, `per_user`, `hybrid`). The upstream code that
 currently ties memory to a profile rather than to a user:
 
 - `tools/memory_tool.py` `get_memory_dir()`: MEMORY.md and USER.md always live under the profile home.

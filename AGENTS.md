@@ -49,8 +49,8 @@ standalone plugin repo).
 isolation is often the design (profiles are islands on purpose), an absence can be load-bearing,
 and a fix that cannot point to the line where the bug manifests has an unverified premise.
 
-**Security:** `SECURITY.md` is the scope authority. A §3.1 finding goes private (GitHub Security
-Advisories or security@nousresearch.com), never into a public issue, PR, commit or comment; §3.2
+**Security:** `SECURITY.md` is the scope authority. A §3.1 finding goes private (this fork's private
+advisories; also to Nous if upstream has it), never into a public issue, PR, commit or comment; §3.2
 hardening is ordinary public work. Name the §2 boundary crossed, with a repro on `main`.
 
 **Footprint ladder** (take the highest rung that solves it): extend existing code → CLI command +

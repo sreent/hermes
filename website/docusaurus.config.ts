@@ -11,8 +11,8 @@ const config: Config = {
   url: 'https://hermes-agent.nousresearch.com',
   baseUrl: '/docs/',
 
-  organizationName: 'NousResearch',
-  projectName: 'hermes-agent',
+  organizationName: 'sreent',
+  projectName: 'hermes',
 
   onBrokenLinks: 'warn',
 
@@ -83,7 +83,7 @@ const config: Config = {
         docs: {
           routeBasePath: '/',  // Docs at the root of /docs/
           sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/NousResearch/hermes-agent/edit/main/website/',
+          editUrl: 'https://github.com/sreent/hermes/edit/main/website/',
           // Relative `.md` links (readable on GitHub, #114428) must also resolve
           // across the zh-Hans fallback boundary; see src/remark/relativeDocLinks.js.
           beforeDefaultRemarkPlugins: [[relativeDocLinks, {siteDir: __dirname}]],
@@ -147,7 +147,7 @@ const config: Config = {
           position: 'left',
         },
         {
-          href: 'https://hermes-agent.nousresearch.com/',
+          href: 'https://github.com/sreent/hermes/releases',
           label: 'Download',
           position: 'left',
         },
@@ -161,7 +161,7 @@ const config: Config = {
           position: 'right',
         },
         {
-          href: 'https://github.com/NousResearch/hermes-agent',
+          href: 'https://github.com/sreent/hermes',
           label: 'GitHub',
           position: 'right',
         },
@@ -188,20 +188,20 @@ const config: Config = {
           title: 'Community',
           items: [
             { label: 'Discord', href: 'https://discord.gg/NousResearch' },
-            { label: 'GitHub Issues', href: 'https://github.com/NousResearch/hermes-agent/issues' },
+            { label: 'GitHub Issues', href: 'https://github.com/sreent/hermes/issues' },
             { label: 'Skills Hub', href: 'https://agentskills.io' },
           ],
         },
         {
           title: 'More',
           items: [
-            { label: 'Desktop Download', href: 'https://hermes-agent.nousresearch.com/' },
-            { label: 'GitHub', href: 'https://github.com/NousResearch/hermes-agent' },
+            { label: 'Desktop Download', href: 'https://github.com/sreent/hermes/releases' },
+            { label: 'GitHub', href: 'https://github.com/sreent/hermes' },
             { label: 'Nous Research', href: 'https://nousresearch.com' },
           ],
         },
       ],
-      copyright: `Built by <a href="https://nousresearch.com">Nous Research</a> · MIT License · ${new Date().getFullYear()}`,
+      copyright: `Based on <a href="https://github.com/NousResearch/hermes-agent">Hermes Agent</a> by <a href="https://nousresearch.com">Nous Research</a> · MIT License · ${new Date().getFullYear()}`,
     },
     prism: {
       theme: prismThemes.github,

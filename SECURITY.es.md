@@ -4,6 +4,12 @@ Este documento describe el modelo de confianza de Hermes Agent, identifica el
 único límite de seguridad que el proyecto trata como estructural y define el
 alcance para los informes de vulnerabilidades.
 
+> **Este fork:** informa de las vulnerabilidades de este repositorio de forma privada mediante
+> el [informe privado de vulnerabilidades de GitHub](https://github.com/sreent/hermes/security/advisories/new),
+> nunca en un issue público. Si Hermes Agent upstream tiene el mismo fallo, infórmalo también a
+> Nous Research como describe la §1, para que la corrección llegue a upstream. El modelo de
+> confianza y el alcance siguientes se aplican a este fork sin cambios.
+
 ## 1. Reportar una Vulnerabilidad
 
 Reporta de forma privada a través de [GitHub Security Advisories](https://github.com/NousResearch/hermes-agent/security/advisories/new)

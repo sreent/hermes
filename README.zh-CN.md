@@ -7,11 +7,13 @@
 <p align="center">
   <a href="https://hermes-agent.nousresearch.com/docs/"><img src="https://img.shields.io/badge/Docs-hermes--agent.nousresearch.com-FFD700?style=for-the-badge" alt="Documentation"></a>
   <a href="https://discord.gg/NousResearch"><img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
-  <a href="https://github.com/NousResearch/hermes-agent/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License: MIT"></a>
+  <a href="https://github.com/sreent/hermes/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License: MIT"></a>
   <a href="https://nousresearch.com"><img src="https://img.shields.io/badge/Built%20by-Nous%20Research-blueviolet?style=for-the-badge" alt="Built by Nous Research"></a>
   <a href="README.md"><img src="https://img.shields.io/badge/Lang-English-lightgrey?style=for-the-badge" alt="English"></a>
   <a href="README.ur-pk.md"><img src="https://img.shields.io/badge/Lang-اردو-green?style=for-the-badge" alt="اردو"></a>
 </p>
+
+> **本仓库是 Nous Research 的 [Hermes Agent](https://github.com/NousResearch/hermes-agent) 的分支（fork）。** 下方的安装命令安装的是本分支；文档链接指向上游文档，其内容仍然适用。与上游的差异见 [FORK.md](FORK.md)（英文）。
 
 **由 [Nous Research](https://nousresearch.com) 构建的自进化 AI 代理。** 它是唯一内置学习闭环的智能代理——从经验中创建技能，在使用中改进技能，主动持久化知识，搜索过往对话，并在跨会话中逐步构建对你的深度理解。可以在 $5 的 VPS 上运行，也可以在 GPU 集群上运行，或者使用几乎零成本的 Serverless 基础设施。它不绑定你的笔记本——你可以在 Telegram 上与它对话，而它在云端 VM 上工作。
 
@@ -32,7 +34,7 @@
 ## 快速安装
 
 ```bash
-curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/sreent/hermes/main/scripts/install.sh | bash
 ```
 
 支持 Linux、macOS 和 WSL2。安装程序会自动处理平台特定的配置。
@@ -41,7 +43,7 @@ curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
 >
 > **Windows：** 在 PowerShell 中运行：
 > ```powershell
-> iex (irm https://hermes-agent.nousresearch.com/install.ps1)
+> iex (irm https://raw.githubusercontent.com/sreent/hermes/main/scripts/install.ps1)
 > ```
 > 安装完成后，可能需要重启终端，然后运行 `hermes` 开始对话。
 
@@ -178,7 +180,7 @@ PM 引导、Python 3.14 测试环境和规范验证命令见
 
 - 💬 [Discord](https://discord.gg/NousResearch)
 - 📚 [技能中心](https://agentskills.io)
-- 🐛 [问题反馈](https://github.com/NousResearch/hermes-agent/issues)
+- 🐛 [问题反馈](https://github.com/sreent/hermes/issues)
 - 💡 [讨论区](https://github.com/NousResearch/hermes-agent/discussions)
 - 🔌 [HermesClaw](https://github.com/AaronWong1999/hermesclaw) — 社区微信桥接：在同一微信账号上运行 Hermes Agent 和 OpenClaw。
 

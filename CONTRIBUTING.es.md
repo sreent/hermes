@@ -2,6 +2,8 @@
 
 ¡Gracias por contribuir a Hermes Agent! Esta guía cubre todo lo que necesitas: configurar tu entorno de desarrollo, entender la arquitectura, decidir qué construir y conseguir que tu PR sea aceptado.
 
+> **Este fork:** contribuye mediante pull requests a [sreent/hermes](https://github.com/sreent/hermes). Esta guía es la de upstream: sus normas de código, su ejecutor de pruebas y sus comprobaciones se aplican aquí, mientras que sus referencias a los mantenedores, el Discord, el triaje y las versiones de Nous Research describen upstream. [FORK.md](FORK.md) (en inglés) explica cómo este fork sigue a upstream.
+
 ---
 
 ## Prioridades de Contribución

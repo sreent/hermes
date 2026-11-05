@@ -8,6 +8,7 @@ from pathlib import Path
 
 from hermes_constants import get_hermes_home
 
+from hermes_cli import distribution
 from hermes_cli.colors import Colors, color
 
 def _logger(mark: str, col: str):
@@ -1143,8 +1144,8 @@ def _perform_uninstall(
 
 
 _REINSTALL_HINT = {
-    True: "  iex (irm https://hermes-agent.nousresearch.com/install.ps1)",
-    False: "  curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash"}
+    True: f"  {distribution.INSTALL_PS1_COMMAND}",
+    False: f"  {distribution.INSTALL_SH_COMMAND}"}
 # windows -> [(line, color or None)]
 _RELOAD_HINT = {
     True: [("Open a new terminal (PowerShell / Windows Terminal) to pick up", Colors.YELLOW),

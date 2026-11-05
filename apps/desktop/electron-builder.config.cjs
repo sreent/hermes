@@ -57,7 +57,8 @@ const channelRequest = channelBuildRequest()
 
 /** @typedef {import("app-builder-lib").Configuration} Configuration */
 
-const [owner, repo] = (process.env.GITHUB_REPOSITORY || 'NousResearch/hermes-agent').split('/')
+// This fork's repository (FORK.md): local builds publish to, and update from, its GitHub releases.
+const [owner, repo] = (process.env.GITHUB_REPOSITORY || 'sreent/hermes').split('/')
 if (!owner || !repo) {
   throw new Error(`invalid GITHUB_REPOSITORY ${process.env.GITHUB_REPOSITORY}`)
 }

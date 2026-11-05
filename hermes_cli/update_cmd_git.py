@@ -15,6 +15,7 @@ from datetime import datetime, timedelta, timezone, UTC
 from pathlib import Path
 from typing import Optional
 
+from hermes_cli import distribution
 from hermes_cli._subprocess_compat import NO_LAZY_FETCH_ENV, noninteractive_git_env, windows_hide_flags
 from hermes_cli.update_cmd_common import _record_stop
 
@@ -29,7 +30,7 @@ _ORPHAN_RESCUE_REF_MAX_AGE_DAYS = 30
 _GIT_TEXT_KW = dict(capture_output=True, text=True, encoding="utf-8", errors="replace",
                    creationflags=windows_hide_flags())
 _BAR = "=" * 68
-_UPSTREAM_ADD_CMD = "git remote add upstream https://github.com/NousResearch/hermes-agent.git"
+_UPSTREAM_ADD_CMD = f"git remote add upstream {distribution.REPO_URL}"
 
 
 def _git_ok(git_cmd, args, cwd, **kw) -> bool:
@@ -271,13 +272,9 @@ def _print_parked_branch_kept_notice(current_branch: str, target_branch: str, un
     )
 
 
-OFFICIAL_REPO_URLS = {
-    "https://github.com/NousResearch/hermes-agent.git",
-    "git@github.com:NousResearch/hermes-agent.git",
-    "https://github.com/NousResearch/hermes-agent",
-    "git@github.com:NousResearch/hermes-agent",
-}
-OFFICIAL_REPO_URL = "https://github.com/NousResearch/hermes-agent.git"
+# This fork's repository: its installs update from it and are never offered Nous's as upstream.
+OFFICIAL_REPO_URLS = set(distribution.REPO_URLS)
+OFFICIAL_REPO_URL = distribution.REPO_URL
 SKIP_UPSTREAM_PROMPT_FILE = ".skip_upstream_prompt"
 
 
@@ -342,7 +339,7 @@ def _offer_upstream_remote(git_cmd: list[str], cwd: Path, *, assume_yes: bool, i
     from hermes_cli.update_cmd import _add_upstream_remote, _mark_skip_upstream_prompt
     print(
         "\nℹ Your fork is not tracking the official Hermes repository.\n"
-        "  This means you may miss updates from NousResearch/hermes-agent.\n"
+        f"  This means you may miss updates from {distribution.REPOSITORY}.\n"
     )
     if assume_yes or (input_fn is None and not (sys.stdin.isatty() and sys.stdout.isatty())):
         print(f"  Skipping upstream setup (non-interactive run).\n  Add it later with: {_UPSTREAM_ADD_CMD}")
@@ -363,7 +360,7 @@ def _offer_upstream_remote(git_cmd: list[str], cwd: Path, *, assume_yes: bool, i
     if not _add_upstream_remote(git_cmd, cwd):
         print("  ✗ Failed to add upstream remote. Skipping upstream sync.")
         return False
-    print("  ✓ Added upstream: https://github.com/NousResearch/hermes-agent.git")
+    print(f"  ✓ Added upstream: {OFFICIAL_REPO_URL}")
     return True
 
 
@@ -503,10 +500,10 @@ def _damaged_checkout_message(root: Path) -> str:
     would rebuild the default directory and leave a ``--dir`` install broken)."""
     if sys.platform == "win32":
         quoted = "'" + str(root).replace("'", "''") + "'"
-        repair = ("& ([scriptblock]::Create((irm https://hermes-agent.nousresearch.com/install.ps1)))"
+        repair = (f"& ([scriptblock]::Create((irm {distribution.INSTALL_PS1_URL})))"
                   f" -InstallDir {quoted}")
     else:
-        repair = f"curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash -s -- --dir {shlex.quote(str(root))}"
+        repair = f"curl -fsSL {distribution.INSTALL_SH_URL} | bash -s -- --dir {shlex.quote(str(root))}"
     return (f"✗ This Hermes checkout's git data is damaged (git no longer recognizes {root / '.git'}),"
             " so it cannot be updated in place.\n"
             "  Run the installer again to repair it; it moves the damaged checkout aside and keeps"
@@ -550,7 +547,7 @@ _FETCH_FAILURE_RULES = (
     # key (or lack of one) was the cause (#82169).
     (lambda s: "Permission denied (publickey)" in s or "Host key verification failed" in s,
      "✗ SSH authentication failed — check your SSH key is added to GitHub, or switch"
-     " `origin` to HTTPS: `git remote set-url origin https://github.com/NousResearch/hermes-agent.git`."),
+     f" `origin` to HTTPS: `git remote set-url origin {distribution.REPO_URL}`."),
 )
 
 

@@ -2,7 +2,9 @@
 
 `hermes update` already follows stable for an official checkout that never chose a channel;
 the installer has to put a fresh install there too, or new users start on main's tip. The
-official URL is redirected to a local origin and `curl` answers the release lookup.
+official URL is redirected to a local origin and `curl` answers the release lookup. This fork's
+installer clones the fork by default (test_install_sh_fork_default.py), so the official repository
+is named through HERMES_REPO_URL.
 """
 from pathlib import Path
 import os
@@ -59,7 +61,7 @@ def test_install_lands_on_the_latest_stable_release(tmp_path, side, start, args,
         encoding="utf-8")
     (bin_dir / "curl").chmod(0o755)
     env = {"PATH": f"{bin_dir}{os.pathsep}{os.environ['PATH']}", "HOME": str(home), "NO_COLOR": "1",
-           "GIT_CONFIG_NOSYSTEM": "1"}
+           "GIT_CONFIG_NOSYSTEM": "1", "HERMES_REPO_URL": OFFICIAL}
     if start:
         install.parent.mkdir(parents=True)
         _git(tmp_path, "clone", "-q", OFFICIAL, str(install), env=env)

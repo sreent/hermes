@@ -44,7 +44,7 @@ writing the same home while either version performs migrations.
 ## 2. Clone an independent checkout
 
 ```bash
-git clone https://github.com/NousResearch/hermes-agent.git
+git clone https://github.com/sreent/hermes.git hermes-agent
 cd hermes-agent
 ```
 

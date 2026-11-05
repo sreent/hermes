@@ -283,7 +283,7 @@ build fails with a hint to install one (`sudo apt install build-essential`).
 Clone the repository and select your branch before preparing dependencies:
 
 ```bash
-git clone https://github.com/NousResearch/hermes-agent.git
+git clone https://github.com/sreent/hermes.git hermes-agent
 cd hermes-agent
 ```
 

@@ -61,7 +61,7 @@ hermes chat
 <summary><strong>从本地克隆构建</strong></summary>
 
 ```bash
-git clone https://github.com/NousResearch/hermes-agent.git
+git clone https://github.com/sreent/hermes.git hermes-agent
 cd hermes-agent
 nix build
 ./result/bin/hermes setup

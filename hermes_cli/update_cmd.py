@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import NoReturn
 
 # Old updaters load _no_prompt_git_kwargs from here after the checkout swap (frozen surface).
+from hermes_cli import distribution
 from hermes_cli._subprocess_compat import no_prompt_git_kwargs as _no_prompt_git_kwargs
 from hermes_cli.config import get_hermes_home
 from hermes_cli import update_handoff as _update_handoff
@@ -1606,7 +1607,7 @@ def _prepare_git_command(*, checkout_move=None) -> tuple[bool, list, bool]:
     use_zip_update = not git_dir.exists()
     if use_zip_update and sys.platform != "win32":
         print("✗ Not a git repository. Please reinstall:")
-        print("  curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash")
+        print(f"  {distribution.INSTALL_SH_COMMAND}")
         _record_stop("not_git_checkout")
         sys.exit(1)
 

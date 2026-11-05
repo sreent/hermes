@@ -14,6 +14,7 @@ import time as _time
 from pathlib import Path
 from typing import Optional
 
+from hermes_cli import distribution
 from hermes_cli.update_cmd_common import _best_effort
 from datetime import UTC
 
@@ -36,8 +37,8 @@ _PRE_UPDATE_SNAPSHOT_MAX_FILE_SIZE = 1 << 30  # 1 GiB
 #: Reinstalling through the official installer swaps in a Python whose SQLite is safe; the
 #: one-liner differs per OS (mirrors ``uninstall._REINSTALL_HINT``). windows -> command
 _REINSTALL_ONE_LINER = {
-    True: "iex (irm https://hermes-agent.nousresearch.com/install.ps1)",
-    False: "curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash",
+    True: distribution.INSTALL_PS1_COMMAND,
+    False: distribution.INSTALL_SH_COMMAND,
 }
 
 

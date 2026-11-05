@@ -2,6 +2,8 @@
 
 Thank you for contributing to Hermes Agent! This guide covers everything you need: setting up your dev environment, understanding the architecture, deciding what to build, and getting your PR merged.
 
+> **This fork:** contribute through pull requests to [sreent/hermes](https://github.com/sreent/hermes). This guide is upstream's: its code standards, test runner and checks apply here, while its references to Nous Research's maintainers, Discord, triage and releases describe upstream. [FORK.md](FORK.md) covers how this fork tracks upstream.
+
 ---
 
 ## Contribution Priorities
