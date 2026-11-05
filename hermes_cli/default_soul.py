@@ -1,5 +1,7 @@
 """Default SOUL.md template seeded into HERMES_HOME on first run."""
 
+from hermes_cli.distribution import brand_identity
+
 # Kept identical to agent/prompt_builder.py's DEFAULT_AGENT_IDENTITY: _ensure_default_soul_md()
 # seeds this into SOUL.md on first run, so it is the text virtually every real user gets. The old
 # "targeted and efficient exploration" line is deliberately absent (see DEFAULT_AGENT_IDENTITY) --
@@ -52,6 +54,13 @@ _LEGACY_TEMPLATE_SOULS = (
     # tests/scripts/install/test_install_ps1_ascii_only.py); upgrading converges Windows installs on the em-dash text.
     DEFAULT_SOUL_MD.replace("\u2014", "--"),
 )
+
+
+# tuos (FORK.md): the seeded persona introduces tuos. Hermes's default joins the auto-seeded legacy texts,
+# so an untouched SOUL.md moves to the tuos persona while anything a user wrote stays as it is.
+_HERMES_SOUL_MD = DEFAULT_SOUL_MD
+DEFAULT_SOUL_MD = brand_identity(_HERMES_SOUL_MD)
+_LEGACY_TEMPLATE_SOULS += (_HERMES_SOUL_MD,)
 
 
 def _normalize_soul(text: str) -> str:

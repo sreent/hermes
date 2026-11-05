@@ -187,6 +187,69 @@ entries. Documented in `website/docs/user-guide/configuration.md#memory-storage`
 - The pod starts as root, as the image requires, and does not mount a service-account token: the agent's
   shell commands run in this pod.
 
+### Rebranded as tuos
+
+What people see calls the product **tuos** (lowercase). Internal names stay Hermes's, so upstream merges and
+existing installs keep working: Python packages, `HERMES_*` variables, `~/.hermes`, service and unit names,
+the desktop app's packaging identity, and the `hermes` command.
+
+- **The rule**: `brand()` in `hermes_cli/distribution.py` and its TypeScript twin in `apps/shared/src/brand.ts`
+  (keep them identical; both are tested). In user-facing copy, "Hermes Agent" and "Hermes" become "tuos",
+  except:
+  - "Hermes Cloud", Nous's hosted service;
+  - Nous model names such as "Hermes 3";
+  - the wake word "Hey Hermes";
+  - credit to upstream ("built on / based on Hermes Agent").
+- **Applied where copy is loaded, not in the strings themselves**, so upstream's strings merge untouched and
+  its new ones are rebranded too:
+  - Gateway messages, and the translations the TUI fetches from the backend: `agent/i18n.py` `_load_bundled`.
+  - Desktop:
+    - `apps/desktop/src/i18n/en.ts` and `define-locale.ts`;
+    - runtime packs in `registry.ts`;
+    - plugin strings in `plugin-i18n.ts`.
+  - Web dashboard: `web/src/i18n/en.ts` and `context.tsx`.
+  - TUI: its English in `ui-tui/src/i18n/en.ts`, packs in `runtime.ts`.
+  - CLI help: `HermesArgumentParser.format_help` in `hermes_cli/_parser.py`. Its `prog` is now `tuos`.
+  - The dashboard's sign-in pages: `hermes_cli/dashboard_auth/login_page.py`.
+- **The agent's identity**: "You are tuos, built on Nous Research's open-source Hermes Agent."
+  - Set by `brand_identity()` in a block at the end of `agent/prompt_builder.py`. The same block brands the
+    help guidance and the TUI and desktop surface hints.
+  - Also in `hermes_cli/default_soul.py`, `SOUL.md` and `docker/SOUL.md`.
+  - Hermes's default persona is now listed as an auto-seeded legacy text. A SOUL.md nobody edited moves to
+    tuos; one a user wrote stays.
+- **CLI and TUI look**:
+  - The built-in skins that carried Hermes's branding say tuos, with ◆ in place of ☤
+    (`hermes_cli/skin_engine.py`).
+  - Banner art: `hermes_cli/brand_art.py` (new) holds the wordmark and emblem that `banner.py` falls back to,
+    and `ui-tui/src/banner.ts` draws the same.
+  - Version labels: `banner.py`, `_startup_fast.py`.
+  - The TUI's default brand, taglines and attribution: `theme.ts`, `components/branding.tsx`,
+    `i18n/en/chatBits.ts`.
+- **The `tuos` command** hands off to `hermes` rather than being a second entry point: gateway, update and
+  restart checks recognise processes by the `hermes` executable (`gateway/status.py`).
+  - `hermes_cli/_launchers.py` publishes it with the other commands. On POSIX, `~/.local/bin/tuos` execs the
+    install's hermes launcher, the same mechanism as the `hermes-agent` forwarder (now the `_FORWARDERS`
+    table). On Windows, `tuos.cmd` sits beside `hermes.exe` in `%HERMES_HOME%\bin`.
+  - The Docker image has `/opt/hermes/bin/tuos` (`docker/tuos.sh`, `Dockerfile`).
+  - Shell completion covers it (`completion.py`), and uninstall removes it (`uninstall.py`).
+  - pip and Nix installs have only `hermes`.
+- **Desktop and web literals**:
+  - Desktop window titles, tray, notification fallbacks and browser tab titles.
+  - The intro wordmark, now lowercase: `.wordmark` lost its `text-transform`.
+  - The boot-failure page, and a few onboarding and quick-entry messages.
+  - The dashboard's `<title>`, and the default Telegram bot name (`web/`, `telegram_managed_bot.py`,
+    `web_routers/messaging.py`).
+- **Docs and README**: the docs site's title and navbar (`website/docusaurus.config.ts`, without Hermes's
+  logo), and the README's title and opening.
+
+Not rebranded yet:
+- English hard-coded outside the catalogs: about 1,500 Python strings (setup wizard, doctor, status output,
+  errors), and roughly 300 literals in the desktop renderer and Electron main process.
+- The desktop app's packaging identity (`product-identity.cjs`): app and executable name, appId, MSIX
+  identity, the macOS menu's app name and the About panel. That belongs with this fork's own builds and
+  signing.
+- Docs pages, translated READMEs, favicons and images, and the TUI's translated taglines.
+
 ### Planned: configurable memory sharing
 
 Configurable memory sharing per agent (`shared`, `per_user`, `hybrid`). The upstream code that

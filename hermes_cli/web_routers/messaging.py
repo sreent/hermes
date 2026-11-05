@@ -861,7 +861,9 @@ async def _telegram_onboarding_request(method: str, path: str, *, body=None, bea
 
 @router.post("/api/messaging/telegram/onboarding/start")
 async def start_telegram_onboarding(body: TelegramOnboardingStart):
-    bot_name = (body.bot_name or "Hermes Agent").strip() or "Hermes Agent"
+    from hermes_cli.telegram_managed_bot import DEFAULT_BOT_NAME
+
+    bot_name = (body.bot_name or DEFAULT_BOT_NAME).strip() or DEFAULT_BOT_NAME
     payload = await _telegram_onboarding_request("POST", "/v1/telegram/pairings", body={"bot_name": bot_name})
 
     def field(key: str) -> str:

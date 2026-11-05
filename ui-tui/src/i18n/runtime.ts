@@ -5,6 +5,7 @@
 // maps of strings; a string overriding a function-valued en leaf is wrapped into
 // `(...args) => format(str, args)` with positional `{0}`, `{1}` placeholders.
 
+import { brandCatalog } from '@hermes/shared/brand'
 import { atom } from 'nanostores'
 
 import { en } from './en.js'
@@ -113,7 +114,8 @@ export function catalogFromPack(messages: Record<string, string> | undefined): T
     return en
   }
 
-  return mergeTranslations<Translations>(en, nestPack(en, messages) as TranslationOverride<Translations>)
+  // tuos (FORK.md): pack copy written for Hermes names the product, as the bundled English does.
+  return mergeTranslations<Translations>(en, nestPack(en, brandCatalog(messages)) as TranslationOverride<Translations>)
 }
 
 /** Install a language: `pack` may be null when the backend has no TUI strings

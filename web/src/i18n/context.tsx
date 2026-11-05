@@ -1,3 +1,4 @@
+import { brandCatalog } from "@hermes/shared/brand";
 import { applyDocumentLocale, LOCALE_ENDONYMS } from "@hermes/shared/i18n";
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
 import type { Locale, Translations } from "./types";
@@ -19,7 +20,8 @@ import { ru } from "./ru";
 import { hu } from "./hu";
 import { ar } from "./ar";
 
-const TRANSLATIONS: Record<Locale, Translations> = {
+// tuos (FORK.md): copy written for Hermes names the product.
+const TRANSLATIONS: Record<Locale, Translations> = brandCatalog({
   en,
   zh,
   "zh-hant": zhHant,
@@ -37,7 +39,7 @@ const TRANSLATIONS: Record<Locale, Translations> = {
   ru,
   hu,
   ar,
-};
+});
 
 const SUPPORTED_LOCALES = Object.keys(TRANSLATIONS) as Locale[];
 
@@ -72,7 +74,7 @@ interface I18nContextValue {
 const I18nContext = createContext<I18nContextValue>({
   locale: "en",
   setLocale: () => {},
-  t: en,
+  t: TRANSLATIONS.en,
 });
 
 export function I18nProvider({ children }: { children: ReactNode }) {

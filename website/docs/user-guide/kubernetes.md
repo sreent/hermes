@@ -6,11 +6,11 @@ description: "Running tuos on Kubernetes with its Helm chart: one gateway pod wi
 
 # Running on Kubernetes
 
-The Helm chart in [`deploy/helm/tuos`](https://github.com/sreent/hermes/tree/main/deploy/helm/tuos) runs tuos in one pod, from the same image as [Docker](./docker.md). The pod runs the messaging gateway, which also runs scheduled jobs, and the web dashboard. tuos is built on Hermes Agent, so the commands, settings and environment variables keep Hermes's names.
+The Helm chart in [`deploy/helm/tuos`](https://github.com/sreent/hermes/tree/main/deploy/helm/tuos) runs tuos in one pod, from the same image as [Docker](./docker.md). The pod runs the messaging gateway, which also runs scheduled jobs, and the web dashboard. tuos is built on Hermes Agent: its settings and environment variables keep Hermes's names, and the `hermes` command works wherever `tuos` does.
 
 | Object | Purpose |
 |---|---|
-| StatefulSet with one pod | Runs `hermes gateway run`, supervised inside the container |
+| StatefulSet with one pod | Runs `tuos gateway run`, supervised inside the container |
 | PersistentVolumeClaim `data-<release>-0` | `/opt/data`: `config.yaml`, `.env`, sessions, skills, cron jobs, logs |
 | ConfigMap | The `config` value, pinned over `/opt/data/config.yaml` |
 | Secret | The `secrets.env` value, as the pod's environment (or name your own Secret) |
@@ -53,15 +53,15 @@ Any key from [`.env.example`](https://github.com/sreent/hermes/blob/main/.env.ex
 Then choose a model and connect chat platforms from inside the pod, and restart the gateway to apply them:
 
 ```bash
-kubectl exec -it -n tuos tuos-0 -- hermes setup
-kubectl exec -n tuos tuos-0 -- hermes gateway restart
+kubectl exec -it -n tuos tuos-0 -- tuos setup
+kubectl exec -n tuos tuos-0 -- tuos gateway restart
 ```
 
 What you set up this way is saved on the volume, so it survives restarts and upgrades. `kubectl logs -f -n tuos tuos-0` follows the gateway. To start the pod idle for this first setup, without the gateway, install with `--set-json 'args=["sleep","infinity"]'` and upgrade with the default `args` afterwards.
 
 ## Settings from Helm values
 
-`config` holds `config.yaml` settings. The chart mounts them as the [managed scope](./managed-scope.md): they are laid over `/opt/data/config.yaml` key by key, and the dashboard and `hermes config set` show them as managed and cannot change them. Every key the chart does not set stays editable in the pod. Changing `config` restarts the pod.
+`config` holds `config.yaml` settings. The chart mounts them as the [managed scope](./managed-scope.md): they are laid over `/opt/data/config.yaml` key by key, and the dashboard and `tuos config set` show them as managed and cannot change them. Every key the chart does not set stays editable in the pod. Changing `config` restarts the pod.
 
 ```yaml
 config:
@@ -78,7 +78,7 @@ config:
 
 The pod's environment comes from `secrets.existingSecret`, a Secret you manage (by hand, with External Secrets, Sealed Secrets and so on), or from `secrets.env`, a map of keys from which the chart creates the Secret (the values are then also stored in the Helm release). A changed Secret applies when the pod restarts: `helm upgrade` restarts it when `secrets.env` changes, and `kubectl rollout restart statefulset/tuos -n tuos` does it for your own Secret.
 
-A key that is also set in `/opt/data/.env` takes its value from that file. `hermes setup` and the dashboard's Keys page write there, so delete a key there to let the Secret's value apply.
+A key that is also set in `/opt/data/.env` takes its value from that file. `tuos setup` and the dashboard's Keys page write there, so delete a key there to let the Secret's value apply.
 
 ## Memory in a bucket
 

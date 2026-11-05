@@ -2023,8 +2023,7 @@ body.guest-pointer-lock :is(webview, iframe) {
   font-family: 'Collapse', var(--font-sans);
   font-weight: 700;
   line-height: 0.9;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.08em; /* tuos (FORK.md): the name is lowercase, so no text-transform */
 }
 
 .fit-text > [aria-hidden] {

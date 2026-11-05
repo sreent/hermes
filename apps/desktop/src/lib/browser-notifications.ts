@@ -9,6 +9,8 @@
  * it, a plain-http LAN address does not.
  */
 
+import { PRODUCT_NAME } from '@hermes/shared/brand'
+
 import { flagTabAttention } from '@/store/browser-tab-attention'
 
 export type BrowserNotificationPermission = 'default' | 'denied' | 'granted' | 'insecure' | 'unsupported'
@@ -56,7 +58,7 @@ export interface BrowserNotifyPayload {
 
 /** Flash the tab, then show a browser notification when the user allowed it. */
 export function showBrowserNotification(payload: BrowserNotifyPayload): boolean {
-  const title = payload.title || 'Hermes'
+  const title = payload.title || PRODUCT_NAME
 
   flagTabAttention(title)
 

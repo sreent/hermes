@@ -1,4 +1,5 @@
 import { useAuiState } from '@assistant-ui/react'
+import { PRODUCT_NAME } from '@hermes/shared/brand'
 import { useStore } from '@nanostores/react'
 import { type FC, type ReactNode, useEffect, useMemo, useState } from 'react'
 
@@ -330,7 +331,7 @@ const TurnActivityRow: FC<TurnActivityRowProps> = ({ active, elapsed, hint, loca
       className={cn(!active && 'sr-only')}
       data-slot="aui_turn-activity"
       data-state={active ? 'active' : 'idle'}
-      label={active ? hint || 'Hermes is working' : ''}
+      label={active ? hint || `${PRODUCT_NAME} is working` : ''}
     >
       {active && (
         <>

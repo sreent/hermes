@@ -15,11 +15,11 @@ fullnameOverride: ""
 
 # What the container runs, as arguments to `hermes`. The default is the gateway, which connects to
 # the chat platforms you configure and runs cron jobs (it keeps running with no platform set up).
-# ["sleep", "infinity"] starts the pod idle instead, for a first `hermes setup` through kubectl exec.
+# ["sleep", "infinity"] starts the pod idle instead, for a first `tuos setup` through kubectl exec.
 args: ["gateway", "run"]
 
 # Settings for config.yaml, pinned by the chart. They are laid over /opt/data/config.yaml key by
-# key (Hermes's managed scope), and the dashboard and `hermes config set` cannot change them; keys
+# key (Hermes's managed scope), and the dashboard and `tuos config set` cannot change them; keys
 # not listed here stay editable there. This becomes a ConfigMap, so no secrets: those go in
 # `secrets`. A change restarts the pod.
 config: {}
@@ -49,7 +49,7 @@ config: {}
 # Name a Secret you manage (kubectl create secret generic tuos-env --from-env-file=.env, External
 # Secrets, Sealed Secrets), or list the values under `env` and the chart creates the Secret (the
 # values are then also stored in the Helm release). A key that is also set in /opt/data/.env, which
-# `hermes setup` and the dashboard's Keys page write, takes its value from that file.
+# `tuos setup` and the dashboard's Keys page write, takes its value from that file.
 secrets:
   existingSecret: ""
   env: {}

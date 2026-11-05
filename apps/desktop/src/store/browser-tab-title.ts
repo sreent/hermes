@@ -16,6 +16,7 @@
  * tab lists.
  */
 
+import { PRODUCT_NAME } from '@hermes/shared/brand'
 import { computed } from 'nanostores'
 
 import { $workspaceOwnerLabels, workspaceOwnerTitle } from '@/components/pane-shell/workspace-scope'
@@ -28,7 +29,7 @@ import { $unreadSessionCount } from './session-dot-state'
 import { $focusedStoredSessionId } from './session-focus'
 import { $attentionSessionIds, $sessionTiles, $workingSessionIds } from './session-states'
 
-const APP_NAME = 'Hermes'
+const APP_NAME = PRODUCT_NAME
 
 export interface BrowserTabStatus {
   /** The focused session's name, or empty when it has none yet. */

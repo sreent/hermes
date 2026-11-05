@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from '@hermes/shared/brand'
 import { useStore } from '@nanostores/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
@@ -449,7 +450,7 @@ export function PetOverlayApp() {
               stopPropagation keeps a click from starting a window drag. */}
           {unread && (
             <button
-              aria-label="Open in Hermes"
+              aria-label={`Open in ${PRODUCT_NAME}`}
               onClick={openApp}
               onPointerDown={e => e.stopPropagation()}
               onPointerUp={e => e.stopPropagation()}

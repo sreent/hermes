@@ -14,6 +14,7 @@
  * name, direction) is composed with the bundled table in `./languages`.
  */
 
+import { brandCatalog } from '@hermes/shared/brand'
 import {
   adaptStringOverrides,
   type FlatMessages,
@@ -238,7 +239,8 @@ export function resolveTranslations(locale: Locale): Translations {
     if (entry.translations) {
       value = mergeTranslations<Translations>(
         value,
-        adaptStringOverrides(value, entry.translations) as TranslationOverride<Translations>
+        // tuos (FORK.md): pack copy written for Hermes names the product, as the bundled catalogs do.
+        adaptStringOverrides(value, brandCatalog(entry.translations)) as TranslationOverride<Translations>
       )
     }
   }

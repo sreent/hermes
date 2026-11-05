@@ -1,6 +1,9 @@
+import { brandCatalog } from "@hermes/shared/brand";
+
 import type { Translations } from "./types";
 
-export const en: Translations = {
+// tuos (FORK.md): copy written for Hermes names the product.
+export const en: Translations = brandCatalog({
   common: {
     save: "Save",
     saving: "Saving...",
@@ -942,4 +945,4 @@ export const en: Translations = {
       confirmManyTitle: "Delete {n} tasks?",
     },
   },
-};
+});

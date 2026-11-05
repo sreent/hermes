@@ -8,6 +8,7 @@ import {
   useStdout,
   useTerminalTitle
 } from '@hermes/ink'
+import { PRODUCT_NAME } from '@hermes/shared/brand'
 import type { SessionControlSnapshot } from '@hermes/shared/gateway-events'
 import { JSON_RPC_METHOD_NOT_FOUND, type ServerRequest } from '@hermes/shared/json-rpc-channel'
 import { useStore } from '@nanostores/react'
@@ -779,7 +780,7 @@ export function useMainApp(gw: GatewayClient) {
           tab: composeTabTitle(marker, ui.sessionTitle, '', ''),
           window: composeTabTitle(marker, ui.sessionTitle, model, tabCwd ? shortCwd(tabCwd, 24) : '')
         }
-      : 'Hermes'
+      : PRODUCT_NAME
   )
 
   useEffect(() => {

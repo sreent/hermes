@@ -1,4 +1,6 @@
 // health: allow FILE_LINES -- locale data: translated copy for the usage-window plan UI (allowance gauges, Large/Free tags, the limit card), one key per string
+import { brandCatalog } from '@hermes/shared/brand'
+
 import { FIELD_DESCRIPTIONS, FIELD_LABELS } from '@/app/settings/constants'
 
 import { enAppTour } from './en_app_tour'
@@ -33,7 +35,8 @@ import { enUninstallSection } from './en_uninstall_section'
 import { enUpdateChannel } from './en_update_channel'
 import type { Translations } from './types'
 
-export const en: Translations = {
+// tuos (FORK.md): copy written for Hermes names the product.
+export const en: Translations = brandCatalog({
   externalOpenFailed: enExternalOpenFailed,
   sharedMetrics: enSharedMetrics,
   appTour: enAppTour,
@@ -4908,4 +4911,4 @@ export const en: Translations = {
       toggle: open => `${open ? 'Show' : 'Hide'} sidebar`
     }
   }
-}
+})

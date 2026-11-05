@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from '@hermes/shared/brand'
 import { useEffect, useReducer, useRef } from 'react'
 
 import { isSubmitEnter } from '@/lib/ime'
@@ -83,7 +84,7 @@ export function QuickEntryApp() {
 
     const offLateResult = api?.onLateResult(payload => {
       dispatch({
-        message: payload?.result?.message ?? 'Hermes could not deliver the prompt.',
+        message: payload?.result?.message ?? `${PRODUCT_NAME} could not deliver the prompt.`,
         ok: payload?.result?.ok === true,
         type: 'late-result'
       })
@@ -162,7 +163,7 @@ export function QuickEntryApp() {
                 dispatch({ type: 'dismiss' })
               }
             }}
-            placeholder={state.connected ? 'Ask Hermes…' : 'Not connected — open Hermes to reconnect'}
+            placeholder={state.connected ? `Ask ${PRODUCT_NAME}…` : `Not connected — open ${PRODUCT_NAME} to reconnect`}
             ref={inputRef}
             spellCheck={false}
             style={{

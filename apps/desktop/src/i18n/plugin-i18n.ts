@@ -11,6 +11,7 @@
  *  - `ctx.i18n.t` — module-level translator for handlers/stores (non-reactive).
  */
 
+import { brand } from '@hermes/shared/brand'
 import { useStore } from '@nanostores/react'
 import { atom } from 'nanostores'
 import { useCallback } from 'react'
@@ -103,7 +104,7 @@ export function registerPluginLocales(pluginId: string, bundles: PluginLocaleBun
 }
 
 export function translatePlugin(pluginId: string, locale: Locale, key: string, args: unknown[]): string {
-  return translateFrom(l => registry.get(pluginId)?.get(l), locale, key, args)
+  return brand(translateFrom(l => registry.get(pluginId)?.get(l), locale, key, args))
 }
 
 /** Build the `ctx.i18n` door for a plugin. `track` records the disposer so the

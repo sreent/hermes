@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "@hermes/shared/brand";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
@@ -1254,7 +1255,7 @@ function TelegramOnboardingPanel({
     setDetectedOwnerId(null);
     setNewAllowedId("");
     try {
-      const res = await api.startTelegramOnboarding({ bot_name: "Hermes Agent" });
+      const res = await api.startTelegramOnboarding({ bot_name: PRODUCT_NAME });
       const dataUrl = await QRCode.toDataURL(res.qr_payload, {
         errorCorrectionLevel: "M",
         margin: 1,

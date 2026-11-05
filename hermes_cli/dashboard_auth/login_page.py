@@ -15,6 +15,7 @@ import html
 from urllib.parse import quote, urlencode
 
 from hermes_cli.dashboard_auth import list_interactive_providers, list_session_providers
+from hermes_cli.distribution import brand
 
 # Single curly braces are ``str.format`` placeholders; CSS curlies are doubled.
 _LOGIN_HTML_TEMPLATE = """\
@@ -512,6 +513,11 @@ _PASSWORD_FORM_SCRIPT = """\
 })();
 </script>
 """
+
+
+# tuos (FORK.md): the sign-in pages name the product.
+_LOGIN_HTML_TEMPLATE, _EMPTY_HTML, _TOKEN_MODE_HTML = (
+    brand(_LOGIN_HTML_TEMPLATE), brand(_EMPTY_HTML), brand(_TOKEN_MODE_HTML))
 
 
 def render_login_html(*, next_path: str = "", prefix: str = "") -> str:

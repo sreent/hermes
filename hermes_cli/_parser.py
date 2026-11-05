@@ -357,6 +357,13 @@ class HermesArgumentParser(argparse.ArgumentParser):
     stock usage + message shape.
     """
 
+    def format_help(self):
+        # tuos (FORK.md): help copy names the product. Imported here: hermes_bootstrap loads this module
+        # before a torn checkout is repaired, so its module-level imports stay the boot set.
+        from hermes_cli.distribution import brand
+
+        return brand(super().format_help())
+
     def _check_value(self, action, value):
         if isinstance(action, argparse._SubParsersAction) and value not in action.choices:
             # ``self.prog`` is "hermes" at the top level and "hermes gateway" for a nested group
@@ -384,8 +391,10 @@ def build_top_level_parser():
     ``chat_parser.set_defaults(func= cmd_chat)`` and registers further subparsers via
     ``subparsers.add_parser(...)``.
     """
+    from hermes_cli.distribution import PRODUCT_NAME
+
     parser = HermesArgumentParser(
-        prog="hermes", description="Hermes Agent - AI assistant with tool-calling capabilities",
+        prog=PRODUCT_NAME, description="Hermes Agent - AI assistant with tool-calling capabilities",
         formatter_class=argparse.RawDescriptionHelpFormatter, epilog=_EPILOGUE)
     _add_top_level_flags(parser)
     # metavar keeps the usage line to ``hermes [...] <command>`` instead of the brace list of

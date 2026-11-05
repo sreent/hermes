@@ -90,7 +90,7 @@ describe('refreshOnboarding with the local model server down', () => {
     expect($desktopOnboarding.get().configured).toBe(true)
     const shown = notify.mock.calls.at(-1)?.[0]
     expect(shown?.action?.label).toBe('Choose another model')
-    expect(shown?.message).toContain('Hermes desktop app')
+    expect(shown?.message).toContain('tuos desktop app')
     expect(shown?.message).not.toContain('Local models')
   })
 

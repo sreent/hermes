@@ -21,6 +21,7 @@ from hermes_constants import (
 
 from agent.model_metadata import CHARS_PER_TOKEN
 from agent.runtime_cwd import resolve_agent_cwd
+from hermes_cli.distribution import brand, brand_identity
 from agent.skill_utils import (
     EXCLUDED_SKILL_DIRS, SKILL_SUPPORT_DIRS,
     TIER_LOCAL, clip_skill_description, extract_skill_conditions, extract_skill_description,
@@ -1748,3 +1749,10 @@ def build_context_files_prompt(
         return ""
     return ("# Project Context\n\nThe following project context files have been loaded and should be followed:\n\n"
             + "\n".join(sections))
+
+
+# tuos (FORK.md): the agent introduces itself, and names the apps it runs in, as tuos.
+DEFAULT_AGENT_IDENTITY = brand_identity(DEFAULT_AGENT_IDENTITY)
+HERMES_AGENT_HELP_GUIDANCE = brand(HERMES_AGENT_HELP_GUIDANCE)
+HERMES_AGENT_HELP_GUIDANCE_NO_SKILLS = brand(HERMES_AGENT_HELP_GUIDANCE_NO_SKILLS)
+PLATFORM_HINTS = {surface: brand(hint) for surface, hint in PLATFORM_HINTS.items()}

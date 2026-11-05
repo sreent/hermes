@@ -1,4 +1,5 @@
 import type { ModelOptionProvider } from '@hermes/shared'
+import { PRODUCT_NAME } from '@hermes/shared/brand'
 import { atom } from 'nanostores'
 
 import { invalidateAllConnectors } from '@/app/capabilities/connectors/data/keys'
@@ -336,7 +337,7 @@ export function settleLocalRuntimeNotice(runtime: RuntimeReadinessResult) {
 // The Webapp has no Local models pane (the flag is Electron-only), so there the way forward it can
 // offer is another model, and the sentence must not send the user to a pane they cannot open.
 const WEBAPP_LOCAL_RUNTIME_DOWN =
-  "The local model server isn't serving. Start it from the Hermes desktop app or `hermes model` in a terminal, or choose another model."
+  `The local model server isn't serving. Start it from the ${PRODUCT_NAME} desktop app or \`hermes model\` in a terminal, or choose another model.`
 
 // Desktop has the pane, so its notice names it next to the button that opens it.
 const DESKTOP_LOCAL_RUNTIME_DOWN =
@@ -359,7 +360,7 @@ function keepConfiguredWithLocalRuntimeDown(reason: string) {
 }
 
 function notifyReady(provider: string) {
-  notify({ kind: 'success', title: 'Hermes is ready', message: `${provider} connected.` })
+  notify({ kind: 'success', title: `${PRODUCT_NAME} is ready`, message: `${provider} connected.` })
 }
 
 // Human-friendly labels for tools auto-routed through the Nous Tool Gateway,
@@ -547,7 +548,7 @@ async function completeWithModelConfirm(
         return
       }
 
-      onFail(error instanceof Error ? error.message : 'Hermes could not save the selected model.')
+      onFail(error instanceof Error ? error.message : `${PRODUCT_NAME} could not save the selected model.`)
 
       return
     }
@@ -615,8 +616,8 @@ function providerResolutionFailure(reason: null | string) {
   const detail = reason?.trim()
 
   return detail
-    ? `Connected, but Hermes still cannot resolve a usable provider. ${detail}`
-    : 'Connected, but Hermes still cannot resolve a usable provider.'
+    ? `Connected, but ${PRODUCT_NAME} still cannot resolve a usable provider. ${detail}`
+    : `Connected, but ${PRODUCT_NAME} still cannot resolve a usable provider.`
 }
 
 /** Re-read the OAuth provider list into the onboarding cache. Exported so a
@@ -897,7 +898,7 @@ export async function refreshOnboarding(ctx: OnboardingContext, stillWanted?: ()
         kind: 'info',
         title: 'Runtime not ready',
         message:
-          'Hermes Desktop could not verify the running backend on startup. Some features may be unavailable until the gateway is reachable.'
+          `${PRODUCT_NAME} Desktop could not verify the running backend on startup. Some features may be unavailable until the gateway is reachable.`
       })
     }
 
@@ -1232,7 +1233,7 @@ export async function recheckExternalSignin(ctx: OnboardingContext) {
       provider,
       message:
         reason?.trim() ||
-        `Hermes still cannot reach ${provider.name}. Run \`${provider.cli_command}\` in a terminal first.`
+        `${PRODUCT_NAME} still cannot reach ${provider.name}. Run \`${provider.cli_command}\` in a terminal first.`
     })
   )
 }
@@ -1417,7 +1418,7 @@ export async function saveOnboardingLocalEndpoint(
     if (!runtime.ready) {
       const detail = (runtime.reason ?? '').trim()
 
-      return { ok: false, message: detail || `Saved, but Hermes still cannot reach ${resolvedUrl}.` }
+      return { ok: false, message: detail || `Saved, but ${PRODUCT_NAME} still cannot reach ${resolvedUrl}.` }
     }
 
     notifyReady('Local / custom endpoint')

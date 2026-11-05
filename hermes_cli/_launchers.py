@@ -562,6 +562,11 @@ def _owns_launcher(target: Path, root: Path) -> bool:
     return False
 
 
+# User-bin commands that forward to the hermes launcher, with the arguments they add. `tuos` (FORK.md) is
+# the product's name for hermes; the process it starts is still `hermes`, which process checks recognise.
+_FORWARDERS = {"hermes-agent": ("--run-module", "run_agent"), "tuos": ()}
+
+
 def _publish_conveniences(root: Path, out_dir: Path, names, *, create: bool = True) -> dict[Path, bool]:
     """User-bin commands forward to durable local launchers, not a Python pin."""
     if create:
@@ -574,8 +579,8 @@ def _publish_conveniences(root: Path, out_dir: Path, names, *, create: bool = Tr
         if (not create or target.exists() or target.is_symlink()) and not _owns_launcher(target, root):
             continue
         before = target.lstat().st_mtime_ns if target.exists() or target.is_symlink() else None
-        command = ([str(root / ".hermes/bin/hermes"), "--run-module", "run_agent"]
-                   if name == "hermes-agent" else [str(root / ".hermes/bin" / name)])
+        command = ([str(root / ".hermes/bin/hermes"), *_FORWARDERS[name]]
+                   if name in _FORWARDERS else [str(root / ".hermes/bin" / name)])
         if _write_shell(target, command) is None:
             raise OSError(f"could not publish launcher {target}")
         published[target] = before != target.lstat().st_mtime_ns
@@ -917,7 +922,7 @@ def expose_cli(project_root: Path | None = None, *, create: bool = True) -> dict
                 dirs.append(directory)
         written = []
         for directory in dirs:
-            published = _publish_conveniences(root, directory, (*WINDOWS_BIN_LAUNCHERS, "hermes-agent"), create=create)
+            published = _publish_conveniences(root, directory, (*WINDOWS_BIN_LAUNCHERS, *_FORWARDERS), create=create)
             written.extend(path.name for path, changed in published.items() if changed)
         return {"ok": True, "written": written}
     except OSError as exc:
@@ -1062,6 +1067,18 @@ def _broadcast_environment_change() -> None:
         pass
 
 
+def _publish_windows_tuos(directory: Path) -> Path | None:
+    """``tuos.cmd`` beside the hermes launcher in the User-PATH bin: starts that hermes (FORK.md)."""
+    body = b'@"%~dp0hermes" %*\r\n'  # bytes: cmd.exe misreads a BOM, so a BOM'd copy is rewritten
+    target = directory / "tuos.cmd"
+    try:
+        if target.read_bytes() == body:
+            return target
+    except OSError:
+        pass
+    return _write_atomic(target, lambda staging: staging.write_bytes(body))
+
+
 def _expose_windows_user_bin(root: Path, *, create: bool) -> dict:
     """Windows twin of expose_cli's POSIX half.
 
@@ -1090,7 +1107,9 @@ def _expose_windows_user_bin(root: Path, *, create: bool) -> dict:
         written = ensure_install_launchers(root, directory)
         if len(written) != len(WINDOWS_BIN_LAUNCHERS):
             return {"ok": False, "error": "source launcher publication failed"}
-        names = [Path(path).name for path in written]
+        if (tuos := _publish_windows_tuos(directory)) is None:
+            return {"ok": False, "error": "could not publish tuos.cmd"}
+        names = [Path(path).name for path in (*written, tuos)]
         if not owns_user_path(directory.parent):
             # New consoles resolve another home; its launchers stay in its own bin.
             return {"ok": True, "skipped": "User PATH belongs to the home new consoles use", "written": names}

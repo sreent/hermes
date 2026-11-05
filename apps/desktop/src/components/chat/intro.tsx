@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from '@hermes/shared/brand'
 import { useState } from 'react'
 
 import { useI18n } from '@/i18n'
@@ -146,7 +147,7 @@ function pickCopy(copies: IntroCopy[], seed = 0): IntroCopy {
   return copies[Math.abs(seed) % copies.length] || FALLBACK_COPY[0]
 }
 
-const WORDMARK = 'HERMES AGENT'
+const WORDMARK = PRODUCT_NAME
 
 function resolveCopy(personality?: string, seed?: number): IntroCopy {
   const personalityKey = normalizeKey(personality)

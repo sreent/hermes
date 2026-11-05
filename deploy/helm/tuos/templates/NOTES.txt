@@ -5,8 +5,8 @@ Gateway output:
   kubectl logs -f -n {{ .Release.Namespace }} {{ $pod }}
 
 Choose a model and connect chat platforms inside the pod, then restart the gateway to apply them:
-  kubectl exec -it -n {{ .Release.Namespace }} {{ $pod }} -- hermes setup
-  kubectl exec -n {{ .Release.Namespace }} {{ $pod }} -- hermes gateway restart
+  kubectl exec -it -n {{ .Release.Namespace }} {{ $pod }} -- tuos setup
+  kubectl exec -n {{ .Release.Namespace }} {{ $pod }} -- tuos gateway restart
 {{- if .Values.dashboard.enabled }}
 {{- if .Values.dashboard.expose }}
 
