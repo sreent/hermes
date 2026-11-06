@@ -889,7 +889,7 @@ damaged application files, repair through the
 
 ```bash
 # Reset a stuck macOS microphone prompt
-tccutil reset Microphone com.nousresearch.hermes
+tccutil reset Microphone io.github.sreent.tuos
 ```
 
 ### Windows: the SSH client is missing or broken
@@ -981,7 +981,7 @@ with tuos' stable signing identities it survives every update:
 
 1. System Settings → **Privacy & Security → Full Disk Access** (or run
    `open "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles"`)
-2. Enable your terminal app — and **Hermes.app** if you use Desktop.
+2. Enable your terminal app — and **tuos.app** if you use Desktop.
 3. Fully quit and relaunch them once.
 
 `tuos doctor` reports whether the current terminal context already has the
@@ -1000,7 +1000,7 @@ button, so it looks like there is nothing to re-check. If that happens, reset
 the stale grant once and re-grant:
 
 ```bash
-tccutil reset ScreenCapture com.nousresearch.hermes   # repeat per service
+tccutil reset ScreenCapture io.github.sreent.tuos   # repeat per service
 ```
 
 then toggle the fresh entry ON in System Settings and fully quit & relaunch
@@ -1038,7 +1038,7 @@ detected and never re-signed.
 One-time note: changing the signing identity (including the first update after
 this fix) changes the app's identity once, so macOS will re-prompt one final
 time. Grants are stable from then on. If a permission gets stuck, reset it with
-`tccutil reset All com.nousresearch.hermes` and re-grant.
+`tccutil reset All io.github.sreent.tuos` and re-grant.
 
 ## See also
 

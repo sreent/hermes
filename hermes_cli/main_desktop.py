@@ -22,6 +22,7 @@ import time as _time_mod
 from pathlib import Path
 from typing import Callable, Optional
 from hermes_cli.desktop_console import desktop_console_output, desktop_launch_notice
+from hermes_cli.distribution import DESKTOP_APP_NAME
 from hermes_platform.host import facts
 
 # Log-record parity with the origin module.
@@ -50,7 +51,7 @@ def _packaged_resources_dir(desktop_dir: Path) -> Optional[Path]:
     executable = _desktop_packaged_executable(desktop_dir)
     if executable is None:
         return None
-    # macOS: …/Hermes.app/Contents/MacOS/Hermes → …/Contents/Resources
+    # macOS: …/tuos.app/Contents/MacOS/tuos → …/Contents/Resources
     return executable.parent.parent / "Resources" if sys.platform == "darwin" else executable.parent / "resources"
 
 
@@ -159,26 +160,25 @@ def _desktop_packaged_executable_in(release_dir: Path) -> Optional[Path]:
     stage-and-swap staging dir (#86443).
     """
     if sys.platform == "darwin":
-        candidates = list(release_dir.glob("mac*/Hermes.app/Contents/MacOS/Hermes"))
+        candidates = list(release_dir.glob(f"mac*/{DESKTOP_APP_NAME}.app/Contents/MacOS/{DESKTOP_APP_NAME}"))
     elif sys.platform == "win32":
         candidates = [
-            release_dir / d / "Hermes.exe" for d in ("win-unpacked", "win-ia32-unpacked", "win-arm64-unpacked")
+            release_dir / d / f"{DESKTOP_APP_NAME}.exe"
+            for d in ("win-unpacked", "win-ia32-unpacked", "win-arm64-unpacked")
         ]
     else:
-        candidates = [
-            release_dir / d / n for d in ("linux-unpacked", "linux-arm64-unpacked") for n in ("hermes", "Hermes")
-        ]
+        candidates = [release_dir / d / DESKTOP_APP_NAME for d in ("linux-unpacked", "linux-arm64-unpacked")]
 
     existing = [p for p in candidates if p.exists()]
     if not existing:
         return None
     if sys.platform == "win32" and len(existing) > 1:
         # A stale win-arm64-unpacked next to the real win-unpacked: picking by
-        # mtime can hand a wrong-architecture Hermes.exe to the launcher. Prefer
+        # mtime can hand a wrong-architecture tuos.exe to the launcher. Prefer
         # candidates whose PE machine matches the host; mtime when none parse.
         # Multiple unpacked trees can coexist (e.g. a stale win-arm64-unpacked left behind by a cross-arch
         # experiment next to the real win-unpacked). Picking purely by mtime can then hand a
-        # wrong-architecture Hermes.exe to the launcher, which Windows rejects with "This app can't run on
+        # wrong-architecture tuos.exe to the launcher, which Windows rejects with "This app can't run on
         # your computer" (#69179).
         expected = _expected_windows_pe_machines()
         matching = [p for p in existing if _pe_machine_or_none(p) in expected]
@@ -188,7 +188,7 @@ def _desktop_packaged_executable_in(release_dir: Path) -> Optional[Path]:
 
 
 # ─── Desktop stage-and-swap pack (#86443) ─────────────────────────────────── electron-builder packs IN
-# PLACE: before-pack.mjs wipes ``release/<platform>- unpacked`` (or the mac ``Hermes.app``) and the Electron
+# PLACE: before-pack.mjs wipes ``release/<platform>- unpacked`` (or the mac ``tuos.app``) and the Electron
 # unpack + asar + rename then rebuild it. Any failure after that wipe — corrupt cached zip, blocked
 # download, missing dep, disk full — leaves the user with NO app, and ``hermes update`` used to report
 # "partially complete" over an empty release/. Fix the class, not the predicate: build into a STAGING output
@@ -333,12 +333,12 @@ def _discard_desktop_staging(staging_dir: Path) -> None:
 
 # ─── Desktop exe integrity gate (#69179) ──────────────────────────────────── The desktop self-update chain
 # (Desktop → hermes-setup --update → `hermes update` → `hermes desktop --build-only` → relaunch) rebuilds
-# Hermes.exe on the end user's machine and used to verify only that the file EXISTS before declaring
+# tuos.exe on the end user's machine and used to verify only that the file EXISTS before declaring
 # success. A corrupt cached Electron zip whose extraction produced a truncated electron.exe, an interrupted
 # rcedit resource rewrite, a disk-full pack, or a wrong-arch unpacked tree therefore shipped a broken binary
 # that Windows refuses to load ("This app can't run on your computer" / 此应用无法在你的电脑上运行). These helpers parse
 # the PE header — no signature infrastructure required — so a structurally broken or wrong-architecture
-# Hermes.exe is caught BEFORE the updater replaces the working app, and the previous build can be restored
+# tuos.exe is caught BEFORE the updater replaces the working app, and the previous build can be restored
 # from the .bak tree that apps/desktop/scripts/before-pack.mjs now preserves.
 _PE_MACHINE_I386 = 0x014C
 _PE_MACHINE_AMD64 = 0x8664
@@ -758,7 +758,7 @@ def _desktop_macos_local_codesign(app: Path, *, desktop_dir: Path, identity: str
 
     # 1) Standalone Mach-O files (native modules, dylibs, crashpad handler),
     #    compared relative to the app root — the absolute path always contains
-    #    the outer Hermes.app component.
+    #    the outer tuos.app component.
     contents = app / "Contents"
     standalone: list[Path] = []
     for root, _dirs, files in os.walk(contents):
@@ -848,7 +848,7 @@ def _desktop_macos_relaunchable_fixup(
     exe = _desktop_packaged_executable_in(release_dir or (desktop_dir / "release"))
     if exe is None:
         return True
-    # exe = .../Hermes.app/Contents/MacOS/Hermes  ->  app bundle = .../Hermes.app
+    # exe = .../tuos.app/Contents/MacOS/tuos  ->  app bundle = .../tuos.app
     app = exe.parents[2]
     if not str(app).endswith(".app") or not app.is_dir():
         return True
@@ -972,7 +972,7 @@ def _running_macos_app_bundles() -> set[Path]:
     bundles: set[Path] = set()
     for proc in psutil.process_iter(["exe"]):
         exe = proc.info.get("exe") or ""
-        if exe.endswith("/Contents/MacOS/Hermes"):
+        if exe.endswith(f"/Contents/MacOS/{DESKTOP_APP_NAME}"):
             bundles.add(Path(exe).resolve().parents[2])
     return bundles
 
@@ -984,7 +984,7 @@ def _stage_macos_bundle_copy(src: Path, dst: Path) -> None:
 
 
 def _install_rebuilt_desktop_app(desktop_dir: Path, candidates: list[Path]) -> tuple[list[Path], list[str]]:
-    """Copy the rebuilt macOS bundle into every stale or missing installed ``Hermes.app`` in
+    """Copy the rebuilt macOS bundle into every stale or missing installed ``tuos.app`` in
     *candidates* (``_installed_desktop_apps()``) (#52339).
 
     ``hermes desktop --build-only`` (what ``hermes update`` runs) packages into
@@ -1003,7 +1003,7 @@ def _install_rebuilt_desktop_app(desktop_dir: Path, candidates: list[Path]) -> t
     rebuilt_exe = _desktop_packaged_executable(desktop_dir)
     if rebuilt_exe is None:
         return [], []
-    # .../Hermes.app/Contents/MacOS/Hermes -> .../Hermes.app
+    # .../tuos.app/Contents/MacOS/tuos -> .../tuos.app
     return _install_rebuilt_macos_bundles(
         rebuilt_exe.parents[2], candidates, running=_running_macos_app_bundles())
 
@@ -1068,7 +1068,7 @@ def _owns_installed_desktop_apps() -> bool:
 
 
 def _installed_desktop_apps() -> list[Path]:
-    """Installed macOS ``Hermes.app`` bundles this checkout's update owns.
+    """Installed macOS ``tuos.app`` bundles this checkout's update owns.
 
     When no owned copy is left, a recorded one that has gone missing still counts: its ownership
     stamp left with the bundle, and without the record nothing would ever put it back (Finder, the
@@ -1091,7 +1091,7 @@ def _installed_desktop_apps() -> list[Path]:
 def _installed_desktop_launch_target(desktop_dir: Path, packaged_executable: Path) -> Path:
     """The executable ``hermes desktop`` launches: the installed app once it IS the checkout build.
 
-    Finder, the Dock and Spotlight open the installed ``Hermes.app``; launching the ``release/``
+    Finder, the Dock and Spotlight open the installed ``tuos.app``; launching the ``release/``
     bundle beside it ran the same app from a second path while the installed copy went stale
     (#52339). Refresh the installed copies, then launch the first one that matches the checkout
     build. The checkout bundle stays the fallback: nothing installed, or a copy that is running
@@ -1103,7 +1103,7 @@ def _installed_desktop_launch_target(desktop_dir: Path, packaged_executable: Pat
     rebuilt_hash = _app_asar_hash(packaged_executable.parents[2])
     for app in _installed_desktop_apps():
         if rebuilt_hash is not None and _app_asar_hash(app) == rebuilt_hash:
-            return app / "Contents" / "MacOS" / "Hermes"
+            return app / "Contents" / "MacOS" / DESKTOP_APP_NAME
     return packaged_executable
 
 
@@ -1656,14 +1656,14 @@ def _site_packages_install_kind(project_root: Path) -> Optional[str]:
 
 
 def _launch_installed_macos_desktop_app() -> bool:
-    """Launch a separately installed ``/Applications/Hermes.app``, if present.
+    """Launch a separately installed ``/Applications/tuos.app``, if present.
 
     Returns True only when the app bundle exists and a detached launch was
     started — the caller then exits without touching the build ladder.
     """
     if sys.platform != "darwin":
         return False
-    executable = Path("/Applications/Hermes.app/Contents/MacOS/Hermes")
+    executable = Path(f"/Applications/{DESKTOP_APP_NAME}.app/Contents/MacOS/{DESKTOP_APP_NAME}")
     if not executable.is_file():
         return False
     from hermes_cli.bundled_app import launch_detached

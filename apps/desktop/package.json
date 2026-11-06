@@ -3,8 +3,8 @@
   "productName": "Hermes",
   "private": true,
   "version": "0.0.0",
-  "description": "Native desktop shell for Hermes Agent.",
-  "author": "Nous Research",
+  "description": "Native desktop shell for tuos.",
+  "author": "tuos",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sreent/hermes.git"

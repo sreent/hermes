@@ -310,7 +310,8 @@ function Invoke-Pre {
   $volumes = @($volumes | Select-Object -Unique)
 
   Step 'before we start (nothing here is pass/fail, just read it)'
-  $procs = @(Get-Process -Name 'Hermes', 'hermes' -ErrorAction SilentlyContinue)
+  # The desktop app (tuos.exe) and the CLI (hermes.exe).
+  $procs = @(Get-Process -Name 'tuos', 'hermes' -ErrorAction SilentlyContinue)
   if ($procs.Count) {
     Warn 'Hermes looks like it is running -- close the desktop app and the gateway'
     Warn "before you run 'hermes update', or the dependency sync may fail:"
@@ -515,7 +516,7 @@ function Invoke-Post {
   Confirm-Action "Put everything back from $($script:Snap)?"
 
   Step 'stopping Hermes'
-  foreach ($name in @('Hermes', 'hermes')) {
+  foreach ($name in @('tuos', 'hermes')) {
     Get-Process -Name $name -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
   }
   Ok 'asked Hermes to stop (if anything was running)'

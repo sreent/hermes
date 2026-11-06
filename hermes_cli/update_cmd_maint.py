@@ -1001,7 +1001,7 @@ def _run_post_update_maintenance(
         print(
             "  ℹ macOS: if tuos re-prompts for permissions you already "
             "granted (toggle shows ON), the stored grant is stale — run "
-            "`tccutil reset ScreenCapture com.nousresearch.hermes` (repeat "
+            f"`tccutil reset ScreenCapture {distribution.DESKTOP_APP_ID}` (repeat "
             "per affected service), toggle it ON in System Settings, then "
             "fully quit & relaunch once."
         )

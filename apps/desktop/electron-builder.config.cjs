@@ -5,7 +5,7 @@
 // how the two halves drift.
 //
 // A .cjs module (not JSON) so the variant is decided at require time:
-// HERMES_DESKTOP_VARIANT=light builds "Hermes Light". The whole config
+// HERMES_DESKTOP_VARIANT=light builds "tuos Light". The whole config
 // derives from that one flag.
 // @ts-check
 'use strict'
@@ -29,8 +29,8 @@ const {
   token
 } = require('./product-identity.cjs')
 
-// `storeMsix` is optional on the identity type but guaranteed present when
-// `store` is true (product-identity.cjs spreads it only in that branch).
+// `storeMsix` is optional on the identity type and present only when `store`
+// is true and product-identity.cjs's STORE_MSIX is set.
 // The `store` flag is typed `boolean` in the identity, so checkJs cannot
 // correlate the two; `mustStoreMsix` is the single assertion point and the
 // invariant lives in product-identity.cjs:33-34/58-68.
@@ -45,7 +45,10 @@ const releaseBuild = Boolean(process.env.HERMES_PAYLOAD_TAG)
  * @returns {NonNullable<typeof storeMsix>}
  */
 function mustStoreMsix(value) {
-  return /** @type {NonNullable<typeof storeMsix>} */ (value)
+  if (!value) {
+    throw new Error("Store packaging needs this fork's Partner Center identity: set STORE_MSIX in product-identity.cjs")
+  }
+  return value
 }
 
 // The out-of-store MSIX publisher (ATS cert subject) — single source, shared
@@ -67,6 +70,11 @@ if (!/^\d+\.\d+\.\d+$/.test(electronVersion)) {
   throw new Error(`invalid electron version ${electronVersion} in package.json`)
 }
 
+// Who ships the builds (FORK.md, "Rebranded as tuos"). The code is Nous Research's Hermes Agent under the
+// MIT licence, so the copyright line credits both; otherwise it would default to package.json's author.
+const PUBLISHER = 'tuos'
+const COPYRIGHT = 'Copyright © 2026 Nous Research and the tuos contributors'
+
 const macFeed = channelRequest ? null : feedContract.darwinFeed(channel === 'canary' || channel === 'light-canary' ? 'canary' : 'stable', light)
 const publicUrl = feedContract.feedBaseUrl(process.env.CLOUDFLARE_R2_PUBLIC_URL)
 
@@ -76,6 +84,7 @@ module.exports = {
   appId,
   productName: displayName,
   executableName: displayName,
+  copyright: COPYRIGHT,
   protocols: [
     {
       name: `${displayName} Protocol`,
@@ -206,7 +215,7 @@ module.exports = {
     // paste onto the stock removable-drive icon). It lives in packaging/ with
     // the background so the `files` whitelist keeps it out of the app bundle.
     icon: 'packaging/dmg-volume.icns',
-    title: 'Hermes Agent Installer',
+    title: `${displayName} Installer`,
     // A prebuilt .tiff on purpose, not a PNG plus a @2x sibling: dmg-builder's
     // PNG path runs `tiffutil -cathidpicheck`, which on macOS 26 rewrites both
     // frames to 72 dpi and silently drops the 2x representation. A .tiff is
@@ -251,7 +260,7 @@ module.exports = {
     applicationId: appNamePascal,
     displayName,
     publisher: store ? mustStoreMsix(storeMsixWhenStore).publisher : OUT_OF_STORE_PUBLISHER,
-    publisherDisplayName: store ? mustStoreMsix(storeMsixWhenStore).publisherDisplayName : 'Nous Research',
+    publisherDisplayName: store ? mustStoreMsix(storeMsixWhenStore).publisherDisplayName : PUBLISHER,
     // The native quad is the build time (scripts/msix-shared.mjs::nativeQuad),
     // baked into the manifest template, so the builder's own build-number
     // override would stamp a second, conflicting version.
@@ -281,10 +290,10 @@ module.exports = {
   },
   linux: {
     category: 'Development',
-    maintainer: 'Nous Research <support@nousresearch.com>',
+    maintainer: `${PUBLISHER} <https://github.com/${owner}/${repo}>`,
     synopsis: light
-      ? 'Remote-only desktop client for Hermes Agent.'
-      : 'Native desktop shell for Hermes Agent.',
+      ? 'Remote-only desktop client for tuos.'
+      : 'Native desktop shell for tuos.',
     target: ['AppImage']
   }
 }

@@ -118,9 +118,9 @@ test('nonstable runtime pins userData before the app name can change', async ():
 })
 
 test.each([
-  [undefined, 'Hermes', 'hermes', 'latest', 'canary'],
-  ['bundled', 'Hermes Agent', 'hermes', 'latest', 'canary'],
-  ['light', 'Hermes Light', 'hermes-light', 'light', 'light-canary']
+  [undefined, 'tuos', 'hermes', 'latest', 'canary'],
+  ['bundled', 'tuos Agent', 'hermes', 'latest', 'canary'],
+  ['light', 'tuos Light', 'hermes-light', 'light', 'light-canary']
 ] as const)(
   '%s separates stable, canary and independent commits',
   async (
@@ -287,15 +287,13 @@ test('nonstable builds cannot claim the official Store package', async (): Promi
   await assert.rejects(identityForVariant('store'), /Store.*stable/)
 })
 
-test('store carries the Partner Center MSIX identity and no other variant does', async (): Promise<void> => {
-  const store: ProductIdentity = await identityForVariant('store')
-  assert.deepEqual(store.storeMsix, {
-    identityName: 'NousResearchInc.HermesAgent',
-    publisher: 'CN=EE6D86E4-606F-4E38-B940-AD7248C9D519',
-    publisherDisplayName: 'Nous Research Inc.'
-  })
-
-  for (const v of [undefined, 'bundled', 'light'] as const) {
+test('store packaging refuses until this fork has its own Partner Center identity', async (): Promise<void> => {
+  // Nous Research's Store listing is not this fork's to publish under.
+  for (const v of ['store', undefined, 'bundled', 'light'] as const) {
     assert.equal((await identityForVariant(v)).storeMsix, undefined, `variant ${v} must carry no storeMsix`)
   }
+
+  await identityForVariant('store')
+  delete require.cache[require.resolve('../electron-builder.config.cjs')]
+  assert.throws(() => require('../electron-builder.config.cjs'), /Partner Center identity/)
 })

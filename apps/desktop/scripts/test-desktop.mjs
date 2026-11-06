@@ -17,10 +17,10 @@ const PLATFORM = process.platform
 // shell and the PM payload under resources/agent-payload.
 const APP = (() => {
   if (PLATFORM === 'darwin') {
-    const appPath = path.join(RELEASE_ROOT, `mac-${ARCH}`, 'Hermes.app')
+    const appPath = path.join(RELEASE_ROOT, `mac-${ARCH}`, 'tuos.app')
     return {
       appPath,
-      binary: path.join(appPath, 'Contents', 'MacOS', 'Hermes'),
+      binary: path.join(appPath, 'Contents', 'MacOS', 'tuos'),
       resourcesPath: path.join(appPath, 'Contents', 'Resources'),
       asarPath: path.join(appPath, 'Contents', 'Resources', 'app.asar'),
       unpackedDistIndex: path.join(appPath, 'Contents', 'Resources', 'app.asar.unpacked', 'dist', 'index.html')
@@ -35,7 +35,7 @@ const APP = (() => {
       .find(exists)
     return {
       appPath: unpacked,
-      binary: unpacked ? path.join(unpacked, 'Hermes.exe') : path.join(RELEASE_ROOT, 'win-unpacked', 'Hermes.exe'),
+      binary: unpacked ? path.join(unpacked, 'tuos.exe') : path.join(RELEASE_ROOT, 'win-unpacked', 'tuos.exe'),
       resourcesPath: unpacked ? path.join(unpacked, 'resources') : path.join(RELEASE_ROOT, 'win-unpacked', 'resources'),
       asarPath: unpacked ? path.join(unpacked, 'resources', 'app.asar') : path.join(RELEASE_ROOT, 'win-unpacked', 'resources', 'app.asar'),
       unpackedDistIndex: unpacked
@@ -47,7 +47,7 @@ const APP = (() => {
   const unpacked = path.join(RELEASE_ROOT, 'linux-unpacked')
   return {
     appPath: unpacked,
-    binary: path.join(unpacked, 'Hermes'),
+    binary: path.join(unpacked, 'tuos'),
     resourcesPath: path.join(unpacked, 'resources'),
     asarPath: path.join(unpacked, 'resources', 'app.asar'),
     unpackedDistIndex: path.join(unpacked, 'resources', 'app.asar.unpacked', 'dist', 'index.html')

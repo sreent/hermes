@@ -216,7 +216,7 @@ function nativeRemovalInstructions(kind, platform, appPath = null) {
 
   if (platform === 'darwin') {
     // Name the running bundle: channel builds ship under different .app names.
-    const bundle = appPath ? path.posix.basename(String(appPath)) : 'the Hermes app'
+    const bundle = appPath ? path.posix.basename(String(appPath)) : 'the tuos app'
     const folder = appPath ? path.posix.dirname(String(appPath)) : 'Applications'
 
     return `Quit the app and drag ${bundle} from ${folder} to the Trash.`
@@ -262,8 +262,8 @@ function modeRemovesUserData(mode: string) {
  * Resolve the on-disk app bundle/dir to remove for the running desktop app,
  * given the path to the running executable (`process.execPath`) and platform.
  *
- *   macOS:   …/Hermes.app/Contents/MacOS/Hermes  → …/Hermes.app
- *   Windows: …\Hermes\Hermes.exe                 → …\Hermes  (install dir)
+ *   macOS:   …/tuos.app/Contents/MacOS/tuos  → …/tuos.app
+ *   Windows: …\tuos\tuos.exe                 → …\tuos  (install dir)
  *   Linux:   AppImage → APPIMAGE when we run from it; unpacked → the *-unpacked dir
  *
  * Returns null when we can't confidently identify a removable bundle (e.g.
@@ -282,10 +282,10 @@ function resolveRemovableAppPath(execPath, platform, env: any = {}) {
   const p = platform === 'win32' ? path.win32 : path.posix
 
   if (platform === 'darwin') {
-    // …/Hermes.app/Contents/MacOS/Hermes → strip 3 segments to the .app
+    // …/tuos.app/Contents/MacOS/tuos → strip 3 segments to the .app
     const macOsDir = p.dirname(exe) // …/Contents/MacOS
     const contents = p.dirname(macOsDir) // …/Contents
-    const appBundle = p.dirname(contents) // …/Hermes.app
+    const appBundle = p.dirname(contents) // …/tuos.app
 
     if (appBundle.endsWith('.app')) {
       return appBundle
@@ -295,10 +295,10 @@ function resolveRemovableAppPath(execPath, platform, env: any = {}) {
   }
 
   if (platform === 'win32') {
-    // NSIS per-user installs Hermes.exe directly in the install dir.
+    // NSIS per-user installs tuos.exe directly in the install dir.
     const dir = p.dirname(exe)
 
-    if (/[\\/]Hermes$/i.test(dir) || /[\\/]hermes-desktop$/i.test(dir)) {
+    if (/[\\/]tuos$/i.test(dir) || /[\\/]hermes-desktop$/i.test(dir)) {
       return dir
     }
 
@@ -313,7 +313,7 @@ function resolveRemovableAppPath(execPath, platform, env: any = {}) {
     return appImage
   }
 
-  // Unpacked electron-builder tree: …/linux-unpacked/hermes
+  // Unpacked electron-builder tree: …/linux-unpacked/tuos
   const dir = p.dirname(exe)
 
   if (/-unpacked$/.test(dir)) {

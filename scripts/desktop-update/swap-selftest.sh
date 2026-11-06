@@ -33,7 +33,7 @@ SWAP_ST_FAILED="" SWAP_ST_CELL=""
 
 swap_st_fail() { echo "FAIL [$SWAP_ST_CELL] $*"; SWAP_ST_FAILED="$SWAP_ST_FAILED $SWAP_ST_CELL"; }
 
-swap_st_bundle() { # dir version -- a fixture Hermes.app; every file carries the version
+swap_st_bundle() { # dir version -- a fixture tuos.app; every file carries the version
   local d="$1" v="$2" i=0
   mkdir -p "$d/Contents/MacOS" "$d/Contents/Resources/payload" || return 1
   printf '%s\n' "$v" > "$d/Contents/Resources/hermes-version"
@@ -65,9 +65,9 @@ swap_st_interrupt() { # root pause-at mode
   local root="$1" pause="$2" mode="$3" t pid i deadline s sentinels
   rm -rf "$root"
   mkdir -p "$root/Applications" "$root/hermes-agent/apps/desktop/release/mac-arm64" || return 2
-  cp -R "$SWAP_ST_ROOT/old.app" "$root/Applications/Hermes.app" || return 2
-  cp -R "$SWAP_ST_ROOT/new.app" "$root/hermes-agent/apps/desktop/release/mac-arm64/Hermes.app" || return 2
-  INSTALL_ROOT="$root/hermes-agent" RELAUNCH_TARGET="$root/Applications/Hermes.app"
+  cp -R "$SWAP_ST_ROOT/old.app" "$root/Applications/tuos.app" || return 2
+  cp -R "$SWAP_ST_ROOT/new.app" "$root/hermes-agent/apps/desktop/release/mac-arm64/tuos.app" || return 2
+  INSTALL_ROOT="$root/hermes-agent" RELAUNCH_TARGET="$root/Applications/tuos.app"
   t="$RELAUNCH_TARGET"
   if [ "$mode" = none ]; then
     ( FINAL_CODE=0 APP_REBUILD_FAILED=0; mac_swap ) </dev/null >/dev/null 2>&1
@@ -134,7 +134,7 @@ swap_st_cell() { # cell pause-at mode expected-wreck expected-bundle
   local cell="$1" pause="$2" mode="$3" want_state="$4" want="$5"
   local root="$SWAP_ST_ROOT/$1" t attempt rc state got leftover r before log_lines
   SWAP_ST_CELL="$cell"
-  t="$root/Applications/Hermes.app"
+  t="$root/Applications/tuos.app"
   for attempt in 1 2 3 4 5; do
     swap_st_interrupt "$root" "$pause" "$mode"; rc=$?
     [ "$rc" -eq 1 ] || break

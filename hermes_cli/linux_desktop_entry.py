@@ -27,12 +27,20 @@ from typing import Callable, Mapping, Optional
 # verbatim (Wayland app_id, CHROME_DESKTOP). GNOME links a window to a launcher by StartupWMClass
 # or by a `<app_id>.desktop` file name, so the entry has to carry the same id — under the old
 # "hermes.desktop" name a packaged launch matches neither rung and lands on the placeholder icon.
-APP_ID = "com.nousresearch.hermes"
+# Literals, not hermes_cli.distribution's DESKTOP_APP_ID / DESKTOP_APP_NAME: nix/desktop.nix imports
+# this file on its own. Tests keep them equal to those and to product-identity.cjs.
+APP_ID = "io.github.sreent.tuos"
+APP_NAME = "tuos"  # the launcher's label and the packaged executable's name
 DESKTOP_ENTRY_NAME = f"{APP_ID}.desktop"
 
-# Entry name written before the app-id rename; a successful install converts it into a hidden
-# alias (NoDisplay=true) so pre-rename taskbar pins keep resolving (see _alias_legacy_desktop_entry).
+# Entry names written before this one: "hermes.desktop" before the app-id rename, then Hermes's own
+# app id before this fork's (FORK.md, "Rebranded as tuos"). A successful install converts each into a
+# hidden alias (NoDisplay=true) so taskbar pins made against it keep resolving
+# (see _alias_legacy_desktop_entry).
 LEGACY_DESKTOP_ENTRY_NAME = "hermes.desktop"
+LEGACY_DESKTOP_ENTRY_NAMES = (LEGACY_DESKTOP_ENTRY_NAME, "com.nousresearch.hermes.desktop")
+# The menu label those entries carried, and the one this entry carries.
+_OWN_ENTRY_NAMES = ("Name=Hermes", f"Name={APP_NAME}")
 
 # XDG startup notification: set by an app-grid / menu launch, absent for terminal and detached
 # (updater relaunch) launches. See launched_from_shell().
@@ -157,11 +165,7 @@ def _desktop_argv_tail(project_root: Optional[Path]) -> list[str]:
     if project_root is None:
         return ["desktop"]
     release = project_root / "apps" / "desktop" / "release"
-    packaged = any(
-        (release / dist / name).exists()
-        for dist in ("linux-unpacked", "linux-arm64-unpacked")
-        for name in ("hermes", "Hermes")
-    )
+    packaged = any((release / dist / APP_NAME).exists() for dist in ("linux-unpacked", "linux-arm64-unpacked"))
     return ["desktop", "--skip-build"] if packaged else ["desktop"]
 
 
@@ -582,9 +586,9 @@ def render_desktop_entry(exec_command: str, icon: str) -> str:
     return (
         "[Desktop Entry]\n"
         "Type=Application\n"
-        "Name=Hermes\n"
-        "GenericName=Hermes Desktop\n"
-        "Comment=Launch Hermes Desktop\n"
+        f"Name={APP_NAME}\n"
+        f"GenericName={APP_NAME} Desktop\n"
+        f"Comment=Launch {APP_NAME} Desktop\n"
         f"Exec={exec_command}\n"
         f"Icon={icon}\n"
         "Terminal=false\n"
@@ -768,40 +772,41 @@ def _launcher_entry_management_enabled() -> bool:
 
 
 def _alias_legacy_desktop_entry(applications_dir: Path, exec_command: str, icon: str) -> bool:
-    """Keep the pre-rename ``hermes.desktop`` as a hidden alias of the app-id entry.
+    """Keep each earlier entry (``LEGACY_DESKTOP_ENTRY_NAMES``) as a hidden alias of the app-id entry.
 
     Shells resolve a taskbar pin by the entry file name it was pinned against: deleting the
     file makes GNOME drop the favourite and Plasma leave an inert item, and nothing can
-    re-pin for the user. The alias stays launchable for old pins without listing Hermes
+    re-pin for the user. The alias stays launchable for old pins without listing the app
     twice. Only a file that still names this app is converted; anything else at that path
-    is left alone. True when the legacy file was (re)written.
+    is left alone. True when a legacy file was (re)written.
     """
-    legacy = applications_dir / LEGACY_DESKTOP_ENTRY_NAME
-    try:
-        text = legacy.read_text(encoding="utf-8-sig")
-    except OSError:
-        return False
-    if not any(line.strip() == "Name=Hermes" for line in text.splitlines()):
-        return False
     alias_contents = _render_legacy_alias_entry(exec_command, icon)
-    if text == alias_contents:
-        return False
-    try:
-        from utils import atomic_write_text
+    rewritten = False
+    for name in LEGACY_DESKTOP_ENTRY_NAMES:
+        legacy = applications_dir / name
+        try:
+            text = legacy.read_text(encoding="utf-8-sig")
+        except OSError:
+            continue
+        if text == alias_contents or not any(line.strip() in _OWN_ENTRY_NAMES for line in text.splitlines()):
+            continue
+        try:
+            from utils import atomic_write_text
 
-        atomic_write_text(legacy, alias_contents, create_mode=0o755)
-        legacy.chmod(0o755)
-    except OSError:
-        return False
-    return True
+            atomic_write_text(legacy, alias_contents, create_mode=0o755)
+            legacy.chmod(0o755)
+        except OSError:
+            continue
+        rewritten = True
+    return rewritten
 
 
 def install_desktop_entry(project_root: Path) -> Optional[Path]:
     """Create or refresh the app-id entry, respecting the opt-out for existing entries.
 
-    Only the app-id entry is written; a pre-rename ``hermes.desktop`` beside it is converted
-    into a hidden alias once the new entry exists, and only while launcher management is
-    enabled — deleting it instead would silently kill existing taskbar pins (#124492).
+    Only the app-id entry is written; an earlier entry beside it (``hermes.desktop``, Hermes's
+    app id) is converted into a hidden alias once the new entry exists, and only while launcher
+    management is enabled — deleting it instead would silently kill existing taskbar pins (#124492).
     ``None`` on non-Linux platforms, when the write fails, or when the resolved ``Exec``
     provably cannot serve ``hermes desktop`` — a convenience, never a reason to fail a launch.
     """

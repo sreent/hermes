@@ -85,11 +85,12 @@ async function stampExeIdentity(
 
   const options = {
     icon,
+    // The publisher and copyright electron-builder.config.cjs gives the packages.
     'version-string': {
-      ProductName: 'Hermes',
-      FileDescription: 'Hermes',
-      CompanyName: 'Nous Research',
-      LegalCopyright: 'Copyright (c) 2026 Nous Research'
+      ProductName: 'tuos',
+      FileDescription: 'tuos',
+      CompanyName: 'tuos',
+      LegalCopyright: 'Copyright (c) 2026 Nous Research and the tuos contributors'
     }
   }
 

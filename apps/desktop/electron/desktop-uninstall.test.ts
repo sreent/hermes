@@ -81,7 +81,7 @@ test('nativeRemovalInstructions names the steward per kind and OS', () => {
     nativeRemovalInstructions('bundled', 'darwin', '/Applications/Hermes Agent Canary.app'),
     'Quit the app and drag Hermes Agent Canary.app from /Applications to the Trash.'
   )
-  assert.match(nativeRemovalInstructions('bundled', 'darwin'), /drag the Hermes app from Applications to the Trash/)
+  assert.match(nativeRemovalInstructions('bundled', 'darwin'), /drag the tuos app from Applications to the Trash/)
   assert.match(
     nativeRemovalInstructions('bundled', 'linux', '/home/x/Apps/Hermes.AppImage'),
     /\/home\/x\/Apps\/Hermes\.AppImage/
@@ -135,8 +135,8 @@ test('resolveRemovableAppPath: dev-run .app resolves (safety is shouldRemoveAppB
 
 test('resolveRemovableAppPath finds the install dir on Windows', () => {
   assert.equal(
-    resolveRemovableAppPath('C:\\Users\\x\\AppData\\Local\\Programs\\Hermes\\Hermes.exe', 'win32'),
-    'C:\\Users\\x\\AppData\\Local\\Programs\\Hermes'
+    resolveRemovableAppPath('C:\\Users\\x\\AppData\\Local\\Programs\\tuos\\tuos.exe', 'win32'),
+    'C:\\Users\\x\\AppData\\Local\\Programs\\tuos'
   )
   assert.equal(
     resolveRemovableAppPath('C:\\Users\\x\\AppData\\Local\\hermes-desktop\\Hermes.exe', 'win32'),

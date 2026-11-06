@@ -21,7 +21,7 @@ test.skipIf(process.platform !== 'linux')(
     } as InstallFacts
 
     fs.mkdirSync(releaseDir(facts), { recursive: true })
-    const exe = path.join(releaseDir(facts), 'Hermes')
+    const exe = path.join(releaseDir(facts), 'tuos')
     fs.copyFileSync(process.execPath, exe)
     const app = spawn(exe, ['-e', 'setTimeout(() => {}, 60_000)'], { env: {}, stdio: 'ignore' })
 

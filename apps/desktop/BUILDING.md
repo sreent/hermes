@@ -9,7 +9,7 @@ commands package the current desktop build; they do not stage a fresh runtime.
 |---|---|---|
 | Windows x64 / ARM64, sideload | Signed per-architecture MSIX packages, combined into a universal `.msixbundle`; `.appinstaller` descriptor | Windows App Installer |
 | Windows x64 / ARM64, Store | Store-identity MSIX packages and a separate Store bundle | Microsoft Store |
-| macOS ARM64 / x64 | Signed, notarized `Hermes.app` in DMG and ZIP artifacts | `electron-updater` with Squirrel.Mac |
+| macOS ARM64 / x64 | Signed, notarized `tuos Agent.app` in DMG and ZIP artifacts | `electron-updater` with Squirrel.Mac |
 | Linux x64 / ARM64 | Local builder can produce AppImage | External replacement; Linux desktop release legs are disabled |
 
 The current MSIX manifest requires Windows 11 22H2 (`10.0.22621.0`).

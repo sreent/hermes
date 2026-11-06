@@ -880,7 +880,7 @@ function Emit-Frame([bool]$ok, [string]$name, [bool]$skipped, [string]$reason = 
 $ProductTitle = if ($IncludeDesktop) { "Install command and app + desktop" } else { "Install command and app" }
 $Stages = @(
     @{ name = "prerequisites"; title = "System prerequisites"; category = "runtime"; needs_user_input = $false },
-    @{ name = "repository"; title = "Download Hermes Agent"; category = "runtime"; needs_user_input = $false },
+    @{ name = "repository"; title = "Download tuos"; category = "runtime"; needs_user_input = $false },
     @{ name = "venv"; title = "Create Python environment"; category = "runtime"; needs_user_input = $false },
     @{ name = "python-deps"; title = "Install Python dependencies"; category = "runtime"; needs_user_input = $false },
     @{ name = "config"; title = "Prepare config and skills"; category = "configuration"; needs_user_input = $false },
@@ -1512,16 +1512,16 @@ function Confirm-DesktopArtifact {
     try {
         $desktopDir = Join-Path $InstallDir "apps\desktop"
         $candidates = @(
-            (Join-Path $desktopDir "release\win-unpacked\Hermes.exe"),
-            (Join-Path $desktopDir "release\win-ia32-unpacked\Hermes.exe"),
-            (Join-Path $desktopDir "release\win-arm64-unpacked\Hermes.exe")
+            (Join-Path $desktopDir "release\win-unpacked\tuos.exe"),
+            (Join-Path $desktopDir "release\win-ia32-unpacked\tuos.exe"),
+            (Join-Path $desktopDir "release\win-arm64-unpacked\tuos.exe")
         )
         $desktopExe = $null
         foreach ($cand in $candidates) {
             if (Test-Path $cand) { $desktopExe = $cand; break }
         }
         if (-not $desktopExe) {
-            Fail "desktop build produced no Hermes.exe under $desktopDir\release\*-unpacked" products_build_failed
+            Fail "desktop build produced no tuos.exe under $desktopDir\release\*-unpacked" products_build_failed
         }
         Write-Ok "Desktop ready: $desktopExe"
 
@@ -1589,8 +1589,8 @@ function New-DesktopShortcuts {
         }
 
         $targets = @(
-            (Join-Path ([Environment]::GetFolderPath('Programs')) 'Hermes.lnk'),
-            (Join-Path ([Environment]::GetFolderPath('Desktop')) 'Hermes.lnk')
+            (Join-Path ([Environment]::GetFolderPath('Programs')) 'tuos.lnk'),
+            (Join-Path ([Environment]::GetFolderPath('Desktop')) 'tuos.lnk')
         )
 
         foreach ($lnkPath in $targets) {
@@ -1605,11 +1605,22 @@ function New-DesktopShortcuts {
                 # that outlives the app then blocks the next update's swap (#101789).
                 $sc.WorkingDirectory = $env:USERPROFILE
                 $sc.IconLocation = $iconLocation
-                $sc.Description = 'Hermes Agent'
+                $sc.Description = 'tuos'
                 $sc.Save()
                 Write-Ok "Shortcut created: $lnkPath"
             } catch {
                 Write-Warn "Could not create shortcut $lnkPath : $($_.Exception.Message)"
+            }
+        }
+
+        # Shortcuts made before the rename (FORK.md, "Rebranded as tuos") start this
+        # checkout's Hermes.exe, which the rebuild replaced with tuos.exe.
+        $oldExe = Join-Path $workDir 'Hermes.exe'
+        foreach ($folder in 'Programs', 'Desktop') {
+            $oldLnk = Join-Path ([Environment]::GetFolderPath($folder)) 'Hermes.lnk'
+            if ((Test-Path $oldLnk) -and $shell.CreateShortcut($oldLnk).TargetPath -eq $oldExe) {
+                Remove-Item -Force $oldLnk
+                Write-Ok "Removed the old shortcut: $oldLnk"
             }
         }
 

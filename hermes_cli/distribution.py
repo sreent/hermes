@@ -29,6 +29,13 @@ INSTALL_PS1_COMMAND = f"iex (irm {INSTALL_PS1_URL})"
 # packages, HERMES_* variables, ~/.hermes, service names and the `hermes` command (`tuos` runs it).
 PRODUCT_NAME = "tuos"
 
+# The desktop app's packaging identity, as apps/desktop/product-identity.cjs builds the stable app (keep
+# the two in step; a test compares them). The name is the macOS bundle (tuos.app) and the Windows and
+# Linux executable (tuos.exe, tuos); the id is its macOS bundle id and Linux app id, and the setup
+# installer's is `<id>.setup`. Its state folder keeps Hermes's name (gui_uninstall.desktop_userdata_dir).
+DESKTOP_APP_NAME = "tuos"
+DESKTOP_APP_ID = "io.github.sreent.tuos"
+
 _WORD = "A-Za-z0-9_"
 # "Hermes Agent" or "Hermes" as a word, in any language's text (CJK puts letters right next to it).
 # Not "Hermes Cloud", Nous Research's hosted service; a Nous model such as "Hermes 3" or "Hermes-4-405B";

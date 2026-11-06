@@ -17,6 +17,7 @@ import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
 
+import { brand } from '@hermes/shared/brand'
 import { _electron, type ElectronApplication, expect, type Page } from '@playwright/test'
 
 import { type CoreSandbox, type ProcInfo, providerConfigYaml, sandboxProcesses } from '../core/harness'
@@ -148,10 +149,10 @@ export function releaseDir(facts: InstallFacts): string {
 /** The packaged executable `hermes desktop` built into the install (electron-builder names it after productName). */
 export function packagedExe(facts: InstallFacts): string {
   const dir = releaseDir(facts)
-  const name = fs.readdirSync(dir).find(entry => /^hermes$/i.test(entry))
+  const name = fs.readdirSync(dir).find(entry => /^tuos$/i.test(entry))
 
   if (!name) {
-    throw new Error(`no packaged Hermes executable in ${dir}: ${fs.readdirSync(dir).join(', ')}`)
+    throw new Error(`no packaged tuos executable in ${dir}: ${fs.readdirSync(dir).join(', ')}`)
   }
 
   return path.join(dir, name)
@@ -411,14 +412,15 @@ export async function waitFor<T>(
 
 // ─── UI steps ──────────────────────────────────────────────────────────
 
-/** Copy of the first-run chooser / bootstrap installer overlay (the screens a healthy install must never show). */
+/** Copy of the first-run chooser / bootstrap installer overlay (the screens a healthy install must never show),
+ *  branded as the app shows its catalog (FORK.md, "Rebranded as tuos"). */
 export const FIRST_RUN_SCREENS = [
   'Set up Hermes Desktop',
   'Hermes needs a one-time install',
   'Setting up Hermes Agent',
   'Install Hermes locally',
   'Use Hermes on this computer'
-]
+].map(brand)
 
 /**
  * Record every first-run/bootstrap screen that is ever painted, even for a

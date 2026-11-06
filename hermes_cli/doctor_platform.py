@@ -10,6 +10,7 @@ import subprocess
 import sys
 from pathlib import Path
 from hermes_cli.colors import Colors, color
+from hermes_cli.distribution import DESKTOP_APP_ID, DESKTOP_APP_NAME
 from hermes_cli.config import is_nix_install_method, recommended_update_command_for_method
 from hermes_cli.doctor_report import (
     Finding, _fail_and_issue, _section, check_bool, check_fail, check_info, check_ok, check_warn, doctor_check,
@@ -311,18 +312,18 @@ def check_macos_tcc_grants() -> None:
     # --setup-tcc-identity or notarized build (certificate-anchored) is the strongest anchor.
     check_ok("macOS TCC signing identity is stable", _TCC_STABLE_DETAIL["certificate" in dr.lower()])
     check_info("If macOS still re-prompts for permissions (toggle shows ON): the stored grant is stale — run "
-               "`tccutil reset ScreenCapture com.nousresearch.hermes` (repeat per affected service), toggle it ON in "
+               f"`tccutil reset ScreenCapture {DESKTOP_APP_ID}` (repeat per affected service), toggle it ON in "
                "System Settings, then fully quit & relaunch tuos once.")
 
 
 def _desktop_app_bundle() -> Path | None:
-    """Locate the locally-built desktop bundle (``apps/desktop/release/mac-<arch>/Hermes.app``), newest first.
+    """Locate the locally-built desktop bundle (``apps/desktop/release/mac-<arch>/tuos.app``), newest first.
 
-    The only layout whose ad-hoc re-signed bundle can invalidate TCC grants. ``/Applications/Hermes.app`` is
-    deliberately not probed: it is the separately-signed, certificate-anchored Hermes-Setup launcher.
+    The only layout whose ad-hoc re-signed bundle can invalidate TCC grants. ``/Applications/tuos.app`` is
+    deliberately not probed: it is the separately-signed, certificate-anchored setup launcher.
     """
     release_dir = Path(__file__).resolve().parents[1] / "apps" / "desktop" / "release"
-    candidates = [p for p in release_dir.glob("mac*/Hermes.app") if p.is_dir()]
+    candidates = [p for p in release_dir.glob(f"mac*/{DESKTOP_APP_NAME}.app") if p.is_dir()]
     return max(candidates, key=lambda p: p.stat().st_mtime) if candidates else None
 
 
@@ -376,7 +377,7 @@ def check_macos_full_disk_access() -> None:
                    "will never trip per-folder dialogs (Desktop/Downloads/Documents/...) again. Open: System Settings → "
                    "Privacy & Security → Full Disk Access — or run:\n"
                    "      open \"x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles\"\n"
-                   "    then enable your terminal (and Hermes.app if you use Desktop), and restart them once. "
+                   f"    then enable your terminal (and {DESKTOP_APP_NAME}.app if you use Desktop), and restart them once. "
                    "With tuos' stable signing identities the grant survives every update.")
     except OSError:
         pass  # missing dir / other error: indeterminate, stay silent

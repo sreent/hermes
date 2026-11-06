@@ -511,7 +511,7 @@ products_record() {
 stage_record() {
     case "$1" in
         prerequisites) echo "System prerequisites|runtime|false" ;;
-        repository)    echo "Download Hermes Agent|runtime|false" ;;
+        repository)    echo "Download tuos|runtime|false" ;;
         venv)          echo "Create Python environment|runtime|false" ;;
         python-deps)   echo "Install Python dependencies|runtime|false" ;;
         config)        echo "Prepare config and skills|configuration|false" ;;

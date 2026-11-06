@@ -362,8 +362,8 @@ def test_missing_desktop_observation_uses_installed_products(completion, capture
     if installed == "renderer":
         _put(source, "apps/desktop/dist/index.html", "old renderer")
     elif installed == "packaged":
-        executable = ("mac-arm64/Hermes.app/Contents/MacOS/Hermes" if sys.platform == "darwin"
-                      else "linux-unpacked/hermes")
+        executable = ("mac-arm64/tuos.app/Contents/MacOS/tuos" if sys.platform == "darwin"
+                      else "linux-unpacked/tuos")
         _put(source, f"apps/desktop/release/{executable}", "old packaged app")
     before = context.read_bytes()
     child = run()

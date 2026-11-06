@@ -27,7 +27,7 @@ Download the package for your platform from the
 - **Windows:** open the `.appinstaller` download with Windows App Installer.
   It installs the signed MSIX bundle and records its update source.
   Microsoft Store packages have separate Store ownership.
-- **macOS:** open the DMG, then copy `Hermes.app` to Applications. The ZIP
+- **macOS:** open the DMG, then copy `tuos Agent.app` to Applications. The ZIP
   artifact carries the signed app used by the automatic updater.
 
 Bundled packages contain the agent, Python, supported dependencies, and prebuilt

@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
  * The TypeScript half of scripts/fork/rename.py (FORK.md, "Rebranded as tuos"): applies
- * apps/shared/src/brand.ts to copy the desktop app, the web dashboard, the TUI and the docs site show
- * that is written into their code rather than their translation catalogs (each app brands those as it
- * loads them).
+ * apps/shared/src/brand.ts to copy the desktop app, its setup installer, the web dashboard, the TUI
+ * and the docs site show that is written into their code rather than their translation catalogs (each
+ * app brands those as it loads them).
  *
  * Renamed: JSX text; JSX attributes, object properties, variables and function results whose names
  * say they hold copy (title, label, message, description, hint, ...); error messages; calls that
@@ -33,7 +33,15 @@ import { fileURLToPath } from 'node:url'
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const ts = createRequire(path.join(ROOT, 'package.json'))('typescript')
 
-const ROOTS = ['apps/desktop/src', 'apps/desktop/electron', 'web/src', 'ui-tui/src', 'website/src', 'website/sidebars.ts']
+const ROOTS = [
+  'apps/desktop/src',
+  'apps/desktop/electron',
+  'apps/bootstrap-installer/src',
+  'web/src',
+  'ui-tui/src',
+  'website/src',
+  'website/sidebars.ts'
+]
 let PRODUCT_NAME = 'tuos' // read from brand.ts in main()
 const TEST = /\.(test|spec)\.(ts|tsx)$/
 // Tests, fixtures and translation catalogs (branded where they load).

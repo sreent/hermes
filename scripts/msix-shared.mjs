@@ -36,12 +36,12 @@ export function channelBuildRequest(env = process.env) {
 }
 
 
-// The out-of-store MSIX publisher — the ATS signing cert subject, which is
+// The out-of-store MSIX publisher — the signing cert subject, which is
 // what Windows compares against the package manifest publisher at install.
 // Mirrored from electron-builder.config.cjs so the .appinstaller and the
-// manifest can never drift.
-export const OUT_OF_STORE_PUBLISHER =
-  'CN=Nous Research Inc., O=Nous Research Inc., L=Austin, S=Texas, C=US'
+// manifest can never drift. This fork (FORK.md, "Rebranded as tuos") has no
+// certificate yet: replace this with its subject, exactly, before signing.
+export const OUT_OF_STORE_PUBLISHER = 'CN=tuos'
 
 // Content-Type for MSIX / App Installer artifacts. Without the right MIME the
 // browser cannot hand a clicked .appinstaller / .msixbundle to the OS App

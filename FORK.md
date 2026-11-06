@@ -145,8 +145,13 @@ Deliberately still upstream's:
 - **Documentation links** to `hermes-agent.nousresearch.com/docs` throughout the CLI, app and docs. Those pages
   still describe this code; repoint them once this fork hosts its own docs (the site's `url` and `baseUrl`
   are unchanged for that reason).
-- **Packaging identity**: the desktop app's signing publisher, MSIX identity and Linux package maintainer
-  ("Nous Research"). Builds of this fork need their own certificates and maintainer before publishing.
+- **Signing and release tooling for desktop builds.** Signing uses Nous's Azure Trusted Signing and Apple
+  accounts (`AZURE_SIGN_*`, notarization). Before this fork publishes builds it needs its own certificate,
+  and the MSIX publisher, `OUT_OF_STORE_PUBLISHER` in `scripts/msix-shared.mjs` (now `CN=tuos`), must
+  equal that certificate's subject. Nous's release scripts still expect Hermes's artifact and channel
+  names (`HermesBundled-<version>-…`): `scripts/releases/darwin.py`, `channels.py`'s preview identities
+  and `scripts/render-builds-table.py`. So does `tests/install/`, which drives Nous's published
+  installers. The removed workflows ran all of these.
 
 ### Diagnostics stay on the machine running Hermes
 
@@ -212,8 +217,8 @@ entries. Documented in `website/docs/user-guide/configuration.md#memory-storage`
 ### Rebranded as tuos
 
 What people see calls the product **tuos** (lowercase). Internal names stay Hermes's, so upstream merges and
-existing installs keep working: Python packages, `HERMES_*` variables, `~/.hermes`, service and unit names,
-the desktop app's packaging identity, and the `hermes` command.
+existing installs keep working: Python packages, `HERMES_*` variables, `~/.hermes` and the desktop app's
+state folder, service and unit names, and the `hermes` command.
 
 - **The rule**: `brand()` in `hermes_cli/distribution.py` and its TypeScript twin in `apps/shared/src/brand.ts`
   (keep them identical; both are tested). In user-facing copy, "Hermes Agent" and "Hermes" become "tuos",
@@ -245,10 +250,10 @@ the desktop app's packaging identity, and the `hermes` command.
     `sys.stdout`/`sys.stderr`, messages of anything raised, slash-command descriptions (`CommandDef`), and
     keyword arguments named for copy (`help=`, `description=`, `detail=`, `install_hint=`, ...). Not logs,
     docstrings, prompts, comparisons, dictionary keys or other data.
-  - The desktop app, web dashboard, TUI and the docs site's own pages (`scripts/fork/rename_ts.mjs`): JSX
-    text, error messages, and attributes, properties, variables and function results whose names say they
-    hold copy (title, label, message, description, hint, ...). Not logs, keys, headers, commands the code
-    runs or scripts it sends to a shell.
+  - The desktop app and its setup installer, web dashboard, TUI and the docs site's own pages
+    (`scripts/fork/rename_ts.mjs`): JSX text, error messages, and attributes, properties, variables and
+    function results whose names say they hold copy (title, label, message, description, hint, ...). Not
+    logs, keys, headers, commands the code runs or scripts it sends to a shell.
   - Docs pages (`website/docs` and the zh-Hans translation): prose, front-matter titles and descriptions,
     and shell blocks. Other code blocks, and lines that credit Nous Research, stay. A renamed heading keeps
     its old anchor (`{#...}`), so links into the page still land.
@@ -301,6 +306,45 @@ the desktop app's packaging identity, and the `hermes` command.
     `web_routers/messaging.py`).
 - **Docs and README**: the docs site's title and navbar (`website/docusaurus.config.ts`, without Hermes's
   logo), and the README's title and opening.
+- **The desktop app's packaging identity** (`apps/desktop/product-identity.cjs`). The apps are tuos,
+  tuos Light and tuos Agent (the bundled build):
+  - Files: `tuos.app`, `tuos.exe` and the Linux executable `tuos`.
+  - App ids: `io.github.sreent.tuos[-light|-bundled]` (`APP_ID_PREFIX`).
+  - MSIX packages: `Sreent.Tuos…` (`MSIX_ORG`), with publisher display name tuos.
+  - Artifacts: `TuosBundled-<version>-…`.
+  - These follow too: the macOS menu, the About panel (copyright "Nous Research and the tuos
+    contributors"), the DMG title, the exe's version info (`scripts/set-exe-identity.mjs`), the Linux
+    package metadata and the build scripts' fallbacks.
+  - The CLI's copy is `DESKTOP_APP_NAME` and `DESKTOP_APP_ID` in `hermes_cli/distribution.py` (a test
+    keeps it in step). `tuos desktop`, doctor and its permission hints, update and uninstall find the
+    app with it.
+  - These find the app by its new name: `scripts/install.ps1`, `scripts/desktop-update/posix.sh`, the
+    setup installer (`bootstrap.rs`, `update.rs`) and `apps/desktop/scripts/test-desktop.mjs`.
+    `install.ps1`'s shortcuts are now `tuos.lnk`, and it removes an old `Hermes.lnk` that started this
+    checkout's app.
+  - The setup installer (`apps/bootstrap-installer`):
+    - product and window name tuos, bundle id `io.github.sreent.tuos.setup`, binary `tuos-setup`;
+    - its Windows manifest, macOS permission prompts and UI text (`rename_ts.mjs` now covers its
+      `src/`), and the installers' "Download tuos" step;
+    - it still copies itself to `~/.hermes/hermes-setup`, which the desktop's updater runs.
+  - Linux: the launcher entry is `io.github.sreent.tuos.desktop`, labelled tuos. Hermes's
+    `com.nousresearch.hermes.desktop` becomes a hidden alias of it, like the older `hermes.desktop`, so
+    taskbar pins keep working. Notifications name the new entry.
+  - Unchanged:
+    - The state folder: `Application Support/Hermes`, `%APPDATA%\Hermes`, `~/.config/Hermes`, named by
+      `apps/desktop/package.json`'s `productName`. Saved connections, sign-ins and window layout carry
+      over. Hermes's own desktop app shares it, so only one of the two runs at a time.
+    - The `hermes://` link scheme, which plugins, the catalog and connectors open.
+    - The `hermes` command inside packages.
+    - The managed Python's signing identifier and the "Hermes Local Signing" certificate.
+  - One-time costs of the new identity:
+    - macOS asks again for permissions (screen recording, microphone, Full Disk Access), since they
+      belong to the bundle id.
+    - Secrets kept in the keychain (an opt-in setting) must be entered again.
+    - On Windows the MSIX is a new package, installed beside a Hermes one.
+    - Update and uninstall leave apps installed under the old names alone (`Hermes.app`, Nous's
+      packages); remove those by hand.
+  - The Store variant refuses to package until `STORE_MSIX` holds this fork's Partner Center identity.
 
 Not rebranded yet:
 - Strings outside the contexts above: Python's returned values, constants and dictionaries (API responses,
@@ -311,11 +355,8 @@ Not rebranded yet:
   notification footer), so extend the scripts' rules with care.
 - What only the agent reads, such as skills and tool descriptions, still says Hermes. Its identity, help
   guidance and surface hints say tuos.
-- The desktop app's packaging identity (`product-identity.cjs`): app and executable name, appId, MSIX
-  identity, the macOS menu's app name and the About panel. That belongs with this fork's own builds and
-  signing.
-- Translated READMEs, favicons and images, the TUI's translated taglines, and upstream's community
-  stories on the docs site.
+- Translated READMEs, favicons and images (the apps' icons and the DMG background too), the TUI's
+  translated taglines, and upstream's community stories on the docs site.
 
 ### Memory sharing per agent: shared, per_user, hybrid
 

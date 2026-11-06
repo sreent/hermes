@@ -85,16 +85,24 @@ def test_remove_desktop_app_leftovers_removes_hermes_library_entries(fake_home):
         ("WebKit", "com.nousresearch.hermes"),
         ("HTTPStorages", "com.nousresearch.hermes"),
         ("Saved Application State", "com.nousresearch.hermes.savedState"),
+        ("Caches", "io.github.sreent.tuos"),
+        ("Caches", "io.github.sreent.tuos.ShipIt"),
+        ("Caches", "tuos-updater"),
+        ("Logs", "tuos"),
+        ("WebKit", "io.github.sreent.tuos"),
+        ("Saved Application State", "io.github.sreent.tuos.savedState"),
     ):
         d = library / parent / name
         d.mkdir(parents=True)
         ours.append(d)
     (library / "Caches" / "com.other.vendor").mkdir(parents=True)  # untouched
+    (library / "Caches" / "virtuoso").mkdir(parents=True)  # contains "tuos", not ours
 
     removed = uninstall.remove_desktop_app_leftovers(full_uninstall=False)
 
     assert all(not d.exists() for d in ours)
     assert (library / "Caches" / "com.other.vendor").exists()
+    assert (library / "Caches" / "virtuoso").exists()
     assert len(removed) == len(ours)
 
 

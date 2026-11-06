@@ -31,10 +31,10 @@ def swap_fixture(tmp_path, monkeypatch):
     desktop_dir = tmp_path / "apps" / "desktop"
     live_root = desktop_dir / "release" / "win-unpacked"
     live_root.mkdir(parents=True)
-    (live_root / "Hermes.exe").write_text("old", encoding="utf-8")
+    (live_root / "tuos.exe").write_text("old", encoding="utf-8")
     staging = main_desktop._desktop_staging_dir(desktop_dir)
     (staging / "win-unpacked").mkdir(parents=True)
-    (staging / "win-unpacked" / "Hermes.exe").write_text("new", encoding="utf-8")
+    (staging / "win-unpacked" / "tuos.exe").write_text("new", encoding="utf-8")
     monkeypatch.setattr(main_desktop, "_DESKTOP_SWAP_RENAME_RETRY_DELAYS_S", (0.2,))
     script = tmp_path / "foreign_helper.py"
     script.write_text(_HELPER, encoding="utf-8")
@@ -69,7 +69,7 @@ def test_blocked_swap_names_the_foreign_holder_and_leaves_it_running(swap_fixtur
     assert f"pid {helper.pid}" in error, error  # the update failure names the holder
     assert f"Desktop app folder held by: {psutil.Process(helper.pid).name()} (pid {helper.pid}, " in out, out
     assert helper.poll() is None, "a program outside Hermes was closed without consent"
-    assert (live_root / "Hermes.exe").read_text(encoding="utf-8") == "old"
+    assert (live_root / "tuos.exe").read_text(encoding="utf-8") == "old"
 
 
 def _consent_for_run(desktop_dir: Path, helper, run_id: str) -> tuple[Path, list]:
@@ -94,7 +94,7 @@ def test_a_consent_given_for_another_run_closes_nothing_and_is_used_up(swap_fixt
     assert promoted is None and f"pid {helper.pid}" in error, error
     assert helper.poll() is None, "closed on a consent given for another run"
     assert not consent.exists(), "the swap attempt consumes the consent, matching or not"
-    assert (live_root / "Hermes.exe").read_text(encoding="utf-8") == "old"
+    assert (live_root / "tuos.exe").read_text(encoding="utf-8") == "old"
 
 
 def test_consented_retry_closes_exactly_the_holder_and_promotes(swap_fixture, capsys, monkeypatch):
@@ -105,7 +105,7 @@ def test_consented_retry_closes_exactly_the_holder_and_promotes(swap_fixture, ca
     promoted, error = _promote(desktop_dir, staging)
 
     assert error == ""
-    assert promoted == live_root / "Hermes.exe"
+    assert promoted == live_root / "tuos.exe"
     assert promoted.read_text(encoding="utf-8") == "new"
     assert helper.wait(10) is not None
     assert not [p.pid for p in tree if p.is_running()]
@@ -140,7 +140,7 @@ def test_a_partial_close_reports_only_the_holder_still_in_the_way(swap_fixture, 
                     for ln in capsys.readouterr().out.splitlines() if "Desktop app folder held by: " in ln}
         assert protected.pid in reported, reported
         assert not reported & {p.pid for p in closed_tree}, f"an exited holder was reported again: {reported}"
-        assert (live_root / "Hermes.exe").read_text(encoding="utf-8") == "old"
+        assert (live_root / "tuos.exe").read_text(encoding="utf-8") == "old"
     finally:
         for proc in [*psutil.Process(protected.pid).children(recursive=True), psutil.Process(protected.pid)]:
             proc.kill()
@@ -170,7 +170,7 @@ def test_a_program_in_a_sibling_unpacked_folder_is_neither_named_nor_closed(swap
 
         promoted, error = _promote(desktop_dir, staging)
 
-        assert error == "" and promoted == live_root / "Hermes.exe"
+        assert error == "" and promoted == live_root / "tuos.exe"
         assert helper.wait(10) is not None
         assert not [p.pid for p in tree if p.is_running()]
         assert all(p.is_running() for p in sibling_tree), "closed a program that never held the renamed folder"

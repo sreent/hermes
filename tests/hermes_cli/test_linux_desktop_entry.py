@@ -148,7 +148,7 @@ def test_install_icon_copy_failure_falls_back_to_absolute(
     assert values["Icon"] == str(lde.icon_path(root))
 
     assert values["Type"] == "Application"
-    assert values["Name"] == "Hermes"
+    assert values["Name"] == lde.APP_NAME
     assert values["Terminal"] == "false"
 
 
@@ -696,10 +696,11 @@ def test_installed_entry_carries_the_window_app_id(tmp_path, xdg_home, monkeypat
     assert entry.name == f"{lde.APP_ID}.desktop"
     values = _parse(entry.read_text(encoding="utf-8"))
     assert values["StartupWMClass"] == lde.APP_ID
-    assert values["Name"] == "Hermes"  # the menu label is not part of the identity
+    assert values["Name"] == lde.APP_NAME  # the menu label
 
 
-def test_install_keeps_the_legacy_entry_as_a_hidden_alias(tmp_path, xdg_home, monkeypatch):
+@pytest.mark.parametrize("legacy_name", lde.LEGACY_DESKTOP_ENTRY_NAMES)
+def test_install_keeps_the_legacy_entry_as_a_hidden_alias(tmp_path, xdg_home, monkeypatch, legacy_name):
     """A pin resolves by the entry file name it was pinned against (#124492).
 
     Deleting ``hermes.desktop`` silently kills existing taskbar pins (GNOME drops
@@ -707,11 +708,12 @@ def test_install_keeps_the_legacy_entry_as_a_hidden_alias(tmp_path, xdg_home, mo
     re-point the association for the user. The pre-rename entry must survive as a
     ``NoDisplay=true`` alias of the app-id entry: out of the app grid, still
     launchable, and window-matched through the same ``StartupWMClass`` and
-    ``Exec`` as the app-id entry.
+    ``Exec`` as the app-id entry. Hermes's own app-id entry, from before this
+    fork's app id, is kept the same way.
     """
     _stub_install(tmp_path, monkeypatch)
     root = _make_project(tmp_path)
-    legacy = xdg_home / "applications" / lde.LEGACY_DESKTOP_ENTRY_NAME
+    legacy = xdg_home / "applications" / legacy_name
     legacy.parent.mkdir(parents=True)
     legacy.write_text(
         "[Desktop Entry]\nType=Application\nName=Hermes\nExec=hermes desktop\n",
@@ -1496,7 +1498,7 @@ def test_exec_appends_skip_build_when_packaged_app_exists(tmp_path, xdg_home, mo
     root = _make_project(tmp_path)
     unpacked = root / "apps" / "desktop" / "release" / "linux-unpacked"
     unpacked.mkdir(parents=True)
-    (unpacked / "hermes").write_text("", encoding="utf-8")
+    (unpacked / lde.APP_NAME).write_text("", encoding="utf-8")
     monkeypatch.setattr("hermes_cli.relaunch.resolve_hermes_bin", lambda: None)
     monkeypatch.setattr(lde, "refresh_desktop_databases", lambda _dir: [])
 

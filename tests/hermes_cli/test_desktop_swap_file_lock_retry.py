@@ -16,10 +16,10 @@ from hermes_cli import main_desktop
 
 def _packaged_exe_rel() -> Path:
     if sys.platform == "darwin":
-        return Path("mac-arm64") / "Hermes.app" / "Contents" / "MacOS" / "Hermes"
+        return Path("mac-arm64") / "tuos.app" / "Contents" / "MacOS" / "tuos"
     if sys.platform == "win32":
-        return Path("win-unpacked") / "Hermes.exe"
-    return Path("linux-unpacked") / "hermes"
+        return Path("win-unpacked") / "tuos.exe"
+    return Path("linux-unpacked") / "tuos"
 
 
 def _staged_over_live(tmp_path: Path, monkeypatch):

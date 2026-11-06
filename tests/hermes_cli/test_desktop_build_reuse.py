@@ -61,7 +61,7 @@ def packaged_checkout(tmp_path, monkeypatch):
     stamp = desktop / "build/install-stamp.json"
     dist = desktop / "release/linux-unpacked/resources/app.asar.unpacked/dist"
     dist.mkdir(parents=True)
-    (desktop / "release/linux-unpacked/hermes").write_text("", encoding="utf-8")
+    (desktop / "release/linux-unpacked/tuos").write_text("", encoding="utf-8")
     (dist / "electron-main.mjs").write_text("// baked\n", encoding="utf-8")
     _node("import {resolveStamp, buildStampPayload, writeDesktopStamp} from './apps/desktop/scripts/write-build-stamp.mjs';"
           "writeDesktopStamp('apps/desktop/build', buildStampPayload(resolveStamp({repoRoot: process.cwd()}), process.env, process.platform, null))",

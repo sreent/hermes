@@ -175,11 +175,11 @@ def test_gui_releases_lock_before_packaged_electron_handoff(tmp_path, monkeypatc
     desktop_dir = root / "apps" / "desktop"
 
     if sys.platform == "darwin":
-        executable = desktop_dir / "release" / "mac-arm64" / "Hermes.app" / "Contents" / "MacOS" / "Hermes"
+        executable = desktop_dir / "release" / "mac-arm64" / "tuos.app" / "Contents" / "MacOS" / "tuos"
     elif sys.platform == "win32":
-        executable = desktop_dir / "release" / "win-unpacked" / "Hermes.exe"
+        executable = desktop_dir / "release" / "win-unpacked" / "tuos.exe"
     else:
-        executable = desktop_dir / "release" / "linux-unpacked" / "hermes"
+        executable = desktop_dir / "release" / "linux-unpacked" / "tuos"
     executable.parent.mkdir(parents=True)
     executable.write_text("", encoding="utf-8")
 

@@ -457,6 +457,14 @@ def _xdg_leftover_paths(full_uninstall: bool) -> tuple[list[Path], list[Path]]:
     return removable, preserved
 
 
+def _is_desktop_app_leftover(name: str) -> bool:
+    """A Library entry the desktop app or its setup installer wrote: Hermes-named (the state folder,
+    the setup binary, builds from before the rename), or named after the app (``Logs/tuos``,
+    ``tuos-updater``) or its bundle id (``<id>``, ``<id>.ShipIt``, ``<id>.savedState``, ``<id>.setup``)."""
+    low, app = name.lower(), distribution.DESKTOP_APP_NAME.lower()
+    return "hermes" in low or low == app or low.startswith((distribution.DESKTOP_APP_ID.lower(), f"{app}-"))
+
+
 def remove_desktop_app_leftovers(*, full_uninstall: bool) -> list[Path]:
     """Remove per-user app leftovers that live outside HERMES_HOME and the
     checkout, which earlier uninstallers left behind (#62209): the macOS
@@ -464,8 +472,8 @@ def remove_desktop_app_leftovers(*, full_uninstall: bool) -> list[Path]:
     Electron scatter, and the XDG cache dir on every platform. On a full
     uninstall the XDG data dir (``~/.local/share/hermes``) goes too.
 
-    Only well-known Hermes-named entries are touched — never a glob of the
-    whole Library.
+    Only entries named after Hermes or the desktop app are touched — never a
+    glob of the whole Library.
     """
     import sys as _sys
 
@@ -481,7 +489,7 @@ def remove_desktop_app_leftovers(*, full_uninstall: bool) -> list[Path]:
                 entries = list(parent_dir.iterdir())
             except OSError:
                 continue
-            targets.extend(e for e in entries if "hermes" in e.name.lower())
+            targets.extend(e for e in entries if _is_desktop_app_leftover(e.name))
     removable, _ = _xdg_leftover_paths(full_uninstall=full_uninstall)
     targets.extend(removable)
     return _remove_each((t for t in targets if t.exists()), _remove_path_or_tree)
@@ -927,9 +935,9 @@ def _macos_cache_leftover_dirs() -> list[Path]:
     caches = Path.home() / "Library" / "Caches"
     return [
         caches / "Hermes",
-        caches / "com.nousresearch.hermes",
+        caches / distribution.DESKTOP_APP_ID,
         caches / "hermes-setup",
-        caches / "com.nousresearch.hermes.setup",
+        caches / f"{distribution.DESKTOP_APP_ID}.setup",
     ]
 
 

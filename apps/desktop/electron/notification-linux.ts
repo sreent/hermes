@@ -250,7 +250,7 @@ export function createLinuxNotifications() {
               member: 'Notify',
               signature: 'susssasa{sv}i',
               body: [
-                'Hermes',
+                'tuos',
                 0,
                 options.icon || '',
                 options.title,
@@ -258,7 +258,8 @@ export function createLinuxNotifications() {
                 actions,
                 {
                   urgency: new Variant('y', 1),
-                  'desktop-entry': new Variant('s', 'hermes'),
+                  // The launcher entry hermes_cli/linux_desktop_entry.py writes (<app id>.desktop).
+                  'desktop-entry': new Variant('s', 'io.github.sreent.tuos'),
                   'suppress-sound': new Variant('b', options.silent)
                 },
                 -1

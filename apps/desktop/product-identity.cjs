@@ -1,6 +1,6 @@
 // The desktop product identity — THE single source for every name-shaped
-// value a variant owns. HERMES_DESKTOP_VARIANT=light builds "Hermes
-// Light", the remote-only client; everything else is full "Hermes".
+// value a variant owns. HERMES_DESKTOP_VARIANT=light builds "tuos Light",
+// the remote-only client; everything else is full "tuos".
 //
 // Consumed at build time by electron-builder.config.cjs (packaging
 // identity). electron/product-identity.ts is the typed runtime accessor.
@@ -8,17 +8,29 @@
 /// <reference types="node" />
 'use strict'
 
+// Who ships this fork (FORK.md, "Rebranded as tuos"): the reverse-DNS prefix of every appId and the
+// organisation prefix of the MSIX package names. The out-of-store MSIX publisher, which must equal the
+// signing certificate's subject, is OUT_OF_STORE_PUBLISHER in scripts/msix-shared.mjs.
+const APP_ID_PREFIX = 'io.github.sreent'
+const MSIX_ORG = 'Sreent'
+
+// This fork's Microsoft Store package identity, from Partner Center's "Product identity" page:
+// { identityName, publisher, publisherDisplayName }. Null until the fork has a Store listing; packaging a
+// store build refuses without it (mustStoreMsix in electron-builder.config.cjs).
+/** @type {NonNullable<ProductIdentity['storeMsix']> | null} */
+const STORE_MSIX = null
+
 const variants = {
-  '': { display: 'Hermes', kebab: 'hermes', pascal: 'Hermes' },
+  '': { display: 'tuos', kebab: 'tuos', pascal: 'Tuos' },
   light: {
-    display: 'Hermes Light',
-    kebab: 'hermes-light',
-    pascal: 'HermesLight'
+    display: 'tuos Light',
+    kebab: 'tuos-light',
+    pascal: 'TuosLight'
   },
   bundled: {
-    display: 'Hermes Agent',
-    kebab: 'hermes-bundled',
-    pascal: 'HermesBundled'
+    display: 'tuos Agent',
+    kebab: 'tuos-bundled',
+    pascal: 'TuosBundled'
   }
 }
 
@@ -44,6 +56,7 @@ const canary = /\+canary\.20\d{6}T\d{6}Z$/.test(process.env.HERMES_PAYLOAD_TAG |
 
 // Nonstable installs own their package family and local desktop state. The
 // seven-character commit suffix also names the CLI and fits MSIX's name cap.
+// The payload CLI keeps the `hermes` command's name (tuos runs it).
 const buildCommitEnv = process.env.HERMES_BUILD_COMMIT || ''
 const buildCommit = /^[a-f0-9]{40}$/.test(buildCommitEnv) ? buildCommitEnv.slice(0, 7) : null
 const displayName = buildCommit
@@ -66,25 +79,17 @@ const identity = {
   store,
   light,
   displayName,
-  appId: `com.nousresearch.${name.kebab}${kebabSuffix}`,
+  appId: `${APP_ID_PREFIX}.${name.kebab}${kebabSuffix}`,
   // Store and commit builds do not publish a release feed.
   channel: store || buildCommit ? null : light ? (canary ? 'light-canary' : 'light') : (canary ? 'canary' : 'latest'),
   appNamePascal: `${name.pascal}${pascalSuffix}`,
   artifactNamePascal: name.pascal,
   windowsExecutableName: kebabSuffix ? cliName : displayName,
   cliName,
-  msixAppIdWithOrg: `NousResearch.${name.pascal}${pascalSuffix}`,
-  ...(store
-    ? {
-        storeMsix: {
-          // Partner Center publisher identity (the account's publisher ID) —
-          // validated + re-signed by the Store on submission.
-          identityName: 'NousResearchInc.HermesAgent',
-          publisher: 'CN=EE6D86E4-606F-4E38-B940-AD7248C9D519',
-          publisherDisplayName: 'Nous Research Inc.'
-        }
-      }
-    : {})
+  msixAppIdWithOrg: `${MSIX_ORG}.${name.pascal}${pascalSuffix}`,
+  // Partner Center publisher identity (the account's publisher ID) — validated
+  // + re-signed by the Store on submission.
+  ...(store && STORE_MSIX ? { storeMsix: STORE_MSIX } : {})
 }
 
 const { channelBuildRequest } = require('../../scripts/msix-shared.mjs')
