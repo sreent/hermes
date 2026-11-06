@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/banner.png" alt="tuos" width="100%">
+</p>
+
 # tuos
 <p align="center">
   <a href="https://hermes-agent.nousresearch.com/docs/"><img src="https://img.shields.io/badge/Docs-hermes--agent.nousresearch.com-FFD700?style=for-the-badge" alt="Documentation"></a>

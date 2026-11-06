@@ -148,10 +148,11 @@ Deliberately still upstream's:
 - **Signing and release tooling for desktop builds.** Signing uses Nous's Azure Trusted Signing and Apple
   accounts (`AZURE_SIGN_*`, notarization). Before this fork publishes builds it needs its own certificate,
   and the MSIX publisher, `OUT_OF_STORE_PUBLISHER` in `scripts/msix-shared.mjs` (now `CN=tuos`), must
-  equal that certificate's subject. Nous's release scripts still expect Hermes's artifact and channel
-  names (`HermesBundled-<version>-…`): `scripts/releases/darwin.py`, `channels.py`'s preview identities
-  and `scripts/render-builds-table.py`. So does `tests/install/`, which drives Nous's published
-  installers. The removed workflows ran all of these.
+  equal that certificate's subject. The release scripts name this fork's builds ("Rebranded as tuos",
+  below) but still publish to Nous's hosts: the R2 bucket's public URL (`scripts/releases/r2.py`
+  `DEFAULT_PUBLIC_URL`) and the Docker image (`scripts/releases/docker.py` `IMAGE`). `tests/install/`
+  drives Nous's published installers and expects Hermes's names. The removed workflows ran all of
+  these.
 
 ### Diagnostics stay on the machine running Hermes
 
@@ -284,8 +285,9 @@ state folder, service and unit names, and the `hermes` command.
 - **CLI and TUI look**:
   - The built-in skins that carried Hermes's branding say tuos, with ◆ in place of ☤
     (`hermes_cli/skin_engine.py`).
-  - Banner art: `hermes_cli/brand_art.py` (new) holds the wordmark and emblem that `banner.py` falls back to,
-    and `ui-tui/src/banner.ts` draws the same.
+  - Banner art: `hermes_cli/brand_art.py` (new) holds the wordmark and the mark that `banner.py` falls
+    back to, and `ui-tui/src/banner.ts` draws the same: the icons' pixel glyphs, a cell four columns by
+    two lines, with quadrant blocks drawing the corner cuts as stairs.
   - Version labels: `banner.py`, `_startup_fast.py`.
   - The TUI's default brand, taglines and attribution: `theme.ts`, `components/branding.tsx`,
     `i18n/en/chatBits.ts`.
@@ -345,6 +347,28 @@ state folder, service and unit names, and the `hermes` command.
     - Update and uninstall leave apps installed under the old names alone (`Hermes.app`, Nous's
       packages); remove those by hand.
   - The Store variant refuses to package until `STORE_MSIX` holds this fork's Partner Center identity.
+- **Icons, logos and banners**: a pixel mark, four 3x3-cell glyphs stacked two by two (t u over o s),
+  each cell a square or a square with one corner cut at 45 degrees.
+  - The glyph rows are `MARK_GLYPHS` in `scripts/generate_icons.py`, which draws everything from them:
+    every app icon (desktop, Windows tiles, the macOS 26 layers, the setup installer), the favicons
+    and logos of the dashboard and docs site, the README and social-card banner, and the DMG's
+    background and volume icon. Black on white, white on `#0d1117`. Change the rows (or
+    `MARK_FRACTION`, the mark's share of the plate), run `node scripts/generate-icons.mjs` and commit.
+  - Nous's artwork is gone (`assets/nous-girl-*.svg`, the drive picture and the DMG background), and
+    the generator lost the code that placed it. In an upstream merge, keep the mark in
+    `generate_icons.py` and regenerate.
+  - Renamed files: `public/tuos-mark*.png` (the apps' `BrandMark`), `website/static/img/tuos-logo*.png`,
+    `tuos-banner.png` (the docs site's social card) and `packaging/dmg-background.tiff`. The README
+    shows the banner again.
+  - Linux names the launcher's icon after the app id (`io.github.sreent.tuos`), so it never replaces
+    Hermes's `hermes` icon; uninstall removes both.
+- **Release scripts** name the builds as the packager does: artifacts `TuosBundled-`/`TuosLight-`
+  (`scripts/releases/darwin.py`, `scripts/render-builds-table.py`, whose tables and pages say tuos and
+  whose default repository is this one), preview channels `tuos <name>` with app id
+  `io.github.sreent.tuos.channel.h<token>` and MSIX name `Sreent.TuosChannel<token>` (`channels.py`),
+  and releases and canaries titled `tuos v<version>` and `tuos canary <tag>` (`entrypoint.py` and
+  `scripts/release.py`, whose release notes carry the same heading and link commits to this
+  repository).
 
 Not rebranded yet:
 - Strings outside the contexts above: Python's returned values, constants and dictionaries (API responses,
@@ -355,8 +379,9 @@ Not rebranded yet:
   notification footer), so extend the scripts' rules with care.
 - What only the agent reads, such as skills and tool descriptions, still says Hermes. Its identity, help
   guidance and surface hints say tuos.
-- Translated READMEs, favicons and images (the apps' icons and the DMG background too), the TUI's
-  translated taglines, and upstream's community stories on the docs site.
+- Translated READMEs (their banner image is the new one), the desktop pet's pixel knight and the
+  feature illustrations, the TUI's translated taglines, and upstream's community stories on the docs
+  site.
 
 ### Memory sharing per agent: shared, per_user, hybrid
 

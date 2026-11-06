@@ -31,6 +31,8 @@ from typing import Callable, Mapping, Optional
 # this file on its own. Tests keep them equal to those and to product-identity.cjs.
 APP_ID = "io.github.sreent.tuos"
 APP_NAME = "tuos"  # the launcher's label and the packaged executable's name
+# The launcher's themed icon, named after the app id: tuos's art never replaces Hermes's `hermes` icon.
+ICON_NAME = APP_ID
 DESKTOP_ENTRY_NAME = f"{APP_ID}.desktop"
 
 # Entry names written before this one: "hermes.desktop" before the app-id rename, then Hermes's own
@@ -667,7 +669,7 @@ def _hicolor_subdir(dimensions: Optional[tuple[int, int]]) -> str:
 
 
 def _hicolor_icon_dest(subdir: str) -> Path:
-    return _xdg_data_home() / "icons" / "hicolor" / subdir / "apps" / "hermes.png"
+    return _xdg_data_home() / "icons" / "hicolor" / subdir / "apps" / f"{ICON_NAME}.png"
 
 
 def _remove_stale_scalable_icon() -> bool:
@@ -727,7 +729,7 @@ def _write_hicolor_pngs(files: dict[str, bytes]) -> bool:
 
 
 def _install_icon_to_hicolor(icon: Path) -> bool:
-    """Install the app icon into the user's hicolor tree so ``Icon=hermes`` resolves without an
+    """Install the app icon into the user's hicolor tree so ``Icon=<ICON_NAME>`` resolves without an
     absolute checkout path. Raster PNGs go to indexed fixed-size dirs, never ``scalable``."""
     try:
         raw = icon.read_bytes()
@@ -832,9 +834,9 @@ def install_desktop_entry(project_root: Path) -> Optional[Path]:
     # Prefer the themed name: the icon is COPIED into the hicolor tree, so the entry outlives the
     # checkout (an absolute Icon= path breaks when the checkout moves). Absolute path only when
     # the copy is impossible (read-only tree); themed name when the checkout has no icon at all.
-    icon_value = str(icon) if icon.is_file() else "hermes"
+    icon_value = str(icon) if icon.is_file() else ICON_NAME
     if icon.is_file() and _install_icon_to_hicolor(icon):
-        icon_value = "hermes"
+        icon_value = ICON_NAME
     contents = render_desktop_entry(exec_command, icon_value)
 
     try:

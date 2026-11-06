@@ -43,7 +43,7 @@ if (!commitBuild && !channelRequest && (values.version !== undefined || noUpload
 }
 
 // product-identity.cjs keys the app name off HERMES_DESKTOP_VARIANT — the
-// artifact filenames (HermesBundled-*-win-x64.msix) carry the bundled
+// artifact filenames (TuosBundled-*-win-x64.msix) carry the bundled
 // identity, so the env var MUST match the variant or the msix lookup
 // fails. Set it before anything requires the identity.
 process.env.HERMES_DESKTOP_VARIANT = variant

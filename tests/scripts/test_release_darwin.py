@@ -27,7 +27,7 @@ def _inputs(version="0.28.0", light=False):
     bytes_by_key = {}
     legs = {}
     for i, arch in enumerate(darwin.ARCHES):
-        name = f"{'HermesLight' if light else 'HermesBundled'}-{version}-mac-{arch}.zip"
+        name = f"{'TuosLight' if light else 'TuosBundled'}-{version}-mac-{arch}.zip"
         data = f"test artifact {arch}".encode()
         bytes_by_key[f"releases/tag/v{version}/{name}"] = data
         file_entry = {
@@ -108,7 +108,7 @@ def test_rejects_broken_legs_instead_of_publishing(kind):
         if kind == "version":
             feed["version"] = "0.27.0"
         if kind == "variant":
-            feed["files"][0]["url"] = feed["files"][0]["url"].replace("HermesBundled", "HermesLight")
+            feed["files"][0]["url"] = feed["files"][0]["url"].replace("TuosBundled", "TuosLight")
         if kind == "hash":
             feed["files"][0]["sha512"] = "invalid"
         if kind == "legacy":

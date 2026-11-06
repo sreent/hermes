@@ -70,7 +70,7 @@ def packaged_gui_app_paths() -> list[Path]:
             [Path(program_files) / DESKTOP_APP_NAME] if program_files else [])
     # Linux: an AppImage lives wherever the user put it and deb/rpm files belong to the package manager
     # (see the hint in ``uninstall_gui``), so only the desktop entry + hicolor icons are cleaned here.
-    from hermes_cli.linux_desktop_entry import LEGACY_DESKTOP_ENTRY_NAMES, desktop_entry_path
+    from hermes_cli.linux_desktop_entry import ICON_NAME, LEGACY_DESKTOP_ENTRY_NAMES, desktop_entry_path
     data_base = _env_dir("XDG_DATA_HOME", home / ".local" / "share")
     icons = data_base / "icons" / "hicolor"
     # "scalable" plus every fixed-size dir the installer may have written (panel sizes + older native copies).
@@ -78,7 +78,8 @@ def packaged_gui_app_paths() -> list[Path]:
     return [desktop_entry_path(),
             *(data_base / "applications" / name for name in LEGACY_DESKTOP_ENTRY_NAMES),
             data_base / "applications" / "Hermes.desktop"] + [
-        icons / size / "apps" / "hermes.png"
+        icons / size / "apps" / f"{name}.png"
+        for name in (ICON_NAME, "hermes")  # and the icon installs before the rename wrote
         for size in ("scalable", "24x24", "32x32", "48x48", "256x256", "512x512", "1024x1024")]
 
 

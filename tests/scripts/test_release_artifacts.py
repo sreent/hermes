@@ -80,10 +80,10 @@ def staged_candidate(tmp_path, r2_server, https_origin):
             if platform == 'windows':
                 row.update(version=WINDOWS_VERSION, executableVersion=WINDOWS_VERSION,
                            publisher='CN=Test', applicationId='App')
-                package = f'HermesBundled-1.2.3-win-{arch}.msix'
+                package = f'TuosBundled-1.2.3-win-{arch}.msix'
                 handoff_name = f'win32-{arch}'
             elif platform == 'macos':
-                package = f'HermesBundled-1.2.3-mac-{arch}.zip'
+                package = f'TuosBundled-1.2.3-mac-{arch}.zip'
                 row.update(version='1.2.3', teamId='ABCDEFGHIJ', filename=package)
                 handoff_name = f'darwin-{arch}'
             else:
@@ -284,7 +284,7 @@ def test_promote_writes_the_stable_mac_feed_from_the_attempt_archive(tmp_path, m
     assert feed['version'] != manifest['archive']
     urls = [entry['url'] for entry in feed['files']]
     assert urls and all(url.startswith(f"/releases/tag/{manifest['archive']}/") for url in urls)
-    assert f"/releases/tag/{manifest['archive']}/HermesBundled-1.2.3-mac-arm64.zip" in urls
+    assert f"/releases/tag/{manifest['archive']}/TuosBundled-1.2.3-mac-arm64.zip" in urls
     assert not any('-mac-x64' in url for url in urls)
 
     # A release that did not opt into Termux promotes the Mac feed and leaves
@@ -299,7 +299,7 @@ def test_promote_writes_the_stable_mac_feed_from_the_attempt_archive(tmp_path, m
     assert puts == ['/hermes-releases/releases/darwin/stable/stable-mac.yml',
                     '/hermes-releases/releases/win32/stable/stable.appinstaller']
     feed = hermes_yaml.safe_load(r2_server.store['releases/darwin/stable/stable-mac.yml'][0].decode())
-    assert [entry['url'].rsplit('/', 1)[1] for entry in feed['files']] == ['HermesBundled-1.2.3-mac-arm64.zip']
+    assert [entry['url'].rsplit('/', 1)[1] for entry in feed['files']] == ['TuosBundled-1.2.3-mac-arm64.zip']
 
 
 def test_promote_refuses_when_the_macos_feed_is_missing(tmp_path, monkeypatch, r2_server, https_origin, staged_candidate):

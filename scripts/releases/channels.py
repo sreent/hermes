@@ -93,12 +93,14 @@ class R2ChannelStore:
 
 
 def preview_identity(name: str, token: str) -> dict:
+    """A preview channel's own app, named like apps/desktop/product-identity.cjs names this fork's
+    (FORK.md, "Rebranded as tuos"); its CLI keeps the `hermes` command's name, as there."""
     validate_name(name)
-    pascal = f"HermesChannel{token}"
-    return {"token": token, "displayName": f"Hermes {name}",
-            "appId": f"ai.hermes.channel.h{token}", "appNamePascal": pascal,
+    pascal = f"TuosChannel{token}"
+    return {"token": token, "displayName": f"tuos {name}",
+            "appId": f"io.github.sreent.tuos.channel.h{token}", "appNamePascal": pascal,
             "artifactNamePascal": pascal, "cliName": f"hermes-{name}",
-            "windowsExecutableName": pascal, "msixAppIdWithOrg": f"NousResearch.{pascal}"}
+            "windowsExecutableName": pascal, "msixAppIdWithOrg": f"Sreent.{pascal}"}
 
 
 class ChannelPublisher:
