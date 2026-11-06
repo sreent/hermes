@@ -16,6 +16,9 @@ Sources of truth — two axes, composed per target:
                       assets/backgrounds/squircle-dark.svg    #0d1117 rounded
                       assets/backgrounds/squircle-mac-light.svg   mac HIG grid
                       assets/backgrounds/squircle-mac-dark.svg    mac HIG grid
+                      Their #ffffff (light) and #0d1117 (dark) fills are slots: TILE_COLORS
+                      fills both with tuos's navy, canary and commit builds bring their own
+                      pairs, and the mark's ink follows the tile (mark_ink).
 
   The master SVGs (assets/icon-master.svg light, assets/icon-master-dark.svg
   dark) are GENERATED artifacts — squircle background + the mark centered on
@@ -68,16 +71,16 @@ Outputs (102 files):
   apps/desktop/assets/appx/Square44x44Logo.targetsize-N[_altform-(light)unplated].png
                                                       taskbar/Start bitmaps 16..256; unplated = dark tile
   apps/desktop/public/apple-touch-icon.png            1024x1024 squircle
-  apps/desktop/public/tuos-mark.png                   256x256 squircle, black mark (light)
-  apps/desktop/public/tuos-mark-dark.png              256x256 squircle, white mark (dark)
+  apps/desktop/public/tuos-mark.png                   256x256 squircle, light appearance
+  apps/desktop/public/tuos-mark-dark.png              256x256 squircle, dark appearance
   apps/bootstrap-installer/src-tauri/icons/32x32.png       32x32
   apps/bootstrap-installer/src-tauri/icons/128x128.png     128x128
   apps/bootstrap-installer/src-tauri/icons/128x128@2x.png  256x256
   apps/bootstrap-installer/src-tauri/icons/icon.ico        16,32,64,128,256
   apps/bootstrap-installer/src-tauri/icons/icon.icns       16..1024
   apps/bootstrap-installer/public/tuos-mark.png   256x256 squircle mark (light)
-  website/static/img/logo.png                     1772x1799 the mark alone, transparent (light)
-  website/static/img/logo-dark.png                1772x1799 the mark alone, transparent (dark)
+  website/static/img/logo.png                     1772x1799 the navy mark alone, transparent (light surfaces)
+  website/static/img/logo-dark.png                1772x1799 the white mark alone, transparent (dark surfaces)
   website/static/img/tuos-logo.png                150x150 on white (opaque)
   website/static/img/tuos-logo-dark.png           150x150 on #0d1117 (opaque)
   website/static/img/tuos-banner.png              1145x196 wordmark banner (social card)
@@ -120,9 +123,14 @@ _CANARY_TAG_RE = re.compile(
     r"\+canary\.20\d{6}T\d{6}Z$"
 )
 
-# The dark background (#0d1117) — fixed dark tile/background everywhere.
+# The dark background (#0d1117) behind the opaque dark logo.
 DARK_HEX = "#0d1117"
 DARK_RGB = (13, 17, 23)
+# tuos's navy (FORK.md, "Rebranded as tuos"): the app tile in light and dark appearance alike.
+NAVY_HEX = "#13294b"
+# The tile fills of the light and dark appearance. The background SVGs are templates whose
+# #ffffff (light) and #0d1117 (dark) fills take these; canary and commit builds bring their own.
+TILE_COLORS = (NAVY_HEX, NAVY_HEX)
 BORDER_FRACTION = 0.0407747197
 # The brand ring is switched off everywhere (tiles and the macOS 26 layers):
 # a flat plate reads better beside macOS 26's own icons. The ring code stays
@@ -138,7 +146,7 @@ BORDER_ENABLED = False
 # logo, banner and the DMG artwork render from these rows.
 MARK_GLYPHS = {
     "t": (".#.", "###", ".◥#"),
-    "u": ("#.#", "#.#", "◥##"),
+    "u": ("#.#", "#.#", "◥#◤"),
     "o": ("◢#◣", "#.#", "◥#◤"),
     "s": ("◢##", "◥#◣", "##◤"),
 }
@@ -155,6 +163,22 @@ GLYPH_GAP = 1  # empty cells between neighbouring glyphs
 # The mark's width as a share of the plate it is centered on.
 MARK_FRACTION = 0.58
 INKS = {"black": "#000000", "white": "#ffffff"}
+
+
+def mark_ink(fill: str) -> str:
+    """The ink with more contrast against the tile `fill` (WCAG): white on the navy and
+    the dark flavour tiles, black on the light canary and commit tiles."""
+    value = fill.lstrip("#")
+    channels = [int(value[i:i + 2], 16) / 255 for i in (0, 2, 4)]
+    r, g, b = (c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4 for c in channels)
+    luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
+    return "black" if (luminance + 0.05) / 0.05 > 1.05 / (luminance + 0.05) else "white"
+
+
+def appearance_ink(colors: tuple[str, str] | None, appearance: str) -> str:
+    """The mark's ink on the light or dark appearance's tile."""
+    light, dark = colors or TILE_COLORS
+    return mark_ink(dark if appearance == "dark" else light)
 # The README banner and the docs site's social card.
 BANNER_SIZE = (1145, 196)
 # The DMG window's background (electron-builder.config.cjs `dmg`), in window points at 1x; the
@@ -273,8 +297,8 @@ TARGETS: list[tuple[str, str, object]] = [
     ("apps/desktop/assets/icon.icon/icon.json", "icon_manifest", None),
     *([("apps/desktop/assets/icon.icon/Assets/border-light.png", "icon_border", "#000000"),
        ("apps/desktop/assets/icon.icon/Assets/border-dark.png", "icon_border", "#ffffff")] if BORDER_ENABLED else []),
-    ("apps/desktop/assets/icon.icon/Assets/art-light.png", "icon_art", "black"),
-    ("apps/desktop/assets/icon.icon/Assets/art-dark.png", "icon_art", "white"),
+    ("apps/desktop/assets/icon.icon/Assets/art-light.png", "icon_art", "light"),
+    ("apps/desktop/assets/icon.icon/Assets/art-dark.png", "icon_art", "dark"),
     ("apps/desktop/assets/icon.icon/Assets/mono.png", "icon_mono", None),
     *APPX_TARGETS,
     ("apps/desktop/public/apple-touch-icon.png", "png", 1024),
@@ -290,8 +314,8 @@ TARGETS: list[tuple[str, str, object]] = [
     # Tauri's bundler compiles an Icon Composer package from `bundle.icon`
     # (actool >= 26) into Assets.car; the unbranded twin of the desktop package.
     ("apps/bootstrap-installer/src-tauri/icons/icon.icon/icon.json", "icon_manifest", None),
-    ("apps/bootstrap-installer/src-tauri/icons/icon.icon/Assets/art-light.png", "icon_art", "black"),
-    ("apps/bootstrap-installer/src-tauri/icons/icon.icon/Assets/art-dark.png", "icon_art", "white"),
+    ("apps/bootstrap-installer/src-tauri/icons/icon.icon/Assets/art-light.png", "icon_art", "light"),
+    ("apps/bootstrap-installer/src-tauri/icons/icon.icon/Assets/art-dark.png", "icon_art", "dark"),
     ("apps/bootstrap-installer/src-tauri/icons/icon.icon/Assets/mono.png", "icon_mono", None),
     ("apps/bootstrap-installer/public/tuos-mark.png", "mark_light", 256),
     ("website/static/img/logo.png", "logo", None),
@@ -317,15 +341,15 @@ class IconArt:
         self.colors = colors
         self.commit = commit
         self.backgrounds = source / "assets" / "backgrounds"
-        self.master = compose_svg(self, "black", "squircle-light.svg")
-        self.master_dark = compose_svg(self, "white", "squircle-dark.svg")
+        self.master = compose_svg(self, "squircle-light.svg")
+        self.master_dark = compose_svg(self, "squircle-dark.svg")
         # macOS icons sit on Apple's 824-on-1024 grid, not the full-bleed
         # squircle: same art, mac-grid backgrounds, icns targets only.
-        self.master_mac = compose_svg(self, "black", "squircle-mac-light.svg")
-        self.master_mac_dark = compose_svg(self, "white", "squircle-mac-dark.svg")
+        self.master_mac = compose_svg(self, "squircle-mac-light.svg")
+        self.master_mac_dark = compose_svg(self, "squircle-mac-dark.svg")
         # Badge-free twins for direct renders below BADGE_MIN_SIZE.
-        self.master_small = compose_svg(self, "black", "squircle-light.svg", badge=False)
-        self.master_dark_small = compose_svg(self, "white", "squircle-dark.svg", badge=False)
+        self.master_small = compose_svg(self, "squircle-light.svg", badge=False)
+        self.master_dark_small = compose_svg(self, "squircle-dark.svg", badge=False)
 
 
 def mark_geometry(layout: tuple[tuple[str, ...], ...] = MARK_LAYOUT) -> tuple[str, int, int]:
@@ -370,9 +394,8 @@ def plate_box(x: float, y: float, width: float, height: float) -> tuple[float, f
 def background_inner(art: IconArt, name: str) -> tuple[str, int, int]:
     """Inner content + (width, height) of a background SVG asset."""
     text = (art.backgrounds / name).read_text(encoding="utf-8-sig")
-    if art.colors:
-        text = text.replace('fill="#ffffff"', f'fill="{art.colors[0]}"')
-        text = text.replace(f'fill="{DARK_HEX}"', f'fill="{art.colors[1]}"')
+    light, dark = art.colors or TILE_COLORS
+    text = text.replace('fill="#ffffff"', f'fill="{light}"').replace(f'fill="{DARK_HEX}"', f'fill="{dark}"')
     root = ET.fromstring(text)
     m = re.fullmatch(r"0 0 (\d+(?:\.\d+)?) (\d+(?:\.\d+)?)", root.get("viewBox", ""))
     assert m, f"cannot parse viewBox of {name}"
@@ -433,16 +456,18 @@ def commit_layer(commit: str, bg: str) -> str:
     )
 
 
-def compose_svg(art: IconArt, ink: str, bg: str, *, badge: bool = True) -> str:
+def compose_svg(art: IconArt, bg: str, *, badge: bool = True) -> str:
     """Full svg text: background + the mark centered on its plate, in the
     background's native coordinate space (resvg scales to whatever output size
-    is requested, so the composition is size-agnostic)."""
+    is requested, so the composition is size-agnostic). The mark's ink follows
+    the plate's fill."""
     inner, w, h = background_inner(art, bg)
     background = ET.fromstring(f"<g>{inner}</g>")
     tile = background.find("{http://www.w3.org/2000/svg}rect")
     assert tile is not None, f"no background rectangle in {bg}"
     geometry = {key: float(tile.attrib[key]) for key in ("x", "y", "width", "height", "rx")}
     silhouette = ET.Element("rect", {key: str(value) for key, value in geometry.items()})
+    ink = mark_ink(tile.attrib["fill"])
     if BORDER_ENABLED:
         thickness = geometry["width"] * BORDER_FRACTION
         # An inward stroke keeps the outer platform geometry unchanged. Subtracting
@@ -638,7 +663,7 @@ def icon_manifest(art: IconArt) -> str:
     """icon.json: flat brand fill (flavoured for canary/commit builds), the
     art layer (and ring, when enabled) with light/dark variants, and the mono
     layer that replaces them under Clear and Tinted."""
-    light, dark = art.colors or ("#ffffff", DARK_HEX)
+    light, dark = art.colors or TILE_COLORS
 
     def layer(name: str) -> dict:
         # No fixed "image-name": actool treats it as the image for every
@@ -723,18 +748,17 @@ def save_png(img: Image.Image, buf: io.BytesIO) -> None:
 
 def mark_tile(art: IconArt, kind: str, size: int) -> Image.Image:
     """The mark in the app-icon squircle (BrandMark asset): the mark IS the
-    icon shape. mark_light: black mark on the white squircle. mark_dark: white
-    mark on the #0d1117 squircle."""
-    ink, bg = ("black", "squircle-light.svg") if kind == "mark_light" else ("white", "squircle-dark.svg")
-    return render_svg(compose_svg(art, ink, bg), size)
+    icon shape, on the light (mark_light) or dark (mark_dark) appearance's tile."""
+    bg = "squircle-light.svg" if kind == "mark_light" else "squircle-dark.svg"
+    return render_svg(compose_svg(art, bg), size)
 
 
 def build_logo_image(art: IconArt, dark: bool = False) -> Image.Image:
     """1772x1799 logo: the mark alone on transparency (no frame), centered.
-    Light = black mark, dark = white mark — the consuming surface's background
+    Light = navy mark, dark = white mark — the consuming surface's background
     shows through."""
     W, H = 1772, 1799
-    svg = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}">\n  {mark_layer("white" if dark else "black", (0, 0, W, H))}\n</svg>\n'
+    svg = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}">\n  {mark_layer("white" if dark else NAVY_HEX, (0, 0, W, H))}\n</svg>\n'
     return render_svg(svg, (W, H))
 
 
@@ -749,15 +773,15 @@ def dot_grid(width: float, height: float, pitch: float, dot: float, fill: str) -
 
 
 def banner_svg() -> str:
-    """The wordmark in white on the dark background, half the banner's height."""
+    """The wordmark in white on navy, half the banner's height."""
     W, H = BANNER_SIZE
     _, cols, rows = mark_geometry(WORDMARK_LAYOUT)
     h = H / 2
     w = h * cols / rows
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}">\n'
-        f'  <rect width="{W}" height="{H}" fill="{DARK_HEX}"/>\n'
-        f"  {dot_grid(W, H, 28, 4, '#1b222c')}\n"
+        f'  <rect width="{W}" height="{H}" fill="{NAVY_HEX}"/>\n'
+        f"  {dot_grid(W, H, 28, 4, '#1d3760')}\n"
         f"  {mark_layer('white', ((W - w) / 2, (H - h) / 2, w, h), WORDMARK_LAYOUT)}\n"
         "</svg>\n"
     )
@@ -766,7 +790,7 @@ def banner_svg() -> str:
 # The DMG artwork's paper and ink. Light paper keeps Finder's black icon labels readable.
 DMG_PAPER = "#f4f4f1"
 DMG_DOTS = "#e3e3df"
-DMG_INK = "#1c1c1c"
+DMG_INK = NAVY_HEX
 
 
 def dmg_background_svg() -> str:
@@ -824,7 +848,7 @@ def dmg_volume_svg() -> str:
         f'  <path d="{body}" fill="url(#drive)" stroke="#b9b9b5" stroke-width="6"/>\n'
         f'  <rect x="{x}" y="{band}" width="{w}" height="{h}" fill="#d6d6d2" clip-path="url(#body)"/>\n'
         f'  <rect x="{x + w - 120}" y="{band + 52}" width="48" height="24" fill="#3c3c3c"/>\n'
-        f"  {mark_layer('black', ((c - side) / 2, y + 150, side, side))}\n"
+        f"  {mark_layer(NAVY_HEX, ((c - side) / 2, y + 150, side, side))}\n"
         "</svg>\n"
     )
 
@@ -887,7 +911,7 @@ def target_bytes(art: IconArt, kind: str, arg: object) -> bytes:
     elif kind == "icon_border":
         save_png(render_svg(icon_border_svg(arg), ICON_CANVAS), buf)
     elif kind == "icon_art":
-        save_png(render_svg(icon_art_svg(art, arg), ICON_CANVAS), buf)
+        save_png(render_svg(icon_art_svg(art, appearance_ink(art.colors, arg)), ICON_CANVAS), buf)
     elif kind == "icon_mono":
         save_png(icon_mono_image(art), buf)
     elif kind == "ico":

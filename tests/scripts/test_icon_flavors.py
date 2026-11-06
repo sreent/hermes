@@ -166,9 +166,12 @@ def test_canary_changes_only_desktop_background_preserving_art_and_native_geomet
             assert (value < 0.4) if is_dark_tile(path) else (value > 0.8), (path, yellow.size, tile_color(yellow))
             # Compare art in direct renders. Tiny container frames use LANCZOS,
             # whose ringing legitimately depends on adjacent background colors.
+            # The mark keeps its pixels; its ink follows the tile: white on stable's navy and on
+            # the dark yellow, black on the light yellow.
             if path.suffix == ".png" and original.width >= 256:
                 ink = (255, 255, 255, 255) if is_dark_tile(path) else (0, 0, 0, 255)
-                assert [p == ink for p in original.get_flattened_data()] == [p == ink for p in yellow.get_flattened_data()]
+                white = (255, 255, 255, 255)
+                assert [p == white for p in original.get_flattened_data()] == [p == ink for p in yellow.get_flattened_data()]
     assert_unbranded_outputs(stable, canary)
 
 
@@ -220,7 +223,7 @@ def test_commit_icons_are_red_and_print_only_the_actual_seven_digit_prefix(gener
     for name in ("icon.png", "icon-dark.png"):
         image = Image.open(first / "apps/desktop/assets" / name).convert("RGB")
         unbadged = Image.open(stable / "apps/desktop/assets" / name).convert("RGB")
-        art = (0, 0, 0) if name == "icon.png" else (255, 255, 255)
+        art = (255, 255, 255)  # stable's white mark on navy
         for digit, rows in enumerate(expected):
             judged = 0
             for y, row in enumerate(rows):
@@ -279,8 +282,8 @@ def manifest_fills(package):
 def test_layered_macos_icon_mono_layer_and_flavor_stays_in_the_fill(generate, monkeypatch):
     """macOS 26 masks the layers itself. The mark sits centered on the plate,
     clear of the mask, the mono layer is the mark in white and fully visible,
-    and build flavors recolour the fill in icon.json only; the layers never
-    change."""
+    and build flavors recolour the fill in icon.json and the ink where it needs
+    contrast; the layers keep their shape."""
     module = load_generator(monkeypatch)
     stable = generate("v1.2.3") / "apps/desktop/assets" / LAYERED_ICON
     canary = generate("v1.2.3+canary.20260911T010203Z") / "apps/desktop/assets" / LAYERED_ICON
@@ -301,8 +304,12 @@ def test_layered_macos_icon_mono_layer_and_flavor_stays_in_the_fill(generate, mo
         return image.getchannel("A").point(lambda a: 255 if a > 127 else 0).tobytes()
     assert solid(mono) == solid(dark_art), "the mono layer is the mark itself"
 
-    for name in ("art-light.png", "art-dark.png", "mono.png"):
-        assert (stable / "Assets" / name).read_bytes() == (canary / "Assets" / name).read_bytes(), name
+    # The mark's ink follows the fill (black on the light canary yellow), so the
+    # art layers keep their shape; the mono layer does not change at all.
+    for name in ("art-light.png", "art-dark.png"):
+        shape = Image.open(stable / "Assets" / name).convert("RGBA").getchannel("A")
+        assert shape.tobytes() == Image.open(canary / "Assets" / name).convert("RGBA").getchannel("A").tobytes(), name
+    assert (stable / "Assets" / "mono.png").read_bytes() == (canary / "Assets" / "mono.png").read_bytes()
 
     # The DMG volume icon and window background are never flavoured: an
     # installer's disk looks the same for every channel.
@@ -320,14 +327,15 @@ def test_layered_macos_icon_mono_layer_and_flavor_stays_in_the_fill(generate, mo
         reps.append((background.size, background.info["dpi"]))
     assert reps == [((width, height), (72, 72)), ((2 * width, 2 * height), (144, 144))]
     for name in ("art-light.png", "art-dark.png"):
-        # The commit badge is the only difference, and it lives in the top quarter.
-        plain = Image.open(stable / "Assets" / name).convert("RGBA")
-        badged = Image.open(commit / "Assets" / name).convert("RGBA")
-        changed = ImageChops.difference(plain, badged).convert("L").getbbox()
+        # The commit badge is the only change of shape, and it lives in the top quarter.
+        plain = Image.open(stable / "Assets" / name).convert("RGBA").getchannel("A")
+        badged = Image.open(commit / "Assets" / name).convert("RGBA").getchannel("A")
+        changed = ImageChops.difference(plain, badged).getbbox()
         assert changed is not None and changed[3] <= canvas * 0.25 + 3, (name, changed)
 
     light, dark = manifest_fills(stable)
-    assert light == (1.0, 1.0, 1.0) and max(dark) < 0.1
+    navy = tuple(int(module.NAVY_HEX[i:i + 2], 16) / 255 for i in (1, 3, 5))
+    assert light == pytest.approx(navy, abs=1e-5) and dark == pytest.approx(navy, abs=1e-5)
     for package, low, high in ((canary, 0.10, 0.18), (commit, -0.05, 0.05)):
         light, dark = manifest_fills(package)
         for fill, dark_fill in ((light, False), (dark, True)):
@@ -365,8 +373,9 @@ def test_msix_logos_resolve_every_slot_windows_draws(generate, monkeypatch):
     """Windows picks `<Logo>.scale-N` / `.targetsize-N` by qualifier; the manifest
     only names the bases. Every base the manifest references must therefore have
     its scaled siblings at Microsoft's pixel sizes (never an upscaled 44px), and
-    the theme forms must be real variants: dark theme (unplated) gets the dark
-    tile, light theme the light one — the unqualified file stays light."""
+    each theme form must exist with its appearance's tile: dark theme (unplated)
+    the dark one, light theme the light one, the unqualified file the light one
+    (stable builds are navy in both)."""
     module = load_generator(monkeypatch)
     appx = generate("v1.2.3") / module.APPX_DIR
     for name, base in module.APPX_LOGOS.items():
@@ -385,6 +394,7 @@ def test_msix_logos_resolve_every_slot_windows_draws(generate, monkeypatch):
         light = Image.open(appx / f"Square44x44Logo.targetsize-{size}_altform-lightunplated.png").convert("RGBA")
         assert plain.size == dark.size == light.size == (size, size)
         edge = (max(1, size // 24), size // 2)  # on the plate, left of the mark
-        assert light.getpixel(edge)[:3] == plain.getpixel(edge)[:3] == light_plate == (255, 255, 255), size
+        navy = tuple(int(module.NAVY_HEX[i:i + 2], 16) for i in (1, 3, 5))
+        assert light.getpixel(edge)[:3] == plain.getpixel(edge)[:3] == light_plate == navy, size
         dark_plate = dark.getpixel(edge)
-        assert dark_plate[3] == 255 and max(dark_plate[:3]) < 60, (size, dark_plate)
+        assert dark_plate[3] == 255 and dark_plate[:3] == navy, (size, dark_plate)

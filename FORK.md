@@ -352,8 +352,12 @@ state folder, service and unit names, and the `hermes` command.
   - The glyph rows are `MARK_GLYPHS` in `scripts/generate_icons.py`, which draws everything from them:
     every app icon (desktop, Windows tiles, the macOS 26 layers, the setup installer), the favicons
     and logos of the dashboard and docs site, the README and social-card banner, and the DMG's
-    background and volume icon. Black on white, white on `#0d1117`. Change the rows (or
-    `MARK_FRACTION`, the mark's share of the plate), run `node scripts/generate-icons.mjs` and commit.
+    background and volume icon. Change the rows (or `MARK_FRACTION`, the mark's share of the plate),
+    run `node scripts/generate-icons.mjs` and commit.
+  - Colours: a white mark on a navy (`#13294b`, `NAVY_HEX`) tile in light and dark mode alike. The
+    mark's ink follows the tile (`mark_ink`), so canary and commit builds keep their yellow and red
+    tiles with a black mark where the tile is light. The transparent logos are navy (for light
+    surfaces) and white; the README banner is navy.
   - Nous's artwork is gone (`assets/nous-girl-*.svg`, the drive picture and the DMG background), and
     the generator lost the code that placed it. In an upstream merge, keep the mark in
     `generate_icons.py` and regenerate.

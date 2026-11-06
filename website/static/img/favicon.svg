@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
   <defs><clipPath id="icon-silhouette"><rect x="0.0" y="0.0" width="1024.0" height="1024.0" rx="245.0" /></clipPath></defs>
-  <ns0:rect xmlns:ns0="http://www.w3.org/2000/svg" x="0" y="0" width="1024" height="1024" rx="245" fill="#ffffff" />
+  <ns0:rect xmlns:ns0="http://www.w3.org/2000/svg" x="0" y="0" width="1024" height="1024" rx="245" fill="#13294b" />
   <g clip-path="url(#icon-silhouette)"><svg x="215.04000000000002" y="215.04000000000002" width="593.92" height="593.92" viewBox="0 0 7 7" preserveAspectRatio="xMidYMid meet">
-    <path fill="#000000" d="M1 0 L2 0 L2 1 L1 1ZM0 1 L1 1 L1 2 L0 2ZM1 1 L2 1 L2 2 L1 2ZM2 1 L3 1 L3 2 L2 2ZM1 2 L2 2 L2 3ZM2 2 L3 2 L3 3 L2 3ZM4 0 L5 0 L5 1 L4 1ZM6 0 L7 0 L7 1 L6 1ZM4 1 L5 1 L5 2 L4 2ZM6 1 L7 1 L7 2 L6 2ZM4 2 L5 2 L5 3ZM5 2 L6 2 L6 3 L5 3ZM6 2 L7 2 L7 3 L6 3ZM1 4 L1 5 L0 5ZM1 4 L2 4 L2 5 L1 5ZM2 4 L3 5 L2 5ZM0 5 L1 5 L1 6 L0 6ZM2 5 L3 5 L3 6 L2 6ZM0 6 L1 6 L1 7ZM1 6 L2 6 L2 7 L1 7ZM2 6 L3 6 L2 7ZM5 4 L5 5 L4 5ZM5 4 L6 4 L6 5 L5 5ZM6 4 L7 4 L7 5 L6 5ZM4 5 L5 5 L5 6ZM5 5 L6 5 L6 6 L5 6ZM6 5 L7 6 L6 6ZM4 6 L5 6 L5 7 L4 7ZM5 6 L6 6 L6 7 L5 7ZM6 6 L7 6 L6 7Z"/>
+    <path fill="#ffffff" d="M1 0 L2 0 L2 1 L1 1ZM0 1 L1 1 L1 2 L0 2ZM1 1 L2 1 L2 2 L1 2ZM2 1 L3 1 L3 2 L2 2ZM1 2 L2 2 L2 3ZM2 2 L3 2 L3 3 L2 3ZM4 0 L5 0 L5 1 L4 1ZM6 0 L7 0 L7 1 L6 1ZM4 1 L5 1 L5 2 L4 2ZM6 1 L7 1 L7 2 L6 2ZM4 2 L5 2 L5 3ZM5 2 L6 2 L6 3 L5 3ZM6 2 L7 2 L6 3ZM1 4 L1 5 L0 5ZM1 4 L2 4 L2 5 L1 5ZM2 4 L3 5 L2 5ZM0 5 L1 5 L1 6 L0 6ZM2 5 L3 5 L3 6 L2 6ZM0 6 L1 6 L1 7ZM1 6 L2 6 L2 7 L1 7ZM2 6 L3 6 L2 7ZM5 4 L5 5 L4 5ZM5 4 L6 4 L6 5 L5 5ZM6 4 L7 4 L7 5 L6 5ZM4 5 L5 5 L5 6ZM5 5 L6 5 L6 6 L5 6ZM6 5 L7 6 L6 6ZM4 6 L5 6 L5 7 L4 7ZM5 6 L6 6 L6 7 L5 7ZM6 6 L7 6 L6 7Z"/>
   </svg></g>
 </svg>

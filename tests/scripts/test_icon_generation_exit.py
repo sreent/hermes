@@ -96,12 +96,13 @@ def _generator(monkeypatch, name):
 
 
 @pytest.mark.parametrize("platform", ["", "mac-"])
-@pytest.mark.parametrize("appearance,ink", [("light", "black"), ("dark", "white")])
+@pytest.mark.parametrize("appearance", ["light", "dark"])
 @pytest.mark.parametrize("colors", [None, ("#f5cc32", "#443808"), ("#e34850", "#4a1117")])
-def test_mark_sits_centered_on_the_plain_tile_inside_the_outer_silhouette(monkeypatch, platform, appearance, ink, colors):
-    """The tile keeps the background's own geometry and fill with no stroke
-    (the ring is disabled), and the mark is centered on it at MARK_FRACTION of
-    its width, inside the same clip as the commit badge."""
+def test_mark_sits_centered_on_the_plain_tile_inside_the_outer_silhouette(monkeypatch, platform, appearance, colors):
+    """The tile keeps the background's own geometry with the build's fill (navy
+    for stable builds) and no stroke (the ring is disabled), and the mark is
+    centered on it at MARK_FRACTION of its width, in the ink that contrasts with
+    the fill, inside the same clip as the commit badge."""
     module = _generator(monkeypatch, "icon_geometry_under_test")
     assert module.BORDER_ENABLED is False
     source = Path(__file__).resolve().parents[2]
@@ -109,13 +110,13 @@ def test_mark_sits_centered_on_the_plain_tile_inside_the_outer_silhouette(monkey
     name = f"squircle-{platform}{appearance}.svg"
     ns = {"svg": "http://www.w3.org/2000/svg"}
     original = ET.parse(art.backgrounds / name).find("svg:rect", ns)
-    result = ET.fromstring(module.compose_svg(art, ink, name))
+    result = ET.fromstring(module.compose_svg(art, name))
     tile = result.find("svg:rect", ns)
     assert original is not None and tile is not None
     geometry = tuple(float(original.attrib[key]) for key in ("x", "y", "width", "height", "rx"))
     assert tuple(float(tile.attrib[key]) for key in ("x", "y", "width", "height", "rx")) == geometry
     assert tile.get("stroke") is None and tile.get("stroke-width") is None
-    expected_fill = (colors or ("#ffffff", module.DARK_HEX))[appearance == "dark"]
+    expected_fill = (colors or (module.NAVY_HEX, module.NAVY_HEX))[appearance == "dark"]
     assert tile.get("fill") == expected_fill
     clip = result.find("svg:defs/svg:clipPath/svg:rect", ns)
     assert clip is not None
@@ -132,7 +133,9 @@ def test_mark_sits_centered_on_the_plain_tile_inside_the_outer_silhouette(monkey
     side = width * module.MARK_FRACTION
     assert box == pytest.approx((x + (width - side) / 2, y + (height - side) / 2, side, side))
     assert mark.get("preserveAspectRatio") == "xMidYMid meet"
-    assert mark[0].get("fill") == module.INKS[ink]
+    # White on navy and on the dark flavour tiles, black on the light canary and commit tiles.
+    expected_ink = "black" if colors and appearance == "light" else "white"
+    assert mark[0].get("fill") == module.INKS[expected_ink]
 
 
 def test_every_mark_cell_is_one_the_renderer_draws(monkeypatch):
