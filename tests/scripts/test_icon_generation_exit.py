@@ -138,17 +138,18 @@ def test_mark_sits_centered_on_the_plain_tile_inside_the_outer_silhouette(monkey
     assert mark[0].get("fill") == module.INKS[expected_ink]
 
 
-def test_every_mark_cell_is_one_the_renderer_draws(monkeypatch):
-    """A glyph is three rows of three cells, each empty or a known cell shape,
-    so a redesigned glyph can never shift its neighbours or draw nothing."""
+def test_every_glyph_stays_inside_its_cell(monkeypatch):
+    """A glyph's outlines stay inside its cell, so a redesigned glyph can never run into a
+    neighbour (where the even-odd fill would punch it out) and every layout fills its own box."""
     module = _generator(monkeypatch, "icon_glyphs_under_test")
-    for glyph, rows in module.MARK_GLYPHS.items():
-        assert len(rows) == 3 and all(len(row) == 3 for row in rows), glyph
-        assert {cell for row in rows for cell in row} <= {".", *module.MARK_CELLS}, glyph
+    assert module.GLYPH_GAP > 0
+    for glyph, outlines in module.MARK_GLYPHS.items():
+        assert outlines and all(len(outline) >= 3 for outline in outlines), glyph
+        assert all(0 <= v <= module.GLYPH_CELL for outline in outlines for point in outline for v in point), glyph
     for layout in (module.MARK_LAYOUT, module.WORDMARK_LAYOUT):
         d, width, height = module.mark_geometry(layout)
-        glyphs = [glyph for row in layout for glyph in row]
-        assert d.count("M") == sum(cell != "." for glyph in glyphs for row in module.MARK_GLYPHS[glyph] for cell in row)
-        assert (width, height) == (len(layout[0]) * 4 - 1, len(layout) * 4 - 1)
-        xs = [float(v) for v in re.findall(r"[ML]([\d.]+) ", d)]
-        assert min(xs) == 0 and max(xs) == width  # the layout fills its own box
+        pitch = module.GLYPH_CELL + module.GLYPH_GAP
+        assert (width, height) == (len(layout[0]) * pitch - module.GLYPH_GAP, len(layout) * pitch - module.GLYPH_GAP)
+        points = [(float(x), float(y)) for x, y in re.findall(r"[ML]([\d.]+) ([\d.]+)", d)]
+        assert min(x for x, _ in points) == 0 and max(x for x, _ in points) == width
+        assert min(y for _, y in points) == 0 and max(y for _, y in points) == height

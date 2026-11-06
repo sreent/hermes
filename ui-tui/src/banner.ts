@@ -43,34 +43,34 @@ export function parseRichMarkup(markup: string): Line[] {
   return lines
 }
 
-// tuos (FORK.md): the wordmark and the mark where Hermes drew its logo and caduceus, from the
-// icons' pixel glyphs (MARK_GLYPHS in scripts/generate_icons.py). A cell is four columns by two
-// lines, so it is square; quadrant blocks draw the 45-degree corner cuts as stairs.
+// tuos (FORK.md): the wordmark and the mark where Hermes drew its logo and caduceus, in the icons'
+// letterforms (MARK_GLYPHS in scripts/generate_icons.py) in quadrant blocks: a glyph is 13 columns
+// by 6 lines, snapped so strokes stay whole and each 45-degree corner cut is a three-step stair.
 // hermes_cli/brand_art.py draws the same for the CLI.
 const LOGO_ART = [
-  '    ████        ████    ████      ▗▟████▙▖        ▗▟████████',
-  '    ████        ████    ████    ▗▟████████▙▖    ▗▟██████████',
-  '████████████    ████    ████    ████    ████    ▝▜██████▙▖',
-  '████████████    ████    ████    ████    ████      ▝▜██████▙▖',
-  '    ▝▜██████    ▝▜████████▛▘    ▝▜████████▛▘    ██████████▛▘',
-  '      ▝▜████      ▝▜████▛▘        ▝▜████▛▘      ████████▛▘'
+  '   ████          ████     ████     ▗▟███████▙▖      ▗▟██████████',
+  '▄▄▄████▄▄▄▄▄     ████     ████    ▟███████████▙    ▟███▀▀▀▀▀▀▀▀▀',
+  '████████████     ████     ████    ████     ████    █████████████',
+  '▀▀▀████▀▀▀▀▀     ████     ████    ████     ████    █████████████',
+  '   ▜████████     ▜███████████▛    ▜███████████▛    ▄▄▄▄▄▄▄▄▄███▛',
+  '    ▝▜██████      ▝▜███████▛▘      ▝▜███████▛▘     ██████████▛▘'
 ]
 
 const CADUCEUS_ART = [
-  '    ████        ████    ████',
-  '    ████        ████    ████',
-  '████████████    ████    ████',
-  '████████████    ████    ████',
-  '    ▝▜██████    ▝▜████████▛▘',
-  '      ▝▜████      ▝▜████▛▘',
+  '   ████          ████     ████',
+  '▄▄▄████▄▄▄▄▄     ████     ████',
+  '████████████     ████     ████',
+  '▀▀▀████▀▀▀▀▀     ████     ████',
+  '   ▜████████     ▜███████████▛',
+  '    ▝▜██████      ▝▜███████▛▘',
   '',
   '',
-  '  ▗▟████▙▖        ▗▟████████',
-  '▗▟████████▙▖    ▗▟██████████',
-  '████    ████    ▝▜██████▙▖',
-  '████    ████      ▝▜██████▙▖',
-  '▝▜████████▛▘    ██████████▛▘',
-  '  ▝▜████▛▘      ████████▛▘'
+  ' ▗▟███████▙▖      ▗▟██████████',
+  '▟███████████▙    ▟███▀▀▀▀▀▀▀▀▀',
+  '████     ████    █████████████',
+  '████     ████    █████████████',
+  '▜███████████▛    ▄▄▄▄▄▄▄▄▄███▛',
+  ' ▝▜███████▛▘     ██████████▛▘'
 ]
 
 const LOGO_GRADIENT = [0, 0, 1, 1, 2, 2] as const

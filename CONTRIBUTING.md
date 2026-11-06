@@ -214,7 +214,7 @@ npm run build:fast --prefix website
 Use a Node/npm version accepted by the corresponding `package.json` engines.
 Native desktop dependencies can also require the platform build toolchain.
 
-Logos and icons are generated from the pixel mark in `scripts/generate_icons.py`
+Logos and icons are generated from the tuos mark's glyphs in `scripts/generate_icons.py`
 (`MARK_GLYPHS`) and `assets/backgrounds/`. `node scripts/generate-icons.mjs` renders them with the
 Hermes runtime Python (`HERMES_PYTHON`, else `python` on PATH): Pillow and
 resvg-py are core dependencies. Generated outputs are committed and CI fails if

@@ -286,8 +286,8 @@ state folder, service and unit names, and the `hermes` command.
   - The built-in skins that carried Hermes's branding say tuos, with ◆ in place of ☤
     (`hermes_cli/skin_engine.py`).
   - Banner art: `hermes_cli/brand_art.py` (new) holds the wordmark and the mark that `banner.py` falls
-    back to, and `ui-tui/src/banner.ts` draws the same: the icons' pixel glyphs, a cell four columns by
-    two lines, with quadrant blocks drawing the corner cuts as stairs.
+    back to, and `ui-tui/src/banner.ts` draws the same: the icons' letterforms in quadrant blocks, a
+    glyph 13 columns by 6 lines, with the corner cuts drawn as stairs.
   - Version labels: `banner.py`, `_startup_fast.py`.
   - The TUI's default brand, taglines and attribution: `theme.ts`, `components/branding.tsx`,
     `i18n/en/chatBits.ts`.
@@ -347,12 +347,13 @@ state folder, service and unit names, and the `hermes` command.
     - Update and uninstall leave apps installed under the old names alone (`Hermes.app`, Nous's
       packages); remove those by hand.
   - The Store variant refuses to package until `STORE_MSIX` holds this fork's Partner Center identity.
-- **Icons, logos and banners**: a pixel mark, four 3x3-cell glyphs stacked two by two (t u over o s),
-  each cell a square or a square with one corner cut at 45 degrees.
-  - The glyph rows are `MARK_GLYPHS` in `scripts/generate_icons.py`, which draws everything from them:
+- **Icons, logos and banners**: the tuos mark, four blocky glyphs stacked two by two (t u over o s):
+  strokes 4 units wide on a 13-unit square, square ends, a 45-degree cut where a stroke would curve,
+  and counters as narrow as 1.5 units.
+  - The glyph outlines are `MARK_GLYPHS` in `scripts/generate_icons.py`, which draws everything from them:
     every app icon (desktop, Windows tiles, the macOS 26 layers, the setup installer), the favicons
     and logos of the dashboard and docs site, the README and social-card banner, and the DMG's
-    background and volume icon. Change the rows (or `MARK_FRACTION`, the mark's share of the plate),
+    background and volume icon. Change the outlines (or `MARK_FRACTION`, the mark's share of the plate),
     run `node scripts/generate-icons.mjs` and commit.
   - Colours: a white mark on a navy (`#13294b`, `NAVY_HEX`) tile in light and dark mode alike. The
     mark's ink follows the tile (`mark_ink`), so canary and commit builds keep their yellow and red

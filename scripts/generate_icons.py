@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""Generate every app icon, logo and banner in the repo from the tuos pixel mark + platform backgrounds.
+"""Generate every app icon, logo and banner in the repo from the tuos mark + platform backgrounds.
 
 Usage (from repo root):
     node scripts/generate-icons.mjs           # write
     node scripts/generate-icons.mjs --check   # verify structure
 
 Sources of truth — two axes, composed per target:
-  The mark (pixels):  MARK_GLYPHS below (FORK.md, "Rebranded as tuos"): four 3x3-cell glyphs,
-                      t u over o s, each cell a square or a square with one corner cut at 45
-                      degrees. Drawn as vector cells, so every size renders the same geometry
+  The mark:           MARK_GLYPHS below (FORK.md, "Rebranded as tuos"): the outlines of four
+                      blocky glyphs, t u over o s, with square ends and 45-degree corner cuts.
+                      Drawn as vector outlines, so every size renders the same geometry
                       without fonts. The wordmark sets the same glyphs in one row.
 
   Backgrounds (per platform surface, light/dark):
@@ -139,29 +139,31 @@ BORDER_ENABLED = False
 
 # ─── the tuos mark ──────────────────────────────────────────────────────────
 #
-# Four 3x3-cell glyphs (FORK.md, "Rebranded as tuos"). A cell is empty (.), a
-# full square (#), or a square with one corner cut at 45 degrees, drawn as the
-# triangle that remains: ◢ cuts the top-left corner, ◣ the top-right, ◤ the
-# bottom-right and ◥ the bottom-left. Redesign the mark here: every icon,
-# logo, banner and the DMG artwork render from these rows.
-MARK_GLYPHS = {
-    "t": (".#.", "###", ".◥#"),
-    "u": ("#.#", "#.#", "◥#◤"),
-    "o": ("◢#◣", "#.#", "◥#◤"),
-    "s": ("◢##", "◥#◣", "##◤"),
+# Four glyphs (FORK.md, "Rebranded as tuos"), each a list of outlines in units
+# of its 13-unit cell: strokes 4 units wide with square ends, a 45-degree cut
+# of 2.75 units on each outer corner where a stroke would curve, and counters
+# as narrow as 1.5 units (under the t's crossbar, and in the s). The mark is
+# filled even-odd, so the o's second outline is its counter. Redesign the mark
+# here: every icon, logo, banner and the DMG artwork render from these
+# outlines, and hermes_cli/brand_art.py and ui-tui/src/banner.ts draw them in
+# quadrant blocks.
+MARK_GLYPHS: dict[str, tuple[tuple[tuple[float, float], ...], ...]] = {
+    "t": (((3, 0), (7, 0), (7, 3.5), (12, 3.5), (12, 7.5), (7, 7.5), (7, 9), (12, 9), (12, 13),
+           (5.75, 13), (3, 10.25), (3, 7.5), (0, 7.5), (0, 3.5), (3, 3.5)),),
+    "u": (((0, 0), (4, 0), (4, 9), (9, 9), (9, 0), (13, 0), (13, 10.25), (10.25, 13), (2.75, 13),
+           (0, 10.25)),),
+    "o": (((2.75, 0), (10.25, 0), (13, 2.75), (13, 10.25), (10.25, 13), (2.75, 13), (0, 10.25),
+           (0, 2.75)),
+          ((4, 4), (9, 4), (9, 9), (4, 9))),
+    "s": (((2.75, 0), (13, 0), (13, 3.25), (4, 3.25), (4, 4.75), (13, 4.75), (13, 10.25),
+           (10.25, 13), (0, 13), (0, 9.75), (9, 9.75), (9, 8.25), (0, 8.25), (0, 2.75)),),
 }
-MARK_CELLS = {  # the filled polygon of each cell kind, in cell units
-    "#": ((0, 0), (1, 0), (1, 1), (0, 1)),
-    "◢": ((1, 0), (1, 1), (0, 1)),
-    "◣": ((0, 0), (1, 1), (0, 1)),
-    "◤": ((0, 0), (1, 0), (0, 1)),
-    "◥": ((0, 0), (1, 0), (1, 1)),
-}
+GLYPH_CELL = 13  # each glyph's square cell; the t is a unit narrower and sits at its left
+GLYPH_GAP = 4  # between neighbouring cells, across and down
 MARK_LAYOUT = (("t", "u"), ("o", "s"))   # icons and logos: two by two
 WORDMARK_LAYOUT = (("t", "u", "o", "s"),)  # banners: one row
-GLYPH_GAP = 1  # empty cells between neighbouring glyphs
 # The mark's width as a share of the plate it is centered on.
-MARK_FRACTION = 0.58
+MARK_FRACTION = 0.62
 INKS = {"black": "#000000", "white": "#ffffff"}
 
 
@@ -353,19 +355,17 @@ class IconArt:
 
 
 def mark_geometry(layout: tuple[tuple[str, ...], ...] = MARK_LAYOUT) -> tuple[str, int, int]:
-    """Path data of a glyph layout in cell units, and its width and height in cells. One path, so
-    neighbouring cells share edges without anti-aliased seams."""
+    """Path data of a glyph layout in units, and its width and height. Each glyph sits in its cell,
+    GLYPH_GAP from its neighbours; one path, so the whole layout fills in one pass."""
+    pitch = GLYPH_CELL + GLYPH_GAP
     parts = []
     for row, glyphs in enumerate(layout):
         for col, glyph in enumerate(glyphs):
-            for y, line in enumerate(MARK_GLYPHS[glyph]):
-                for x, cell in enumerate(line):
-                    if cell == ".":
-                        continue
-                    ox, oy = col * (3 + GLYPH_GAP) + x, row * (3 + GLYPH_GAP) + y
-                    parts.append("M" + " L".join(f"{ox + px} {oy + py}" for px, py in MARK_CELLS[cell]) + "Z")
-    width = len(layout[0]) * (3 + GLYPH_GAP) - GLYPH_GAP
-    height = len(layout) * (3 + GLYPH_GAP) - GLYPH_GAP
+            for outline in MARK_GLYPHS[glyph]:
+                points = " L".join(f"{col * pitch + x:g} {row * pitch + y:g}" for x, y in outline)
+                parts.append(f"M{points}Z")
+    width = len(layout[0]) * pitch - GLYPH_GAP
+    height = len(layout) * pitch - GLYPH_GAP
     return "".join(parts), width, height
 
 
@@ -374,13 +374,13 @@ def mark_layer(
     layout: tuple[tuple[str, ...], ...] = MARK_LAYOUT,
 ) -> str:
     """Nested-svg layer: the glyph layout fitted into `box`, centered; 'meet'
-    keeps its cells square. `ink` is "black", "white" or a colour."""
+    keeps its proportions. `ink` is "black", "white" or a colour."""
     d, width, height = mark_geometry(layout)
     x, y, w, h = box
     return (
         f'<svg x="{x}" y="{y}" width="{w}" height="{h}" viewBox="0 0 {width} {height}" '
         'preserveAspectRatio="xMidYMid meet">\n'
-        f'    <path fill="{INKS.get(ink, ink)}" d="{d}"/>\n'
+        f'    <path fill="{INKS.get(ink, ink)}" fill-rule="evenodd" d="{d}"/>\n'
         "  </svg>"
     )
 
@@ -775,9 +775,9 @@ def dot_grid(width: float, height: float, pitch: float, dot: float, fill: str) -
 def banner_svg() -> str:
     """The wordmark in white on navy, half the banner's height."""
     W, H = BANNER_SIZE
-    _, cols, rows = mark_geometry(WORDMARK_LAYOUT)
+    _, width, height = mark_geometry(WORDMARK_LAYOUT)
     h = H / 2
-    w = h * cols / rows
+    w = h * width / height
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}">\n'
         f'  <rect width="{W}" height="{H}" fill="{NAVY_HEX}"/>\n'
@@ -802,9 +802,10 @@ def dmg_background_svg() -> str:
     x0, x1 = cx - length / 2, cx + length / 2
     arrow = (f"M{x0} {cy - shaft / 2}H{x1 - head}V{cy - head}L{x1} {cy}L{x1 - head} {cy + head}"
              f"V{cy + shaft / 2}H{x0}Z")
-    _, cols, rows = mark_geometry(WORDMARK_LAYOUT)
-    cell = 7
-    word = (cx - cols * cell / 2, 64, cols * cell, rows * cell)
+    _, width, height = mark_geometry(WORDMARK_LAYOUT)
+    word_height = 21
+    word_width = word_height * width / height
+    word = (cx - word_width / 2, 64, word_width, word_height)
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}">\n'
         f'  <rect width="{W}" height="{H}" fill="{DMG_PAPER}"/>\n'
