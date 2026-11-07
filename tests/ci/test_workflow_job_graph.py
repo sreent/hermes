@@ -55,17 +55,3 @@ def test_jobs_only_read_declared_dependencies():
                     violations.append(f"{filename}: {name} reads '{read}' without needing it")
     assert not violations, "workflow job graph:\n" + "\n".join(violations)
 
-
-def test_no_workflow_runs_from_a_tag_push():
-    violations = []
-    for filename, workflow in _loaded().items():
-        triggers = (workflow or {}).get("on") or {}
-        if not isinstance(triggers, dict) or "push" not in triggers:
-            continue
-        push = triggers["push"]
-        # This nightly canary also gates releases with dedicated spend-capped keys.
-        if filename == "live-providers.yml" and push == {"tags": ["v*"]}:
-            continue
-        if not isinstance(push, dict) or not ({"branches", "branches-ignore"} & set(push)) or {"tags", "tags-ignore"} & set(push):
-            violations.append(filename)
-    assert not violations, "tag-triggered workflows: " + ", ".join(violations)

@@ -1,6 +1,7 @@
 import { Box, Text, useStdout } from '@hermes/ink'
 import { PRODUCT_NAME } from '@hermes/shared/brand'
 import { mix } from '@hermes/shared/color'
+import type { SessionInfo } from '@hermes/shared/gateway-types'
 import { useEffect, useState } from 'react'
 import unicodeSpinners from 'unicode-animations'
 
@@ -8,7 +9,7 @@ import { artWidth, caduceus, CADUCEUS_WIDTH, logo, LOGO_WIDTH } from '../banner.
 import { useT } from '../i18n/useT.js'
 import { flat } from '../lib/text.js'
 import type { Theme } from '../theme.js'
-import type { PanelSection, SessionInfo } from '../types.js'
+import type { PanelSection } from '../types.js'
 
 import { Accordion } from './accordion.js'
 import { ShimmerRows } from './loaders.js'

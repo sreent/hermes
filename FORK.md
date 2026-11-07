@@ -35,14 +35,18 @@ a merge conflicts wherever upstream changed a line we renamed, and brings in ups
 unrenamed. Let the script handle both:
 
 ```bash
-npm ci                                     # once per clone: the apps' half parses TypeScript
+source ./activate                          # provides the pnpm pm/lock.json pins
+pnpm install --frozen-lockfile             # once per clone: the apps' half parses TypeScript
 git merge upstream/main
 python scripts/fork/rename.py --resolve    # settle the conflicts the rename caused, then rename again
 ```
 
-`--resolve` takes upstream's side of each conflicted file whose only change on our side is the rename
-(Python tests included), then renames everything again. It lists the conflicted files it left: they carry other changes of ours
-too. Resolve those by hand, taking upstream's wording in renamed lines, and run the script again.
+`--resolve` merges each conflicted file again with the rename applied to the merge base and to upstream's
+side (Python tests included), so lines that differ only by the rename stop conflicting: a file our side
+only renamed takes upstream's text, and one that also carries changes of ours keeps them. Then it renames
+everything again. It lists the files that still conflict, where changes of ours overlap upstream's, and
+leaves them out of the rename until they are resolved. Resolve those by hand, taking upstream's wording in
+renamed lines, and run the script again.
 
 The script exits with status 3 when the rename would break a match: text renamed in one place that code
 elsewhere compares against, searches for or lists, or that a regular expression in the desktop app or
@@ -81,13 +85,16 @@ Nous Research's project automation, which does nothing useful in this repository
     actionlint config.
 - **`.coderabbit.yaml`**: configuration for the CodeRabbit review bot Nous uses.
 - **Tests of those workflow files**, which read them from disk and so can't pass without them:
-  - 18 files in `tests/ci/` whose tests mostly or entirely check workflow definitions, plus the three
+  - 19 files in `tests/ci/` whose tests mostly or entirely check workflow definitions, plus the three
     helper modules only they used (`workflow_steps.py`, `_gha_expr.py`, `desktop_release_roles.py`).
   - The individual workflow-reading tests in `tests/ci/test_classify_changes.py`,
     `test_desktop_release_tag_admission.py`, `test_e2e_tmux_required.py`, `test_live_comment.py`,
-    `test_windows_update_crash_oracles.py`, and `tests/scripts/test_desktop_build_cache.py`,
-    `test_dispatch_log.py`, `test_release_artifacts.py`, `test_termux_build_driver.py`. The rest of each
-    file still runs.
+    `test_timings_report_running_job.py`, `test_windows_update_crash_oracles.py`, and
+    `tests/scripts/test_desktop_build_cache.py`, `test_dispatch_log.py`, `test_release_artifacts.py`,
+    `test_termux_build_driver.py`. The rest of each file still runs.
+  - `test_no_workflow_runs_from_a_tag_push` in `tests/ci/test_workflow_job_graph.py`: upstream runs
+    nothing from a tag push, while this fork's releases (`tuos-desktop.yml`, `tuos-docker.yml`) start
+    from `v*` tags. The file's job-graph test still checks our workflows.
   - `tests-js/setup-pm-cache.test.mjs` and `setup-pm-post.test.mjs`, which loaded the deleted actions.
 
 Deliberately kept, although they serve Nous's release process, because code we keep imports them:
@@ -134,7 +141,8 @@ So that installing or updating this fork never fetches Nous Research's version i
 - **Docs**: the docs site's repository, "edit this page", GitHub, issue and download links
   (`website/docusaurus.config.ts`); the install and clone commands in the README and its translations, the
   docs pages that show them (English and zh-Hans), and the bundled `hermes-agent` skill. The README files
-  open with a note saying this is a fork.
+  open with a note saying this is a fork. The phishing-safety page
+  (`website/docs/getting-started/official-domains.md`) lists this repository's sources, then Nous's.
 
 Deliberately still upstream's:
 
@@ -337,7 +345,10 @@ state folder, service and unit names, and the `hermes` command.
     `apps/desktop/electron/local-runtime-version.ts` (reads `tuos v...` from `--version`, and upstream's
     `Hermes Agent v...` from older installs and remote hosts).
   - Default names people see: the Slack app manifest (`hermes_cli/slack_cli.py`) and the Photon project
-    (`plugins/platforms/photon/auth.py`) are called tuos.
+    (`plugins/platforms/photon/auth.py`, spelled out: plugins may not import `hermes_cli.distribution`)
+    are called tuos.
+  - Generated docs pages: `scripts/gen_plugin_api_docs.py` brands the public plugin API page it writes,
+    so the page matches both its staleness test and the rename.
 - **The agent's identity**: "You are tuos, built on Nous Research's open-source Hermes Agent."
   - Set by `brand_identity()` in a block at the end of `agent/prompt_builder.py`. The same block brands the
     help guidance and the TUI and desktop surface hints.
