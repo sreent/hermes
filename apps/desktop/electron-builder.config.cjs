@@ -162,13 +162,17 @@ module.exports = {
     notarize: false,
     // Electron 44 no longer supports macOS 11 or 12.
     minimumSystemVersion: '13.0',
-    // The packaged client reads this generated app-update.yml by default.
+    // The packaged client reads this generated app-update.yml by default. Without an R2 bucket, a
+    // release reads its channel's feed (stable-mac.yml) from this repository's latest GitHub release
+    // (FORK.md, "Hosted by this fork").
     publish: channelRequest?.receiverCandidate
       ? [{ provider: 'generic', url: `${channelRequest.publicBase}/releases/darwin/stable/`, channel: 'stable' }]
       : channelRequest
       ? [{ provider: 'generic', url: `${channelRequest.publicBase}/releases/channel-builds/${channelRequest.buildId}/darwin/`, channel: 'latest' }]
       : publicUrl && channel && macFeed
       ? [{ provider: 'generic', url: `${publicUrl}/${macFeed.directory}/`, channel: macFeed.channel }]
+      : channel && macFeed
+      ? [{ provider: 'github', owner, repo, channel: macFeed.channel }]
       : null,
     category: 'public.app-category.developer-tools',
     extendInfo: {

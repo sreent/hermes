@@ -1,9 +1,9 @@
 """Where this fork of Hermes Agent is published (see FORK.md).
 
-Installs and updates come from this repository, and its users report problems here. Nous
-Research's release infrastructure (stable channel, signed release records, packaged desktop and
-Termux builds) stays upstream's: ``hermes_cli.source_releases.OFFICIAL_REPOSITORY`` keeps naming it,
-and checkouts of this repository follow their branch because it publishes no releases of its own.
+Installs and updates come from this repository, and its users report problems here. It hosts its
+own docs, Docker image and desktop apps. Nous Research's release infrastructure (stable channel,
+signed release records, Termux builds) stays upstream's: ``hermes_cli.source_releases.OFFICIAL_REPOSITORY``
+keeps naming it, so checkouts of this repository follow their branch.
 """
 
 import re
@@ -32,6 +32,8 @@ DOCKER_PACKAGE_URL = f"https://github.com/{REPOSITORY}/pkgs/container/tuos"
 # The docs site, on GitHub Pages (.github/workflows/tuos-docs.yml), with upstream's page paths:
 # Nous's https://hermes-agent.nousresearch.com/docs/<page> is DOCS_URL/<page> here.
 DOCS_URL = "https://sreent.github.io/hermes"
+# Where the desktop apps are downloaded (.github/workflows/tuos-desktop.yml attaches them to releases).
+RELEASES_URL = f"https://github.com/{REPOSITORY}/releases"
 
 # What people see is called tuos (FORK.md, "Rebranded as tuos"). Internal names stay Hermes's:
 # packages, HERMES_* variables, ~/.hermes, service names and the `hermes` command (`tuos` runs it).

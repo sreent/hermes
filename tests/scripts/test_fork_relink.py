@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 import hermes_yaml
-from hermes_cli.distribution import DOCKER_IMAGE, DOCKER_PACKAGE_URL, DOCS_URL
+from hermes_cli.distribution import DOCKER_IMAGE, DOCKER_PACKAGE_URL, DOCS_URL, RELEASES_URL
 
 
 def _load(name: str):
@@ -77,6 +77,20 @@ def test_docs_links_go_to_the_same_page_here_and_nous_services_stay():
         f'HUB_ORIGIN = "{nous}"\n'
         f"curl -fsSL {nous}/install.sh | bash\n"
         "see hermes-agent.nousresearch.com/docsearch-faq\n"
+    )
+
+
+def test_desktop_downloads_point_at_this_repositorys_releases():
+    nous = "https://hermes-agent.nousresearch.com"
+    text = (
+        f"Download the app from the [product page]({nous}/desktop), or build it.\n"
+        f'"  Install the desktop app from {nous},\\n"\n'
+        f'CATALOG_ORIGIN = "{nous}"\n'
+    )
+    assert relink.relink(text) == (
+        f"Download the app from the [product page]({RELEASES_URL}), or build it.\n"
+        f'"  Install the desktop app from {RELEASES_URL},\\n"\n'
+        f'CATALOG_ORIGIN = "{nous}"\n'
     )
 
 

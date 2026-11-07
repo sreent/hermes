@@ -9,6 +9,9 @@ Each rule rewrites one kind of reference in every tracked text file, code, tests
   ``/docs/api/`` data (the Skills Hub index, the plugin catalog), ``/docs/img/`` art and the hub page the
   desktop embeds (``/docs/skills?embed=picker``) are Nous's services and stay, as does the rest of
   hermes-agent.nousresearch.com (install pages).
+* Nous's desktop download page (``https://hermes-agent.nousresearch.com/desktop``, and the site itself
+  where copy says to install the desktop app from it) becomes this repository's releases page, where
+  ``.github/workflows/tuos-desktop.yml`` publishes the apps.
 * The Docker image ``nousresearch/hermes-agent``, wherever it is pulled, run, built ``FROM`` or named,
   becomes ``hermes_cli.distribution.DOCKER_IMAGE``, and its Docker Hub page the fork's package page.
   The same words inside a path (``github.com/nousresearch/hermes-agent``, ``.../hermes-agent/skills``)
@@ -35,7 +38,7 @@ from typing import Callable
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-from hermes_cli.distribution import DOCKER_IMAGE, DOCKER_PACKAGE_URL, DOCS_URL
+from hermes_cli.distribution import DOCKER_IMAGE, DOCKER_PACKAGE_URL, DOCS_URL, RELEASES_URL
 
 # Never rewritten: the record of what this fork changed, and the rules and their tests.
 NEVER = {"FORK.md", "hermes_cli/distribution.py", "scripts/fork/relink.py", "tests/scripts/test_fork_relink.py"}
@@ -49,6 +52,8 @@ KEEP: tuple[str, ...] = (
 RULES: tuple[tuple[re.Pattern[str], str | Callable[[re.Match[str]], str]], ...] = (
     (re.compile(r"(https?://)?hermes-agent\.nousresearch\.com/docs(?![\w-])(?!/(?:api|img)/|/skills\?embed=)"),
      lambda match: DOCS_URL if match.group(1) else DOCS_URL.split("://", 1)[1]),
+    (re.compile(r"https://hermes-agent\.nousresearch\.com/desktop(?![\w/-])"), RELEASES_URL),
+    (re.compile(r"(?<=desktop app from )https://hermes-agent\.nousresearch\.com(?![\w/.-])"), RELEASES_URL),
     (re.compile(r"https://hub\.docker\.com/r/nousresearch/hermes-agent(?:/tags)?/?"), DOCKER_PACKAGE_URL),
     # As an image reference: followed by a tag, a digest, or the end of the word (never ``/``, ``.git``
     # or a regular expression's next group).
@@ -77,7 +82,8 @@ def relink_file(name: str, text: str) -> str:
 
 def tracked_files() -> list[str]:
     """Tracked files that mention something a rule rewrites (``git grep``, so binaries are skipped)."""
-    words = ("nousresearch/hermes-agent", "hermes-agent.nousresearch.com/docs")
+    words = ("nousresearch/hermes-agent", "hermes-agent.nousresearch.com/docs", "hermes-agent.nousresearch.com/desktop",
+             "desktop app from https://hermes-agent.nousresearch.com")
     result = subprocess.run(["git", "grep", "-l", "-I", "-F", *(arg for word in words for arg in ("-e", word))],
                             cwd=ROOT, capture_output=True, text=True, check=False, timeout=120)
     if result.returncode not in (0, 1):

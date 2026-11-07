@@ -76,6 +76,9 @@ function toolsetArguments(inputs) {
   const config = require(path.join(app, 'electron-builder.config.cjs'))
   const tools = path.join(app, config.directories?.buildResources || 'build', 'prepared-packaging-tools')
   fs.mkdirSync(tools, { recursive: true })
+  // The toolsets are CommonJS (the icons toolset's icon-tool.js, which the AppImage target runs), but
+  // apps/desktop/package.json declares "type": "module", which Node would apply to them.
+  fs.writeFileSync(path.join(tools, 'package.json'), '{ "type": "commonjs" }\n')
   return Object.entries(inputs.toolsets).map(([name, directory]) => {
     const destination = path.join(tools, name)
     fs.rmSync(destination, { recursive: true, force: true })

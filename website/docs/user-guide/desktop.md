@@ -22,7 +22,7 @@ Pick whichever fits the moment. They share state, so you can start a session in 
 
 ## Install
 
-Download the app from the [tuos Desktop product page](https://hermes-agent.nousresearch.com/desktop), or follow the [installation instructions for tuos Desktop](../getting-started/installation.md).
+Download the app from the [tuos Desktop product page](https://github.com/sreent/hermes/releases), or follow the [installation instructions for tuos Desktop](../getting-started/installation.md).
 
 If you already have tuos installed, simply run
 

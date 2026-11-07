@@ -37,3 +37,19 @@ it('bakes only a canonical https feed base into the updater config', () => {
   expect(JSON.parse(build('https://updates.example/'))).toEqual([{ provider: 'generic', url: 'https://updates.example', channel: 'latest' }])
   expect(() => build('http://updates.example')).toThrow(/canonical https/)
 })
+
+// FORK.md, "Hosted by this fork": without an R2 bucket a release's macOS updater reads its channel's
+// feed from this repository's GitHub releases, under the name the runtime asks for.
+it.each([
+  ['bundled', 'v0.28.0', 'stable', false],
+  ['light', 'v0.29.0+canary.20260906T000000Z', 'canary', true]
+])('a %s %s build without R2 publishes its macOS feed to GitHub releases', (variant, tag, channel, light) => {
+  const env = { ...process.env, HERMES_DESKTOP_VARIANT: variant, HERMES_PAYLOAD_TAG: tag, GITHUB_REPOSITORY: 'sreent/hermes' }
+  delete env.CLOUDFLARE_R2_PUBLIC_URL
+  const result = execFileSync(process.execPath, ['-e', "const c=require('./apps/desktop/electron-builder.config.cjs'); console.log(JSON.stringify(c.mac.publish))"], {
+    cwd: root, encoding: 'utf8', env
+  })
+  expect(JSON.parse(result)).toEqual([
+    { provider: 'github', owner: 'sreent', repo: 'hermes', channel: feedContract.darwinFeed(channel, light).channel }
+  ])
+})

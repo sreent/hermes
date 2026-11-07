@@ -139,18 +139,17 @@ So that installing or updating this fork never fetches Nous Research's version i
 Deliberately still upstream's:
 
 - **Nous Research's release infrastructure.** `hermes_cli/source_releases.OFFICIAL_REPOSITORY` and the
-  installers' stable-channel checks keep naming Nous's repository. This fork publishes no releases, so its
-  checkouts follow `main` (the code's existing rule for forks). Packaged desktop builds, the Termux APT
-  package and the stable/canary channels are Nous's; this fork doesn't build them yet.
+  installers' stable-channel checks keep naming Nous's repository, so installs from source follow `main`
+  (the code's existing rule for forks) even after this fork tags a release. The Termux APT package, the
+  stable/canary channels and the setup installer (`apps/bootstrap-installer`) are Nous's; this fork
+  builds desktop apps only ("Hosted by this fork").
 - **Nous's services**, which are product features: Nous Portal sign-in, inference and billing, the Tool
   Gateway, the plugin catalog and Skills Hub, and the opt-in telemetry endpoint (off unless a user consents).
-- **Signing and release tooling for desktop builds.** Signing uses Nous's Azure Trusted Signing and Apple
-  accounts (`AZURE_SIGN_*`, notarization). Before this fork publishes builds it needs its own certificate,
-  and the MSIX publisher, `OUT_OF_STORE_PUBLISHER` in `scripts/msix-shared.mjs` (now `CN=tuos`), must
-  equal that certificate's subject. The release scripts name this fork's builds ("Rebranded as tuos",
-  below) but still publish to Nous's R2 bucket (`scripts/releases/r2.py` `DEFAULT_PUBLIC_URL`).
-  `tests/install/` drives Nous's published installers and expects Hermes's names. The removed workflows
-  ran all of these.
+- **Upstream's release tooling.** `scripts/release.py` and `scripts/releases/` name this fork's builds
+  ("Rebranded as tuos", below) but drive Nous's pipeline: R2 uploads (`scripts/releases/r2.py`
+  `DEFAULT_PUBLIC_URL`), channel feeds, App Installer descriptors and the Store. This fork releases with
+  `tuos-desktop.yml` instead. `tests/install/` drives Nous's published installers and expects Hermes's
+  names.
 
 ### Hosted by this fork
 
@@ -171,11 +170,32 @@ What Nous Research hosts for Hermes, this fork hosts for itself on GitHub, from 
   `latest` follows `main`, as installs do, where Nous's means the newest stable release. The Helm chart
   runs `main` by default. After the first run, check that the package is public (the package's page,
   Package settings) so clusters can pull it without credentials.
+- **Desktop apps**: pushing a tag `vX.Y.Z` runs `tuos-desktop.yml`, which builds the bundled app (the
+  agent inside, as upstream releases it) with upstream's driver, `scripts/bundles/desktop.py`, and attaches
+  the installers to a draft GitHub release of that tag (`hermes_cli.distribution.RELEASES_URL`). Publish
+  the draft by hand; installed apps update from the newest published release.
+  - macOS arm64, DMG and ZIP: signed and notarized when the secrets `CSC_LINK` and `CSC_KEY_PASSWORD` (a
+    Developer ID Application certificate) and `APPLE_API_KEY_P8`, `APPLE_API_KEY_ID` and
+    `APPLE_API_ISSUER` (an App Store Connect API key) are set. Without them the app is only ad-hoc
+    signed: macOS makes people allow it in Privacy & Security, and it cannot update itself. Without
+    Nous's R2 bucket the app reads its update feed (`stable-mac.yml`) from GitHub releases
+    (`electron-builder.config.cjs` `mac.publish`).
+  - Linux x64 and arm64, AppImage.
+  - Windows x64, MSIX: built only when the repository has Azure Trusted Signing variables
+    (`AZURE_SIGN_ENDPOINT`, `AZURE_SIGN_ACCOUNT`, `AZURE_SIGN_PROFILE`, `AZURE_SIGN_PUBLISHER`,
+    `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, with a federated credential for this workflow), because
+    Windows will not install an unsigned package. The MSIX publisher, `OUT_OF_STORE_PUBLISHER` in
+    `scripts/msix-shared.mjs` (now `CN=tuos`), must equal the certificate's subject. No App Installer
+    descriptor is published, so Windows installs do not update themselves.
+  - A stable build needs a claim tag `rc.<N>-vX.Y.Z` (upstream's release gate, which also dates the
+    Windows package version). `scripts/fork/release-claim.sh` makes it on each runner from the release
+    commit and never pushes it.
 - **`scripts/fork/relink.py`** rewrites upstream's references to what Nous hosts, wherever they are
   (code, tests, docs and the agent's prompt):
   - links into Nous's docs site go to the same page on ours. What Nous's site serves for its services
     stays: `/docs/api/` (the Skills Hub index, the plugin and model catalogs), `/docs/img/`, and the
     hub page the desktop app embeds. So does the rest of `hermes-agent.nousresearch.com`;
+  - Nous's desktop download page becomes this repository's releases page;
   - the image `nousresearch/hermes-agent` becomes ours, and its Docker Hub page our package page. The
     same words inside a path name the repository and stay. `rename.py` runs it, and
   its `--resolve` treats relinked lines as ours, so syncing upstream needs no extra step; `relink.py
