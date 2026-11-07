@@ -82,7 +82,7 @@ def _post_enroll(
         if exc.code == 401:
             message = (
                 "Connector rejected the caller identity (401). Your Nous Portal "
-                "token could not be verified — try `hermes auth add nous` and retry."
+                "token could not be verified — try `tuos auth add nous` and retry."
             )
         elif exc.code == 403:
             message = detail or "Enrollment token invalid, expired, already used, or tenant mismatch (403)."

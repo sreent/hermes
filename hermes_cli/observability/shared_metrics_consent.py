@@ -39,7 +39,7 @@ _OFFER_DESCRIPTION = "\n".join((
     "day. Apart from a one-time install note, data from before you opt in is never",
     "sent.",
     f"Details: {DOCS_URL}",
-    "Change it any time: hermes setup telemetry",
+    "Change it any time: tuos setup telemetry",
 ))
 _REASK_NOTE = "Asking once more: an earlier version could save \"No thanks\" before you saw this question."
 

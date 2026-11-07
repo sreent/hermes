@@ -414,7 +414,7 @@ def _audit_one(npm_bin: str, npm_dir, label: str, audit_extra: list[str], manual
             check_ok(f"{label} deps", "(no known vulnerabilities)")
         elif critical > 0 or high > 0:
             remedy = ("fix is an upstream lockfile bump — a local manual fix does not persist"
-                      " (the next `hermes update` reinstalls from the committed lockfile)")
+                      " (the next `tuos update` reinstalls from the committed lockfile)")
             check_warn(f"{label} deps", f"({critical} critical, {high} high, {moderate} moderate — {remedy})")
             if workspace_scoped:
                 check_info("  ^ workspace audit includes runtime and build dependencies; if manual npm remediation "

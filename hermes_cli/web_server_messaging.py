@@ -25,7 +25,7 @@ _log = logging.getLogger("hermes_cli.web_server")
 _PLATFORM_OVERRIDES: dict[str, dict[str, Any]] = {
     "api_server": {
         "name": "API server",
-        "description": "Expose Hermes as an OpenAI-compatible HTTP API for tools like Open WebUI.",
+        "description": "Expose tuos as an OpenAI-compatible HTTP API for tools like Open WebUI.",
         "docs_url": "https://sreent.github.io/hermes/user-guide/messaging/",
         "env_vars": (
             "API_SERVER_ENABLED", "API_SERVER_KEY", "API_SERVER_PORT", "API_SERVER_HOST",
@@ -47,7 +47,7 @@ _PLATFORM_OVERRIDES: dict[str, dict[str, Any]] = {
     },
     "relay": {
         "name": "Relay (experimental)",
-        "description": "Generic relay adapter fronted by the Hermes Relay connector.",
+        "description": "Generic relay adapter fronted by the tuos Relay connector.",
         "docs_url": "", "required_env": (),
     },
 }

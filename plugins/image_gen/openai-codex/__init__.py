@@ -254,7 +254,7 @@ class OpenAICodexImageGenProvider(StaticImageGenProvider):
             # Codex OAuth bootstrap hook (hermes_cli/tools_config_post_setup.py) starts the sign-in (#102144).
             "post_setup": "openai_codex",
             "post_setup_hint": (
-                "Sign in with `hermes auth add openai-codex` (or `hermes setup` → Codex) "
+                "Sign in with `tuos auth add openai-codex` (or `tuos setup` → Codex) "
                 "if you haven't already. No API key needed."),
         }
 

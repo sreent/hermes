@@ -52,7 +52,7 @@ _TURN_ERROR_LAYER_COPY: dict[str, tuple[str, str]] = {
 # ``retryable: false``), for codes whose retry hint cannot be reworded mechanically.
 _TURN_ERROR_NO_RETRY_HINT: dict[str, str] = {
     # Switched off: nothing comes up on its own, so the user starts it or picks another model.
-    "local_runtime_unavailable": ("Start the local model server (Hermes desktop app, or `hermes model` → "
+    "local_runtime_unavailable": ("Start the local model server (tuos desktop app, or `tuos model` → "
                                   "Local models), or switch with /model."),
 }
 

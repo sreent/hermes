@@ -14,14 +14,14 @@ _TTS_SUMMARY_ROWS = {
     "openai": ("OpenAI", ("VOICE_TOOLS_OPENAI_KEY", "OPENAI_API_KEY")),
     "minimax": ("MiniMax", ("MINIMAX_API_KEY",)), "mistral": ("Mistral Voxtral", ("MISTRAL_API_KEY",)),
     "gemini": ("Google Gemini", ("GEMINI_API_KEY", "GOOGLE_API_KEY")),
-    "neutts": ("NeuTTS", "neutts", "run 'hermes setup tts'"),
-    "kittentts": ("KittenTTS", "kittentts", "run 'hermes setup tts'")}
+    "neutts": ("NeuTTS", "neutts", "run 'tuos setup tts'"),
+    "kittentts": ("KittenTTS", "kittentts", "run 'tuos setup tts'")}
 _TTS_SUMMARY_DEFAULT = ("Edge TTS", ())
 _STT_SUMMARY_ROWS = {
     "openai": ("OpenAI", ("VOICE_TOOLS_OPENAI_KEY", "OPENAI_API_KEY")), "groq": ("Groq Whisper", ("GROQ_API_KEY",)),
     "elevenlabs": ("ElevenLabs Scribe", ("ELEVENLABS_API_KEY",)), "xai": ("xAI", ()),
     "deepinfra": ("DeepInfra", ("DEEPINFRA_API_KEY",))}
-_STT_SUMMARY_DEFAULT = ("Local Whisper", "faster_whisper", "run 'hermes tools' → Speech-to-Text")
+_STT_SUMMARY_DEFAULT = ("Local Whisper", "faster_whisper", "run 'tuos tools' → Speech-to-Text")
 
 # Browser "missing" hint keyed by the configured provider; anything else gets the generic hint.
 _BROWSER_MISSING_HINTS = {

@@ -13,7 +13,7 @@ metadata:
 
 # Stripe Link CLI Skill
 
-Wraps [@stripe/link-cli](https://github.com/stripe/link-cli) so Hermes can complete purchases on the user's behalf using one-time-use virtual cards or Shared Payment Tokens (SPT). Every spend is gated by an in-app approval in the Link mobile/web app — Hermes cannot self-approve.
+Wraps [@stripe/link-cli](https://github.com/stripe/link-cli) so tuos can complete purchases on the user's behalf using one-time-use virtual cards or Shared Payment Tokens (SPT). Every spend is gated by an in-app approval in the Link mobile/web app — tuos cannot self-approve.
 
 US-only at the moment (Link account requirement). Windows is not supported by the upstream CLI — this skill is gated `[linux, macos]`.
 
@@ -26,14 +26,14 @@ Trigger phrases:
 - "log in to Link", "connect my Link wallet"
 - HTTP 402 response from a merchant API with `www-authenticate: ... method="stripe"`
 
-If the user wants a paid API call (HTTP 402, no checkout form), the `card` path is wrong — use SPT via this same skill, or install the `pay` plugin (`hermes plugins install pay`) for x402/MPP payments.
+If the user wants a paid API call (HTTP 402, no checkout form), the `card` path is wrong — use SPT via this same skill, or install the `pay` plugin (`tuos plugins install pay`) for x402/MPP payments.
 
 ## Prerequisites
 
 - Node.js 20+ available on `PATH` (`node --version`)
 - US-based (Link account requirement)
 
-The Link account, payment method, and spend-approval app do NOT need to be set up before Hermes attempts to pay — the CLI walks the user through them on first run:
+The Link account, payment method, and spend-approval app do NOT need to be set up before tuos attempts to pay — the CLI walks the user through them on first run:
 
 - A Link account at https://app.link.com — created/linked during first `link-cli` auth
 - At least one payment method — added during first run at https://app.link.com/wallet
@@ -158,13 +158,13 @@ rm -f ~/.hermes/cache/scratch/link-card.json
 
 ## Optional: run as an MCP server instead
 
-`@stripe/link-cli --mcp` exposes the same commands as MCP tools over stdio. To register it with Hermes' native MCP:
+`@stripe/link-cli --mcp` exposes the same commands as MCP tools over stdio. To register it with tuos' native MCP:
 
 ```
 hermes mcp add stripe-link --command "npx" --args "@stripe/link-cli --mcp"
 ```
 
-Then `hermes mcp list` should show `stripe-link`. The same approval rules apply — MCP doesn't bypass the Link app approval step.
+Then `tuos mcp list` should show `stripe-link`. The same approval rules apply — MCP doesn't bypass the Link app approval step.
 
 ## Pitfalls
 

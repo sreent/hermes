@@ -341,7 +341,7 @@ def _migrate_to_21(results: dict[str, Any], quiet: bool) -> None:
         f"{len(grandfathered)} existing plugin(s) into plugins.enabled"
         if grandfathered else
         "  ✓ Plugins now opt-in: no existing plugins to grandfather. "
-        "Use `hermes plugins enable <name>` to activate.")
+        "Use `tuos plugins enable <name>` to activate.")
     _commit(
         config, results, quiet,
         f"plugins.enabled (opt-in allow-list, {len(grandfathered)} grandfathered)", message)

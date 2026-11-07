@@ -6803,7 +6803,7 @@ _SETUP_STEPS = (
     "   3. Install to Workspace: Settings → Install App",
     "   4. After installing, invite the bot to channels: /invite @YourBot",)
 _SETUP_HOME_CHANNEL_HELP = (
-    "📬 Home Channel: where Hermes delivers cron job results,",
+    "📬 Home Channel: where tuos delivers cron job results,",
     "   cross-platform messages, and notifications.",
     "   To get a channel ID: open the channel in Slack, then right-click",
     "   the channel name → Copy link — the ID starts with C (e.g. C01ABC2DE3F).",

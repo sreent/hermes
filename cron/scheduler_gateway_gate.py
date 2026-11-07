@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 GATEWAY_DOWN_HINT = (
     "the gateway is not running, so agent jobs cannot fire; they run at the next tick once it is "
-    "up. Start it with `hermes gateway start` (or `hermes gateway install` for a service)."
+    "up. Start it with `tuos gateway start` (or `tuos gateway install` for a service)."
 )
 # A crontab tick has a minute; a gateway still starting answers within a few seconds or not at all.
 _HEADLESS_PROBE_TIMEOUT_S = 5.0

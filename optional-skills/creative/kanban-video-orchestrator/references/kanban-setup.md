@@ -1,7 +1,7 @@
 # Kanban Setup — Project Bootstrap & Profile Configuration
 
 Once the brief is locked and the team is designed, the next step is producing
-the actual `setup.sh` that creates the project workspace, configures Hermes
+the actual `setup.sh` that creates the project workspace, configures tuos
 profiles, and fires the initial kanban task.
 
 This file documents the patterns. The companion script
@@ -60,13 +60,13 @@ Example: `q3-product-teaser`, `ascii-mood-loop`, `interview-cut-2026-q1`.
 The setup script does six things in order:
 
 1. **Create workspace tree** — all directories above
-2. **Create profiles** — `hermes profile create <name> --clone`
+2. **Create profiles** — `tuos profile create <name> --clone`
 3. **Configure profiles** — patch each profile's
    `~/.hermes/profiles/<name>/config.yaml` to set toolsets, always_load skills,
    and `cwd`
 4. **Write SOUL.md per profile** — the personality + role definition
 5. **Copy any provided assets + write `brief.md`, `TEAM.md`, and `taste/`**
-6. **Fire the initial kanban task** — `hermes kanban create` assigned to the director
+6. **Fire the initial kanban task** — `tuos kanban create` assigned to the director
 
 See `assets/setup.sh.tmpl` for the skeleton.
 
@@ -121,7 +121,7 @@ PY
 }
 ```
 
-ruamel.yaml must be installed in the user's Python (it ships with Hermes).
+ruamel.yaml must be installed in the user's Python (it ships with tuos).
 If absent: `pip install ruamel.yaml==0.18.17`.
 
 The setup script should also **validate** the patch by re-reading the file
@@ -223,7 +223,7 @@ The director turns this into actual `kanban_create` calls.
 ## API-key prerequisites check
 
 Before firing the kanban, verify required keys are available. Check both
-the Hermes `.env` (`${HERMES_HOME:-$HOME/.hermes}/.env`) and macOS Keychain
+the tuos `.env` (`${HERMES_HOME:-$HOME/.hermes}/.env`) and macOS Keychain
 (if on macOS):
 
 ```bash

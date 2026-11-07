@@ -279,9 +279,10 @@ state folder, service and unit names, and the `hermes` command.
     `hermes.exe`, `Hermes.app`, `Application Support/Hermes`);
   - "Hermes Local Signing", the macOS signing certificate's name in the keychain;
   - the `hermes` user and group the Docker image and the Nix module run as ("the `hermes` user",
-    `sudo -u hermes`, `--user hermes`, `s6-setuidgid hermes`, `hermes:hermes`, "drops to hermes").
-    The first rename turned these into `tuos` in 9 docs pages (`docker exec -u tuos ...` fails: there is
-    no such user); they read `hermes` again.
+    `sudo -u hermes`, `--user hermes`, `s6-setuidgid hermes`, `hermes:hermes`, "drops to hermes"), and
+    the container the compose files name hermes (`docker exec hermes tuos ...`). The first rename turned
+    these into `tuos` in 12 docs pages (`docker exec -u tuos ...` and `docker exec tuos ...` fail: there
+    is no such user or container); they read `hermes` again.
   - The TUI's taglines credit upstream in every language ("Built on Hermes Agent by Nous Research"), and
     the rule recognises credit only in English, so `agent/i18n.py` and `ui-tui/src/i18n/runtime.ts`
     serve those two keys as translated (`CREDIT_KEYS`). Before, the translations still carried Hermes's
@@ -303,9 +304,11 @@ state folder, service and unit names, and the `hermes` command.
   Rerun it after every upstream merge ("Renamed copy", above); `--report` lists the strings it left.
   - Python (`hermes_cli`, `gateway`, `tui_gateway`, `cron`, `tools`, `agent`, `plugins`, `acp_adapter`,
     `cli.py`): what `print`, `input` and the CLI's output helpers show, doctor checks, writes to
-    `sys.stdout`/`sys.stderr`, messages of anything raised, slash-command descriptions (`CommandDef`), and
-    keyword arguments named for copy (`help=`, `description=`, `detail=`, `install_hint=`, ...). Not logs,
-    docstrings, prompts, comparisons, dictionary keys or other data.
+    `sys.stdout`/`sys.stderr`, messages of anything raised, slash-command descriptions (`CommandDef`),
+    keyword arguments named for copy (`help=`, `description=`, `detail=`, `install_hint=`, ...),
+    dictionary values under such keys (tool schemas the agent reads, platform cards, config field help;
+    not HTTP header values such as OpenRouter's `X-Title`), and constants named for copy
+    (`UPDATE_MESSAGE`, `_AUTH_HINT`). Not logs, docstrings, prompts, comparisons or other data.
   - The desktop app and its setup installer, web dashboard, TUI and the docs site's own pages
     (`scripts/fork/rename_ts.mjs`): JSX text, error messages, and attributes, properties, variables and
     function results whose names say they hold copy (title, label, message, description, hint, ...). Not
@@ -313,8 +316,9 @@ state folder, service and unit names, and the `hermes` command.
   - Docs pages (`website/docs` and the zh-Hans translation): prose, front-matter titles and descriptions,
     and shell blocks. Other code blocks, and lines that credit Nous Research, stay. A renamed heading keeps
     its old anchor (`{#...}`), so links into the page still land.
-  - The READMEs and contributing guides in every language and the plugin catalog's rules (`DOC_FILES`),
-    the same way but without the anchors, which GitHub would show as text. The docs site mirrors the
+  - The READMEs and contributing guides in every language, the plugin catalog's rules and the skills
+    (`skills/`, `optional-skills/`) (`DOC_FILES`), the same way but without the anchors, which GitHub
+    and the agent would read as text. The docs site mirrors the
     catalog rules word for word (`tests/website/test_catalog_rules_mirror.py`).
   - Tests follow: an expectation that quotes copy the code now shows renamed is renamed with it.
     - Python: text a test searches output for (`"..." in out`, `not in`, `any(...)`, `.count(...)`),
@@ -434,14 +438,13 @@ state folder, service and unit names, and the `hermes` command.
   repository).
 
 Not rebranded yet:
-- Strings outside the contexts above: Python's returned values, constants and dictionaries (API responses,
-  config field descriptions, platform cards built as data), and the apps' strings whose names don't say
-  they hold copy. A message built from both can mix the names ("run `tuos gateway install` ... fold this
-  profile with `hermes gateway migrate --multiplex`"); both commands work. `--report` lists what is left;
-  some of it feeds the agent or matchers in other processes (`[hermes note: ...]` markers, the internal
-  notification footer), so extend the scripts' rules with care.
-- What only the agent reads, such as skills and tool descriptions, still says Hermes. Its identity, help
-  guidance and surface hints say tuos.
+- Strings outside the contexts above: Python's returned values and data whose names don't say they hold
+  copy, and the apps' strings likewise. A message built from both can mix the names ("run `tuos gateway
+  install` ... fold this profile with `hermes gateway migrate --multiplex`"); both commands work.
+  `--report` lists what is left; some of it feeds the agent or matchers in other processes (`[hermes note:
+  ...]` markers, the internal notification footer), so extend the scripts' rules with care.
+- Identities sent to other services: OpenRouter's `X-Title` and `HTTP-Referer` attribution, and the
+  names Hermes registers under elsewhere.
 - The desktop pet's pixel knight and the feature illustrations, and upstream's community stories on the
   docs site (quotes from people about Hermes).
 

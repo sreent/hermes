@@ -16,6 +16,7 @@ from hermes_cli.distribution import PRODUCT_NAME, brand
     ("then run hermes {profile_arg}sessions recover", "then run tuos {profile_arg}sessions recover"),
     ("docker exec -u hermes hermes-agent hermes pairing approve telegram ABC",
      "docker exec -u hermes hermes-agent tuos pairing approve telegram ABC"),
+    ("docker exec hermes hermes -p coder gateway start", "docker exec hermes tuos -p coder gateway start"),
 ])
 def test_copy_written_for_hermes_names_tuos(text, shown):
     assert brand(text) == shown

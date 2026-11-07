@@ -2196,7 +2196,7 @@ def _windows_gateway_breakaway_state() -> bool | None:
 # =============================================================================
 
 _SERVICE_BASE = "hermes-gateway"
-SERVICE_DESCRIPTION = "Hermes Agent Gateway - Messaging Platform Integration"
+SERVICE_DESCRIPTION = "tuos Gateway - Messaging Platform Integration"
 
 _SYSTEM_UNIT_DIR = Path("/etc/systemd/system")
 
@@ -5055,9 +5055,9 @@ def _cmd_setup(args):
 
 
 _WSL_FOREGROUND_HINT = (
-    "", "  hermes gateway run                              # direct foreground",
-    "  tmux new -s hermes 'hermes gateway run'         # persistent via tmux",
-    "  nohup hermes gateway run > ~/.hermes/logs/gateway.log 2>&1 &  # background",
+    "", "  tuos gateway run                              # direct foreground",
+    "  tmux new -s hermes 'tuos gateway run'         # persistent via tmux",
+    "  nohup tuos gateway run > ~/.hermes/logs/gateway.log 2>&1 &  # background",
 )
 # ``(exit_code, *lines)`` when a subcommand has no service backend, keyed by (subcommand, reason).
 # Reasons in check order: "termux", "wsl" (no operational systemd), "s6" / "container", "unsupported".

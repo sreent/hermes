@@ -18,12 +18,12 @@ _ARG_SYNONYMS = {
     "off": "auto", "default": "auto", "disable": "auto", "hermes": "auto"}
 
 _HERMES_TOOLS_CALLBACK_NOTE = (
-    "Hermes tool callback registered: codex can now use "
+    "tuos tool callback registered: codex can now use "
     "web_search, web_extract, vision_analyze, "
     "image_generate, skill_view, skills_list, text_to_speech, "
     "kanban_* (worker + orchestrator) via MCP.",
     "  (delegate_task, memory, session_search, todo run "
-    "only on the default Hermes runtime — they need the "
+    "only on the default tuos runtime — they need the "
     "agent loop context.)")
 
 

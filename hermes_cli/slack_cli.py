@@ -45,11 +45,11 @@ def _build_full_manifest(
 
     if messaging_experience == "assistant":
         features["assistant_view"] = {
-            "assistant_description": "Chat with Hermes in threads and DMs."}
+            "assistant_description": "Chat with tuos in threads and DMs."}
         bot_scopes.append("assistant:write")
         bot_events.extend(["assistant_thread_context_changed", "assistant_thread_started"])
     elif messaging_experience == "agent":
-        features["agent_view"] = {"agent_description": "Chat with Hermes in Slack Messages."}
+        features["agent_view"] = {"agent_description": "Chat with tuos in Slack Messages."}
         bot_scopes.append("assistant:write")
         # Slack includes current viewing context in Agent DM events only after this subscription
         # is enabled; the adapter uses it to preserve the referred channel across the agent turn.
@@ -60,7 +60,7 @@ def _build_full_manifest(
 
     display_information = {
         "name": bot_name[:35],
-        "description": (bot_description or "Your Hermes agent on Slack")[:140],
+        "description": (bot_description or "Your tuos agent on Slack")[:140],
         "background_color": "#1a1a2e"}
     if long_description is not None:
         display_information["long_description"] = long_description

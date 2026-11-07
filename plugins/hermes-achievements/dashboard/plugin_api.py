@@ -530,7 +530,7 @@ def criteria_for(definition: dict[str, Any]) -> str:
 def display_achievement(item: dict[str, Any]) -> dict[str, Any]:
     clean = dict(item)
     if clean.get("state") == "secret":
-        return {**clean, "name": "???", "description": "Secret achievement: hidden until Hermes detects the first relevant behavior in your session history.", "criteria": criteria_for(clean), "icon": "secret"}
+        return {**clean, "name": "???", "description": "Secret achievement: hidden until tuos detects the first relevant behavior in your session history.", "criteria": criteria_for(clean), "icon": "secret"}
     clean["criteria"] = criteria_for(clean)
     return clean
 

@@ -83,7 +83,7 @@ def _register_self_hosted_client(
             detail = ""
         if exc.code == 401:
             message = ("Nous Portal rejected the access token (401). "
-                       "Try `hermes auth add nous` to re-authenticate.")
+                       "Try `tuos auth add nous` to re-authenticate.")
         elif exc.code == 403:
             message = detail or "Your account is not permitted to register a self-hosted dashboard."
         else:

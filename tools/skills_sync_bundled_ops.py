@@ -91,8 +91,8 @@ def ensure_bundled_skill(name: str) -> dict:
     if skill_usage.is_hub_installed(name):
         return {"ok": True, "action": "hub_shadowed", "path": None, "message": (
             f"'{name}' is a built-in skill, but a skill installed from the hub uses the same name and "
-            f"shadows it. To get the built-in back: `hermes skills uninstall {name}`, then "
-            f"`hermes skills install {name}`.")}
+            f"shadows it. To get the built-in back: `tuos skills uninstall {name}`, then "
+            f"`tuos skills install {name}`.")}
     # The rglob walk does not descend a symlinked category the loader follows, so the canonical
     # SKILL.md counts as present too.
     skill_md = dest / "SKILL.md"

@@ -1,6 +1,6 @@
 # Providers & Model Aliases
 
-Set via `hermes model` (picker) or `hermes setup`. 35+ provider profiles ship as
+Set via `tuos model` (picker) or `tuos setup`. 35+ provider profiles ship as
 plugins under `plugins/model-providers/`; user plugins of the same name override.
 Full docs: https://sreent.github.io/hermes/integrations/providers
 
@@ -10,10 +10,10 @@ Full docs: https://sreent.github.io/hermes/integrations/providers
 |----------|------|----------------|
 | openrouter | API key | `OPENROUTER_API_KEY` |
 | anthropic | API key | `ANTHROPIC_API_KEY` (also `CLAUDE_CODE_OAUTH_TOKEN`) |
-| nous | OAuth device code | `hermes auth add nous` (or `NOUS_API_KEY`) |
-| openai-codex | OAuth | `hermes auth add openai-codex` |
-| qwen-oauth | OAuth | `hermes auth add qwen-oauth` |
-| minimax-oauth | OAuth | `hermes auth add minimax-oauth` |
+| nous | OAuth device code | `tuos auth add nous` (or `NOUS_API_KEY`) |
+| openai-codex | OAuth | `tuos auth add openai-codex` |
+| qwen-oauth | OAuth | `tuos auth add qwen-oauth` |
+| minimax-oauth | OAuth | `tuos auth add minimax-oauth` |
 | gemini | API key | `GOOGLE_API_KEY` or `GEMINI_API_KEY` |
 | xai | API key | `XAI_API_KEY` (SuperGrok OAuth also supported) |
 | deepseek | API key | `DEEPSEEK_API_KEY` |
@@ -29,8 +29,8 @@ Full docs: https://sreent.github.io/hermes/integrations/providers
 
 GitHub Copilot (`copilot`, `copilot-acp`) is a labs plugin, not core: `hermes plugins install github-copilot`, then `hermes auth add copilot` (https://github.com/NousResearch/hermes-labs-plugins/tree/main/github-copilot).
 
-Multiple credentials per provider pool and rotate automatically (`hermes auth`).
-Fallback chain when the primary fails: `hermes fallback add|remove|list`.
+Multiple credentials per provider pool and rotate automatically (`tuos auth`).
+Fallback chain when the primary fails: `tuos fallback add|remove|list`.
 
 ### User-defined model aliases
 

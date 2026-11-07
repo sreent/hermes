@@ -416,4 +416,4 @@ def get_plugin_oauth_auth_status(provider_id: str) -> dict[str, Any]:
         "configured": True, "provider": provider_id, "logged_in": bool(live),
         "needs_refresh": bool(refreshable), "accounts": len(entries),
         "base_url": next((e.base_url for e in live + refreshable if e.base_url), "") or "",
-        "hint": "" if live else f"Run `hermes auth add {provider_id}` to sign in."}
+        "hint": "" if live else f"Run `tuos auth add {provider_id}` to sign in."}

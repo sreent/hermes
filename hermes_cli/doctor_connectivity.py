@@ -279,9 +279,9 @@ def _probe_bedrock() -> ProbeResult:
         n = len(client.list_foundation_models().get("modelSummaries", []))
         return _row(name, "ok", f"({auth_var}, {region}, {n} models)", label=label)
     except ImportError:
-        hint = ("From the Hermes environment, run: "
+        hint = ("From the tuos environment, run: "
                 f"{install_hint('bedrock')}. "
-                "Then restart Hermes.")
+                "Then restart tuos.")
         return _row(name, "warn", "(boto3 not installed)", [hint], label=label)
     except Exception as e:
         err_name = type(e).__name__

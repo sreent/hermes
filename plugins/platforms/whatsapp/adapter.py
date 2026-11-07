@@ -671,8 +671,8 @@ class WhatsAppAdapter(WhatsAppBehaviorMixin, BasePlatformAdapter):
         if (missing := ensure_aiohttp()) is not None:  # may install it: connect runs this off the event loop
             why, retryable = missing
             message = (f"aiohttp is unavailable ({why}); the WhatsApp bridge client needs it. "
-                       "Run `hermes pm install --extra sms` (it ships aiohttp; `hermes pm repair` for a damaged install), "
-                       "then restart `hermes gateway`.")
+                       "Run `tuos pm install --extra sms` (it ships aiohttp; `tuos pm repair` for a damaged install), "
+                       "then restart `tuos gateway`.")
             logger.warning("[%s] %s", self.name, message)
             self._set_fatal_error("whatsapp_aiohttp_missing", message, retryable=retryable)
             return False

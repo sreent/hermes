@@ -22,7 +22,7 @@ _SETUP_PLATFORM = {
         "1. Download the Yuanbao app from https://yuanbao.tencent.com/",
         "2. In the app, go to PAI → My Bot and create a new bot",
         "3. After the bot is created, copy the App ID and App Secret",
-        "4. Enter them below and Hermes will connect automatically over WebSocket",
+        "4. Enter them below and tuos will connect automatically over WebSocket",
     ],
     "vars": [
         {"name": "YUANBAO_APP_ID", "prompt": "App ID", "password": False,

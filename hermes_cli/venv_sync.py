@@ -61,7 +61,7 @@ def check_runtime(project_root: Path) -> str | None:
         return None
     steward = sealed_steward(Path(project_root))
     remedy = (f"this {steward}-managed install must rebuild the artifact to fix"
-              if steward else "run `hermes pm install`")
+              if steward else "run `tuos pm install`")
     return f"install out of sync ({'; '.join(problems)}) — {remedy}"
 
 

@@ -274,7 +274,7 @@ def format_nous_portal_entitlement_message(
             f"Billing and credits are managed at {billing_url}."
         )
     if account_info.paid_service_access is None:
-        detail = f"Hermes could not verify your Nous Portal paid access, so {capability} is unavailable."
+        detail = f"tuos could not verify your Nous Portal paid access, so {capability} is unavailable."
         if account_info.error:
             detail += f" Account lookup failed: {account_info.error}."
         if include_refresh_hint:

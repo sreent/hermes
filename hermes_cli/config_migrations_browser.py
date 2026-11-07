@@ -171,7 +171,7 @@ def migrate_to_52(results: dict[str, Any], quiet: bool) -> None:
         if backend is False or (isinstance(backend, str) and backend.strip().lower() == "off"):
             # config_added is what `hermes update` re-surfaces on its quiet path, so the notice rides in it.
             note = ("removed browser.backend: off — the built-in browser tools are gone and browser_exec is the "
-                    "browser now; to turn browsing off, disable the `browser` toolset in `hermes tools`")
+                    "browser now; to turn browsing off, disable the `browser` toolset in `tuos tools`")
             added.append(note)
             messages.append(f"  ✓ {note[0].upper()}{note[1:]}.")
             notices.append(f"{note[0].upper()}{note[1:]}.")

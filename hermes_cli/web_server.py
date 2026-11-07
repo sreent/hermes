@@ -946,7 +946,7 @@ def _no_auth_provider_message(host: str) -> str:
                 "plugins.disabled but dashboard.basic_auth is "
                 "configured.\n"
                 "Remove 'basic' from plugins.disabled (or run "
-                "`hermes plugins enable basic`), then restart the "
+                "`tuos plugins enable basic`), then restart the "
                 "dashboard.\n\n"
             ) + fix_hint
     except Exception:

@@ -13,6 +13,7 @@ describe('brand', () => {
     expect(brand('docker exec -u hermes hermes-agent hermes pairing approve telegram ABC')).toBe(
       'docker exec -u hermes hermes-agent tuos pairing approve telegram ABC'
     )
+    expect(brand('docker exec hermes hermes -p coder gateway start')).toBe('docker exec hermes tuos -p coder gateway start')
   })
 
   it('keeps Nous services and models, the wake word, credit to upstream and internal names', () => {

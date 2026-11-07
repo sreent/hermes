@@ -319,7 +319,7 @@ TOOL_CATEGORIES = {
     "x_search": {
         "name": "X (Twitter) Search", "setup_title": "Select xAI Credential Source",
         "setup_note": (
-            "Hermes routes X searches through xAI's built-in x_search Responses tool for read-only public X "
+            "tuos routes X searches through xAI's built-in x_search Responses tool for read-only public X "
             "discovery. Use the xurl skill for authenticated X API reads and account actions. Both credential "
             "sources hit the same https://api.x.ai/v1/responses endpoint — pick whichever you already have. "
             "SuperGrok OAuth is preferred when both are set (uses your subscription quota instead of API spend)."
@@ -700,7 +700,7 @@ def toolsets_partially_stripped(config: dict, enabled_toolsets: set[str]) -> dic
         if by:
             entries = sorted(by)
             clears = all(_disabled_entry_tools(e) <= tools for e in entries)
-            hint = (f"run `hermes tools enable {name}` to restore" if clears
+            hint = (f"run `tuos tools enable {name}` to restore" if clears
                     else f"remove {', '.join(entries)} from agent.disabled_toolsets to restore")
             report[name] = (sorted(set().union(*by.values())), entries, hint)
     return report

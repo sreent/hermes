@@ -26,13 +26,13 @@ For the broader, already-shipped PowerPoint authoring skill (slides, speaker not
 
 ## Setup
 
-Use `python` when it already imports `pptx` (the Hermes Docker image ships
-it). Otherwise, when `hermes` is on PATH, let Hermes build its shared, pinned
-documents environment under the Hermes home (safe to run from several agents
-at once); in a Docker sandbox without Hermes the block builds a venv in the
+Use `python` when it already imports `pptx` (the tuos Docker image ships
+it). Otherwise, when `tuos` is on PATH, let tuos build its shared, pinned
+documents environment under the tuos home (safe to run from several agents
+at once); in a Docker sandbox without tuos the block builds a venv in the
 sandbox home with the same pinned versions. It is the same block as the
 microsoft-office/pdf skills. Never `pip install` into the interpreter that
-runs Hermes:
+runs tuos:
 
 ```bash
 python -c "import pptx" 2>/dev/null && PY=python || if command -v hermes >/dev/null 2>&1; then

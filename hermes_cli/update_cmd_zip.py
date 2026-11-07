@@ -48,7 +48,7 @@ _ZIP_PRESERVED_NESTED = {
     "web": ("node_modules",),
 }
 
-_STASH_HINT = "  Stash or commit your changes, then rerun `hermes update`."
+_STASH_HINT = "  Stash or commit your changes, then rerun `tuos update`."
 
 
 def _remove_path(path: str, *, ignore_errors: bool = False) -> None:

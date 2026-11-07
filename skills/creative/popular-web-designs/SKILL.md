@@ -31,7 +31,7 @@ system, shadows, responsive behavior, and practical agent prompts with exact CSS
   Pair it with this skill when the user wants a thoughtfully-designed page styled
   after a known brand: `claude-design` drives the workflow, this skill supplies
   the visual vocabulary.
-- **`design-md`** (optional: `hermes skills install official/creative/design-md`) —
+- **`design-md`** (optional: `tuos skills install official/creative/design-md`) —
   use when the deliverable is a formal DESIGN.md token spec file, not a rendered artifact.
 
 ## How to Use
@@ -41,7 +41,7 @@ system, shadows, responsive behavior, and practical agent prompts with exact CSS
 3. Use the design tokens and component specs when generating HTML
 4. Pair with the `generative-widgets` skill to serve the result via cloudflared tunnel
 
-Each template includes a **Hermes Implementation Notes** block at the top with:
+Each template includes a **tuos Implementation Notes** block at the top with:
 - CDN font substitute and Google Fonts `<link>` tag (ready to paste)
 - CSS font-family stacks for primary and monospace
 - Reminders to use `write_file` for HTML creation and `browser_exec` (`capture_screenshot()`) for verification

@@ -52,8 +52,8 @@ If the user needs marker capabilities but the system lacks ~5GB free disk:
 ## pymupdf (lightweight)
 
 Give it a separate side environment (~110 MB with its deps; never
-`pip install` into Hermes's own interpreter): Hermes builds it when `hermes`
-is on PATH, otherwise (a Docker sandbox without Hermes) a venv in the sandbox
+`pip install` into tuos's own interpreter): tuos builds it when `tuos`
+is on PATH, otherwise (a Docker sandbox without tuos) a venv in the sandbox
 home takes the same requirements. Then run the helper and the inline snippet
 below with `"$PY"` instead of `python`:
 

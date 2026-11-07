@@ -54,7 +54,7 @@ def where_to_set_key(env_var: str) -> str:
     from hermes_constants import display_hermes_home, get_hermes_home, profile_cli_selector, profile_name_for_home
     profile = profile_name_for_home(get_hermes_home()) or "default"
     env_path = f"{display_hermes_home()}/.env"
-    hint = (f"Add it to profile '{profile}': run `hermes {profile_cli_selector()}config set {env_var} <your key>` "
+    hint = (f"Add it to profile '{profile}': run `tuos {profile_cli_selector()}config set {env_var} <your key>` "
             f"(stored in {env_path}).")
     if serves_routed_profile() and os.environ.get(env_var):
         hint = (f"{env_var} is set in this server's environment, but profile '{profile}' reads keys only "

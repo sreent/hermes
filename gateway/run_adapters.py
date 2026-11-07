@@ -1205,7 +1205,7 @@ class GatewayAdapterLifecycleMixin(GatewaySecondaryReconnectMixin):
         noted.add((profile_name, platform))
         pv = platform.value
         if platform is Platform.WHATSAPP:
-            message = f"WhatsApp is not paired; pair it: hermes -p {profile_name} whatsapp"
+            message = f"WhatsApp is not paired; pair it: tuos -p {profile_name} whatsapp"
             logger.info("[MULTIPLEX] Profile '%s': %s", profile_name, message)
             self._update_platform_runtime_status(
                 f"{profile_name}:{pv}", platform_state="disabled",

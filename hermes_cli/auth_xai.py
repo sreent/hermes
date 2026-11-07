@@ -226,7 +226,7 @@ def _xai_validate_oauth_endpoint(url: str, *, field: str) -> str:
             f"xAI OIDC discovery {field} host {host!r} is not on the xAI origin "
             f"(expected x.ai or a *.x.ai subdomain). Refusing to use a cached "
             f"endpoint that may have been substituted by a MITM during initial "
-            f"discovery; re-authenticate with `hermes model` to re-fetch."
+            f"discovery; re-authenticate with `tuos model` to re-fetch."
         ),
     }[problem]
     raise _xai_err(message, "xai_discovery_invalid")

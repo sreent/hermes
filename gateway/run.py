@@ -4975,7 +4975,7 @@ def _refuse_second_host_gateway(owner) -> None:
         f"   second one (it would double-bind this profile's platforms).\n"
         f"   Fold every profile onto the owner:  {_migrate_command()}\n"
         f"   Or stop the other gateway first, then start this one.\n"
-        f"   Or start one anyway (skips the host-lock check):  hermes gateway run --force\n"
+        f"   Or start one anyway (skips the host-lock check):  tuos gateway run --force\n"
         f"   (--replace does not skip this check; it only replaces an owner that serves this profile.)")
     logger.error("Refusing to start a second gateway on this host: %s", who)
     print(message)

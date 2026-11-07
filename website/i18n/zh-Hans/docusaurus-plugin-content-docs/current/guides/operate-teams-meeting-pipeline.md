@@ -60,7 +60,7 @@ tuos 内置 cron 调度器。`--no-agent` 模式以脚本作为任务执行（�
 mkdir -p ~/.hermes/scripts
 cat > ~/.hermes/scripts/maintain-teams-subscriptions.sh <<'EOF'
 #!/usr/bin/env bash
-exec tuos teams-pipeline maintain-subscriptions
+exec hermes teams-pipeline maintain-subscriptions
 EOF
 chmod +x ~/.hermes/scripts/maintain-teams-subscriptions.sh
 ```

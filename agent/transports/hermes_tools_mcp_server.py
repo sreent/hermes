@@ -119,7 +119,7 @@ def _build_server() -> Any:
         if spec is None:
             logger.debug("skipping %s — not registered in this Hermes process", name)
             continue
-        description = spec.get("description") or f"Hermes {name} tool"
+        description = spec.get("description") or f"tuos {name} tool"
         params_schema = spec.get("parameters") or {"type": "object", "properties": {}}
         try:
             mcp.add_tool(_make_handler(name, params_schema, description), name=name, description=description)

@@ -54,6 +54,9 @@ DOC_DIRS = ("website/docs", "website/i18n/zh-Hans/docusaurus-plugin-content-docs
 # Docs outside the site, renamed the same way: the READMEs and contributing guides in every language, and
 # the plugin catalog's rules (the docs site mirrors them word for word).
 DOC_FILES = ("README.md", "README.*.md", "CONTRIBUTING.md", "CONTRIBUTING.*.md", "plugin-catalog/README.md")
+# The skills the agent reads: their prose only. Their code blocks are what the agent runs, and `hermes` is on
+# every install's PATH (the blocks also test for it to choose an environment).
+SKILL_FILES = ("skills/*.md", "optional-skills/*.md")
 
 # Never rewritten: the rule itself, text matched against stored data, and the persona/markers the
 # fork brands at runtime (agent/prompt_builder.py's block at its end).
@@ -61,6 +64,8 @@ NEVER = {
     "hermes_cli/distribution.py", "hermes_cli/default_soul.py", "hermes_cli/brand_art.py",
     "hermes_cli/tuos_command.py", "hermes_cli/left_core_migration.py", "agent/prompt_builder.py",
     "tools/memory_sharing.py", "scripts/fork/rename.py",
+    # Generated from the code, and a test compares it with the generator's output.
+    "website/docs/developer-guide/gateway-command-parity.md",
 }
 # Text that keeps its wording: code elsewhere matches on it, or it names something that is not the
 # product. Python's and the apps' (scripts/fork/rename_ts.mjs) lists are separate.
@@ -194,17 +199,33 @@ class Result(NamedTuple):
     shown: list[str]                   # every string in an output context, as it now reads
 
 
+# An HTTP header name ("X-Title", "User-Agent"): its value identifies the client to a service, not copy.
+_HEADER = re.compile(r"[A-Z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)+")
+
+
+def _shown_by(node: ast.AST) -> list[ast.AST]:
+    """The parts of ``node`` that hold text a person reads: the arguments of an output call, keyword
+    arguments, dictionary values and assignments whose names say they hold copy."""
+    if isinstance(node, ast.Call):
+        callee = _callee(node)
+        if callee in OUTPUT_CALLS or callee == "write" or callee.endswith(("Error", "Exception")):
+            return [*node.args, *(k.value for k in node.keywords)]
+        return [k.value for k in node.keywords if k.arg and _holds_copy(k.arg)]
+    if isinstance(node, ast.Dict):  # {"description": ...}: a tool's schema, a platform card, a field's help
+        return [value for key, value in zip(node.keys, node.values)
+                if isinstance(key, ast.Constant) and isinstance(key.value, str) and _holds_copy(key.value)
+                and not _HEADER.fullmatch(key.value)]
+    if isinstance(node, (ast.Assign, ast.AnnAssign)) and node.value is not None:  # UPDATE_MESSAGE = "..."
+        targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+        names = [t.id if isinstance(t, ast.Name) else t.attr for t in targets if isinstance(t, (ast.Name, ast.Attribute))]
+        return [node.value] if any(_holds_copy(name) for name in names) else []
+    return []
+
+
 def _shown(tree: ast.AST):
     """String constants in contexts that show them to a person."""
     for node in ast.walk(tree):
-        if not isinstance(node, ast.Call):
-            continue
-        callee = _callee(node)
-        if callee in OUTPUT_CALLS or callee == "write" or callee.endswith(("Error", "Exception")):
-            shown = [*node.args, *(k.value for k in node.keywords)]
-        else:
-            shown = [k.value for k in node.keywords if k.arg and _holds_copy(k.arg)]
-        yield from (const for arg in shown for const in _strings_in(arg))
+        yield from (const for part in _shown_by(node) for const in _strings_in(part))
 
 
 def _rebrand(source: str, constants) -> tuple[str, dict[tuple[int, int], tuple[str, ast.Constant]]]:
@@ -340,11 +361,12 @@ def _brand_line(line: str) -> str:
     return line if _KEEP_LINE.search(line) or any(text in line for text in KEEP) else brand(line)
 
 
-def rename_markdown(text: str, *, anchors: bool = True) -> str:
+def rename_markdown(text: str, *, anchors: bool = True, shell: bool = True) -> str:
     """Prose and shell blocks renamed; other code blocks (YAML, JSON, Python...) and lines crediting
     Nous Research as they are. A renamed heading keeps its anchor, so links to it still land, unless
-    ``anchors`` is off: GitHub, which renders ``DOC_FILES``, shows a ``{#id}`` as text."""
-    out, fence, shell, seen = [], None, False, {}
+    ``anchors`` is off: GitHub, which renders ``DOC_FILES``, shows a ``{#id}`` as text. ``shell`` off
+    keeps shell blocks as well."""
+    out, fence, in_shell, seen = [], None, False, {}
     in_front = text.startswith("---\n")
     for index, line in enumerate(text.splitlines(keepends=True)):
         if in_front:
@@ -356,7 +378,7 @@ def rename_markdown(text: str, *, anchors: bool = True) -> str:
             continue
         if match := _FENCE.match(line):
             if fence is None:
-                fence, shell = match.group(2)[:3], match.group(3).strip().split(" ")[0].lower() in _SHELL
+                fence, in_shell = match.group(2)[:3], shell and match.group(3).strip().split(" ")[0].lower() in _SHELL
             elif match.group(2).startswith(fence) and not match.group(3).strip():
                 fence = None
             out.append(line)
@@ -370,7 +392,7 @@ def rename_markdown(text: str, *, anchors: bool = True) -> str:
                 branded = f"{branded.rstrip()} {{#{anchor}}}" + line[len(line.rstrip()):]
             out.append(branded)
             continue
-        out.append(_brand_line(line) if fence is None or shell else line)
+        out.append(_brand_line(line) if fence is None or in_shell else line)
     return "".join(out)
 
 
@@ -386,7 +408,9 @@ def python_files() -> list[Path]:
 
 
 def doc_files() -> list[Path]:
-    return _git_files(*(f"{d}/*.md" for d in DOC_DIRS), *(f"{d}/*.mdx" for d in DOC_DIRS), *DOC_FILES)
+    return [path for path in _git_files(*(f"{d}/*.md" for d in DOC_DIRS), *(f"{d}/*.mdx" for d in DOC_DIRS),
+                                        *DOC_FILES, *SKILL_FILES)
+            if path.relative_to(ROOT).as_posix() not in NEVER]
 
 
 def test_files() -> list[Path]:
@@ -434,10 +458,14 @@ def _renamed_text(name: str, text: str) -> str:
             return rename_python(text).text
         except SyntaxError:
             return text
+    if name in NEVER:
+        return text
     if name.endswith((".md", ".mdx")) and any(name.startswith(f"{d}/") for d in DOC_DIRS):
         return rename_markdown(text)
     if any(fnmatch.fnmatchcase(name, pattern) for pattern in DOC_FILES):
         return rename_markdown(text, anchors=False)
+    if any(fnmatch.fnmatchcase(name, pattern) for pattern in SKILL_FILES):
+        return rename_markdown(text, anchors=False, shell=False)
     if name.endswith((".ts", ".tsx")):
         return subprocess.run(["node", str(ROOT / "scripts/fork/rename_ts.mjs"), "--stdin", name], input=text,
                               cwd=ROOT, capture_output=True, text=True, encoding="utf-8", check=True, timeout=300).stdout
@@ -516,9 +544,9 @@ def main() -> int:
                  for a, la, text in renamed for b, lb, kept in matched if overlaps(text, kept)]
     print(*conflicts, sep="\n", file=sys.stderr) if conflicts else None
     for path in doc_files():
+        name = path.relative_to(ROOT).as_posix()
         text = path.read_text(encoding="utf-8-sig")
-        github = any(fnmatch.fnmatchcase(path.relative_to(ROOT).as_posix(), pattern) for pattern in DOC_FILES)
-        if (branded := rename_markdown(text, anchors=not github)) != text:
+        if (branded := rename_text(name, text) if not name.startswith("website/") else rename_markdown(text)) != text:
             changed.append(path.relative_to(ROOT).as_posix())
             if not args.check:
                 path.write_text(branded, encoding="utf-8")

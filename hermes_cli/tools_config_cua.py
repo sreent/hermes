@@ -133,7 +133,7 @@ def install_cua_driver(upgrade: bool = False, show_installer_progress: bool = Tr
     contract = _cua_driver_contract_status(binary)
     if not contract.get("ready"):
         hint = ("    Update the binary selected by HERMES_CUA_DRIVER_CMD, or unset the override."
-                if override else "    Run: hermes computer-use doctor")
+                if override else "    Run: tuos computer-use doctor")
         return _fail("    cua-driver runtime contract is unusable: "
                      f"{contract.get('reason') or 'unknown error'}.", hint)
     if sys.platform == "win32" and not _repair_cua_driver_autostart_windows(

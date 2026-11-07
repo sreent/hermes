@@ -625,7 +625,7 @@ def _apply_tool_selection(
     """
     print()
     name = entry.name
-    configure_hint = f"`hermes mcp configure {name}`"
+    configure_hint = f"`tuos mcp configure {name}`"
 
     # Exclude-mode manifests never probe: the curated exclude list (names or globs) is written as-is
     # and everything else stays enabled, including tools the server adds later. A prior include

@@ -751,13 +751,13 @@ def _refresh_access_token(
         description = (
             "Nous Portal detected refresh-token reuse and revoked this session.\n"
             "This usually means an external process (monitoring script, "
-            "custom self-heal hook, or another Hermes install sharing "
-            "~/.hermes/auth.json) called POST /api/oauth/token with Hermes's "
+            "custom self-heal hook, or another tuos install sharing "
+            "~/.hermes/auth.json) called POST /api/oauth/token with tuos's "
             "refresh token without persisting the rotated token back.\n"
-            "Nous refresh tokens are single-use — only Hermes may call the "
-            "refresh endpoint. For health checks, use `hermes auth status` "
+            "Nous refresh tokens are single-use — only tuos may call the "
+            "refresh endpoint. For health checks, use `tuos auth status` "
             "instead.\n"
-            "Re-authenticate with: hermes auth add nous")
+            "Re-authenticate with: tuos auth add nous")
         relogin = True
     raise _nous_err(description, code, relogin=relogin)
 

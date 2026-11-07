@@ -60,7 +60,7 @@ tuos ships a built-in cron scheduler. The `--no-agent` mode runs a script as the
 mkdir -p ~/.hermes/scripts
 cat > ~/.hermes/scripts/maintain-teams-subscriptions.sh <<'EOF'
 #!/usr/bin/env bash
-exec tuos teams-pipeline maintain-subscriptions
+exec hermes teams-pipeline maintain-subscriptions
 EOF
 chmod +x ~/.hermes/scripts/maintain-teams-subscriptions.sh
 ```

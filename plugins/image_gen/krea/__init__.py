@@ -427,7 +427,7 @@ def _submit_job(
                     "Krea's shared-key concurrency cap was hit — retry shortly." if status == 429 else
                     f"Model '{model_id}' may not be enabled/priced on the Nous Portal's Krea gateway. "
                     "Set KREA_API_KEY to use Krea directly, or pick a different model via "
-                    "`hermes tools` → Image Generation.")
+                    "`tuos tools` → Image Generation.")
                 return None, submit_fail(
                     f"Nous Subscription Krea gateway rejected '{model_id}' "
                     f"(HTTP {status}): {err_msg}. {hint}",

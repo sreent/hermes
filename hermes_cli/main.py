@@ -1931,8 +1931,8 @@ def _resolve_active_provider(config, model_cfg, effective_provider, custom_provi
                 )
         else:
             from hermes_cli.left_core_migration import provider_install_hint
-            hint = provider_install_hint(effective_provider) or ("Check 'hermes model' for available providers, or run "
-                                                                  "'hermes doctor' to diagnose config issues.")
+            hint = provider_install_hint(effective_provider) or ("Check 'tuos model' for available providers, or run "
+                                                                  "'tuos doctor' to diagnose config issues.")
             print(f"Warning: Unknown provider '{effective_provider}'. {hint} Falling back to auto provider detection.")
     if not active:
         try:

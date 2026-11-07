@@ -256,7 +256,7 @@ def test_host_served_profile_refuses_before_unserving_its_live_turns(tmp_path, m
     assert exc.value.code == 1 and requests == []
     assert asked == [(host_home, {"profile": "coder"})]
     assert "1 live session(s)" in out and "agent:coder:telegram:dm:7" in out
-    assert f"hermes -p coder gateway {verb} --yes" in out
+    assert f"tuos -p coder gateway {verb} --yes" in out
     assert not (profile_home / "gateway.parked").exists()
 
     command(SimpleNamespace(all=False, system=False, force=False, interrupt=True))

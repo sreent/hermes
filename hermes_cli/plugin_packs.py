@@ -484,7 +484,7 @@ def export_pack(*, enabled_only: bool = False, pack_name: str = "my-hermes-pack"
 
     doc: dict[str, Any] = {
         "name": pack_name,
-        "description": "Exported by `hermes plugins pack export`.",
+        "description": "Exported by `tuos plugins pack export`.",
         "version": "1.0.0",
         "plugins": entries,
     }

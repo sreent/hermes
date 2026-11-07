@@ -326,10 +326,10 @@ class BitwardenSource(SecretSource):
     # — a stale .env line must not have the final say.
     override_existing_default = True
     _AUTH_HINT = (
-        "Run `hermes secrets bitwarden token` to paste a fresh access "
+        "Run `tuos secrets bitwarden token` to paste a fresh access "
         "token (create one in the Bitwarden web app: Secrets Manager → "
         "Machine accounts → Access tokens).  Wrong region?  Re-run "
-        "`hermes secrets bitwarden setup` and pick EU/self-hosted."
+        "`tuos secrets bitwarden setup` and pick EU/self-hosted."
     )
     remediation_hints = {ErrorKind.AUTH_FAILED: _AUTH_HINT, ErrorKind.AUTH_EXPIRED: _AUTH_HINT}
 

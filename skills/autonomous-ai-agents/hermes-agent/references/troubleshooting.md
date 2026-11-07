@@ -6,15 +6,15 @@
 3. In gateway: `/restart`. In CLI: exit and relaunch.
 
 ### Tool not available
-1. `hermes tools` — check if toolset is enabled for your platform
+1. `tuos tools` — check if toolset is enabled for your platform
 2. Some tools need env vars (check `.env`)
 3. `/reset` after enabling tools
 
 ### Model/provider issues
-1. `hermes doctor` — check config and dependencies
-2. `hermes auth` — re-authenticate OAuth providers (or `hermes auth add <provider>`)
+1. `tuos doctor` — check config and dependencies
+2. `tuos auth` — re-authenticate OAuth providers (or `tuos auth add <provider>`)
 3. Check `.env` has the right API key
-4. **GitHub Copilot** (`copilot` / `copilot-acp`) lives in the `github-copilot` labs plugin (`hermes plugins install github-copilot`); sign in with `hermes auth add copilot` — `gh` CLI logins are not read.
+4. **GitHub Copilot** (`copilot` / `copilot-acp`) lives in the `github-copilot` labs plugin (`tuos plugins install github-copilot`); sign in with `tuos auth add copilot` — `gh` CLI logins are not read.
 
 ### Changes not taking effect
 - **Tools/skills:** `/reset` starts a new session with updated toolset
@@ -49,9 +49,9 @@ Blunt instruments: `web.cache_ttl_minutes: 1` (min) or
 `web.cache_enabled: false` disables both caches entirely.
 
 ### Skills not showing
-1. `hermes skills list` — verify installed
-2. `hermes skills config` — check platform enablement
-3. Load explicitly: `hermes -s name` (or the skill's own `/<name>` slash command)
+1. `tuos skills list` — verify installed
+2. `tuos skills config` — check platform enablement
+3. Load explicitly: `tuos -s name` (or the skill's own `/<name>` slash command)
 
 ### Gateway issues
 Check logs first:

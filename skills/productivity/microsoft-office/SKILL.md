@@ -42,11 +42,11 @@ Deeper notes: `references/revisions-and-comments.md` (Word review markup) and
 - Python 3.10+ with `python-docx`, `python-pptx`, and `openpyxl` (import names
   `docx`, `pptx`, `openpyxl`).
 - Pick the interpreter with `terminal`. Use `python` when it already imports
-  the libraries (the Hermes Docker image ships them). Otherwise, when `hermes`
-  is on PATH, let Hermes build its shared, pinned documents environment under
-  the Hermes home: it survives container restarts, never touches the Hermes
+  the libraries (the tuos Docker image ships them). Otherwise, when `tuos`
+  is on PATH, let tuos build its shared, pinned documents environment under
+  the tuos home: it survives container restarts, never touches the tuos
   install itself, and is safe to run from several agents at once. When it is
-  not (the terminal runs in a Docker sandbox, which has no Hermes), the block
+  not (the terminal runs in a Docker sandbox, which has no tuos), the block
   builds a venv in the sandbox home with the same pinned versions. Use this
   exact block in every document skill so they all share one environment:
 
@@ -76,11 +76,11 @@ Deeper notes: `references/revisions-and-comments.md` (Word review markup) and
   "$PY" scripts/docx_create.py --help
   ```
 
-  Run every helper with `"$PY"`. In PowerShell (Hermes runs on that host, so
+  Run every helper with `"$PY"`. In PowerShell (tuos runs on that host, so
   it is on PATH):
-  `$env:PY = hermes pm environment documents --extra documents --extra documents-pdf`.
-  Never `pip install` into the interpreter that runs Hermes or into the
-  `hermes pm environment` one; Hermes owns both.
+  `$env:PY = tuos pm environment documents --extra documents --extra documents-pdf`.
+  Never `pip install` into the interpreter that runs tuos or into the
+  `tuos pm environment` one; tuos owns both.
 - Optional: LibreOffice (`soffice`) for PDF export, Excel recalculation, and
   slide rendering, plus poppler (`pdftoppm` or `pdftocairo`) for slide PNGs.
   The helpers that need them report what is missing and exit 0.

@@ -61,10 +61,11 @@ _PRODUCT_RE = re.compile(
 # `hermes {profile_arg}doctor`, `hermes` in backticks, "the hermes command". Not a path, package or module
 # (~/.hermes, /opt/hermes/, hermes-agent, hermes_cli, hermes.exe), nor the `hermes` user and group the
 # Docker image and the Nix module run as ("the `hermes` user", "drops to hermes", `sudo -u hermes`, `--user hermes`,
-# `s6-setuidgid hermes`, `chown hermes:hermes`), which keep their name.
+# `s6-setuidgid hermes`, `chown hermes:hermes`), which keep their name, as does the container the
+# compose files name hermes (`docker exec hermes hermes ...` runs `docker exec hermes tuos ...`).
 _NOT_A_USER = r"(?!`?\s(?:user|group|account)\b)"
 _COMMAND_RE = re.compile(
-    rf"(?<![{_WORD}./\\`:=-])(?<!-u )(?<!--user )(?<!setuidgid )(?<!chown )(?<!id -u )(?<!id -g )(?<!su - )(?<!to )(?<!as )"
+    rf"(?<![{_WORD}./\\`:=-])(?<!-u )(?<!--user )(?<!setuidgid )(?<!chown )(?<!id -u )(?<!id -g )(?<!su - )(?<!to )(?<!as )(?<!exec )"
     rf"hermes(?=\s(?:-{{1,2}}[A-Za-z]|[a-z{{])|`){_NOT_A_USER}|(?<=`)hermes(?=`|\s){_NOT_A_USER}")
 
 _HERMES_IDENTITY = "You are Hermes Agent, built by Nous Research."

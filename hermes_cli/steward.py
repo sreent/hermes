@@ -61,9 +61,9 @@ STEWARD_UPDATE_MESSAGES = {
 # pins a bionic CPython with no Android wheels, so a source sync would
 # build sdists on the phone. The APT package is the only supported shape.
 SOURCE_ON_TERMUX_UPDATE_MESSAGE = (
-    "✗ This Hermes is a source checkout running under Termux.\n"
+    "✗ This tuos is a source checkout running under Termux.\n"
     "\n"
-    "Source installs are not supported on Termux — `hermes update` would\n"
+    "Source installs are not supported on Termux — `tuos update` would\n"
     "build Python packages on the device. Switch to the APT package:\n"
     "  pkg install hermes-agent"
 )

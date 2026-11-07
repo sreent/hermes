@@ -49,7 +49,7 @@ def test_backend_off_is_dropped_with_a_notice(tmp_path, monkeypatch, capsys):
     out = capsys.readouterr().out
     assert _raw(home)["browser"] == {"inactivity_timeout": 60}
     assert _raw(home)["_config_version"] == DEFAULT_CONFIG["_config_version"]
-    assert "browser_exec is the browser now" in out and "`browser` toolset in `hermes tools`" in out
+    assert "browser_exec is the browser now" in out and "`browser` toolset in `tuos tools`" in out
     # Once: a second pass has nothing left to say.
     _migrate(home)
     assert "browser_exec" not in capsys.readouterr().out
@@ -90,7 +90,7 @@ def test_boot_migration_shows_the_off_notice_at_the_first_agent_start_once(tmp_p
     said = _boot_agents(home, monkeypatch, starts=2)
     assert _raw(home)["_config_version"] == DEFAULT_CONFIG["_config_version"]
     assert len(said) == 1
-    assert "browser_exec is the browser now" in said[0] and "`browser` toolset in `hermes tools`" in said[0]
+    assert "browser_exec is the browser now" in said[0] and "`browser` toolset in `tuos tools`" in said[0]
     assert _boot_agents(home, monkeypatch, starts=1) == []
 
 

@@ -40,10 +40,10 @@ def test_output_strings_are_renamed_and_data_is_not():
     assert 'print(f"tuos saved {path}. Run `tuos doctor` to check it.")' in out
     assert 'raise RuntimeError("tuos is paused; run `tuos resume`")' in out
     assert 'help="tuos home (default: ~/.hermes)"' in out
-    # Logs, comparisons, constants and data keep their wording.
+    assert 'HINT = "Run `tuos setup` first"' in out  # a constant named for copy
+    # Logs, comparisons and data keep their wording.
     assert 'logger.warning("Hermes could not read %s", path)' in out
     assert 'if status == "Hermes is paused":' in out
-    assert 'HINT = "Run `hermes setup` first"' in out
     assert 'return {"Hermes": path, "agent": "Hermes"}' in out
     assert rename.rename_python(out).text == out  # a second run changes nothing
 
@@ -120,3 +120,19 @@ def test_github_rendered_docs_rename_without_heading_anchors():
     text = "# Hermes Agent\n\nRun `hermes setup`; the image runs as the `hermes` user.\n"
     assert rename.rename_text("README.md", text) == "# tuos\n\nRun `tuos setup`; the image runs as the `hermes` user.\n"
     assert rename.rename_text("website/docs/x.md", text).startswith("# tuos {#hermes-agent}\n")
+
+
+def test_copy_kept_as_data_is_renamed_but_identities_are_not():
+    """Dictionary values under copy keys (a tool's schema, a platform card) and constants named for copy
+    are shown to people or the agent; an HTTP header names the client to a service and stays."""
+    source = (
+        'HEADERS = {"X-Title": "Hermes Agent"}\n'
+        'SCHEMA = {"name": "terminal", "description": "Run commands for Hermes"}\n'
+        'UPDATE_MESSAGE = "Hermes updated; run `hermes doctor`"\n'
+        'NAME = "Hermes Agent"\n'
+    )
+    out = rename.rename_python(source).text
+    assert '{"X-Title": "Hermes Agent"}' in out
+    assert '"description": "Run commands for tuos"' in out
+    assert 'UPDATE_MESSAGE = "tuos updated; run `tuos doctor`"' in out
+    assert 'NAME = "Hermes Agent"' in out
