@@ -60,7 +60,7 @@ def test_npm_audit_only_finding_does_not_offer_doctor_fix(capsys):
 
     out = capsys.readouterr().out
     assert "web workspace has 1 npm vulnerability" in out
-    assert "hermes doctor --fix" not in out
+    assert "doctor --fix" not in out  # either name: the tip says tuos, issue texts hermes
 
 
 
