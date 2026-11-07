@@ -57,8 +57,9 @@ stops with a modify/delete conflict on any deleted file upstream **changed**. Af
 committing:
 
 ```bash
-# Upstream's GitHub automation stays out of this fork (the blob-size allowlist is a lint input we keep).
-git ls-files .github | grep -v '^.github/blob-size-allowlist.txt$' | xargs -r git rm -q
+# Upstream's GitHub automation stays out of this fork. Ours is .github/workflows/tuos-*.yml ("Hosted by
+# this fork"); the blob-size allowlist is a lint input we keep.
+git ls-files .github | grep -Ev '^\.github/(blob-size-allowlist\.txt|workflows/tuos-[^/]*\.yml)$' | xargs -r git rm -q
 git rm -q --ignore-unmatch .coderabbit.yaml
 git status --short | grep -E '^(DU|UD) '   # other deleted files upstream changed: `git rm` each one
 ```
@@ -96,7 +97,8 @@ Deliberately kept, although they serve Nous's release process, because code we k
 - `scripts/ci/` holds the guards `scripts/check` runs, next to helpers only the removed workflows used.
 - `contributors/` feeds the release-notes tooling in `scripts/releases/authors.py`.
 
-We have no CI of our own yet: run `python scripts/check` and `scripts/run_tests.sh` locally before merging.
+Our own workflows (`.github/workflows/tuos-*.yml`, "Hosted by this fork") build and publish; none runs the
+tests or the lint checks yet, so run `python scripts/check` and `scripts/run_tests.sh` locally before merging.
 
 ## Upstream process documents
 
@@ -149,10 +151,26 @@ Deliberately still upstream's:
   accounts (`AZURE_SIGN_*`, notarization). Before this fork publishes builds it needs its own certificate,
   and the MSIX publisher, `OUT_OF_STORE_PUBLISHER` in `scripts/msix-shared.mjs` (now `CN=tuos`), must
   equal that certificate's subject. The release scripts name this fork's builds ("Rebranded as tuos",
-  below) but still publish to Nous's hosts: the R2 bucket's public URL (`scripts/releases/r2.py`
-  `DEFAULT_PUBLIC_URL`) and the Docker image (`scripts/releases/docker.py` `IMAGE`). `tests/install/`
-  drives Nous's published installers and expects Hermes's names. The removed workflows ran all of
-  these.
+  below) but still publish to Nous's R2 bucket (`scripts/releases/r2.py` `DEFAULT_PUBLIC_URL`).
+  `tests/install/` drives Nous's published installers and expects Hermes's names. The removed workflows
+  ran all of these.
+
+### Hosted by this fork
+
+What Nous Research hosts for Hermes, this fork hosts for itself on GitHub, from workflows of its own
+(`.github/workflows/tuos-*.yml`, kept out of the merge cleanup above):
+
+- **Docker image**: `ghcr.io/sreent/tuos` (`hermes_cli.distribution.DOCKER_IMAGE`), built by
+  `tuos-docker.yml` for amd64 and arm64 on GitHub's runners. A push to `main` publishes `main` and
+  `latest`; a tag `vX.Y.Z` publishes that version; each has a `-desktop` twin with the bots' screens.
+  `latest` follows `main`, as installs do, where Nous's means the newest stable release. The Helm chart
+  runs `main` by default. After the first run, check that the package is public (the package's page,
+  Package settings) so clusters can pull it without credentials.
+- **`scripts/fork/relink.py`** rewrites upstream's references to what Nous hosts, wherever they are
+  (code, tests and docs): the image `nousresearch/hermes-agent` becomes ours, and its Docker Hub page
+  our package page. The same words inside a path name the repository and stay. `rename.py` runs it, and
+  its `--resolve` treats relinked lines as ours, so syncing upstream needs no extra step; `relink.py
+  --check` exits 1 while anything is left.
 
 ### Diagnostics stay on the machine running Hermes
 

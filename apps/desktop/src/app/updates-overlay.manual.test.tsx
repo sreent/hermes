@@ -83,7 +83,7 @@ it('names the backend, not a local install, when a remote refusal carries a bare
     message: '',
     percent: null,
     error: null,
-    command: 'docker pull nousresearch/hermes-agent:latest',
+    command: 'docker pull ghcr.io/sreent/tuos:latest',
     log: []
   })
   await act(async (): Promise<void> => {
@@ -93,7 +93,7 @@ it('names the backend, not a local install, when a remote refusal carries a bare
       </I18nProvider>
     )
   })
-  expect(screen.getByText('docker pull nousresearch/hermes-agent:latest')).toBeTruthy()
+  expect(screen.getByText('docker pull ghcr.io/sreent/tuos:latest')).toBeTruthy()
   expect(screen.getByText(en.updates.manualBodyBackend)).toBeTruthy()
   expect(screen.getByText(en.updates.manualPickedUpBackend)).toBeTruthy()
   expect(screen.queryByText(en.updates.manualBody)).toBeNull()

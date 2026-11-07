@@ -6,7 +6,7 @@ description: "Running tuos on Kubernetes with its Helm chart: one gateway pod wi
 
 # Running on Kubernetes
 
-The Helm chart in [`deploy/helm/tuos`](https://github.com/sreent/hermes/tree/main/deploy/helm/tuos) runs tuos in one pod, from the same image as [Docker](./docker.md). The pod runs the messaging gateway, which also runs scheduled jobs, and the web dashboard. tuos is built on Hermes Agent: its settings and environment variables keep tuos's names, and the `tuos` command works wherever `tuos` does.
+The Helm chart in [`deploy/helm/tuos`](https://github.com/sreent/hermes/tree/main/deploy/helm/tuos) runs tuos in one pod, from the same image as [Docker](./docker.md). The pod runs the messaging gateway, which also runs scheduled jobs, and the web dashboard. tuos is built on Nous Research's Hermes Agent, whose settings and environment variables keep Hermes's names (`~/.hermes`, `HERMES_*`).
 
 | Object | Purpose |
 |---|---|
@@ -19,17 +19,17 @@ The Helm chart in [`deploy/helm/tuos`](https://github.com/sreent/hermes/tree/mai
 
 There is only ever one pod: a chat platform's bot token takes one connection at a time, and the sessions database on the volume takes one writer. The StatefulSet stops the old pod before it starts a new one.
 
-## Build the image
+## The image
 
-This fork publishes no image. Build it from the repository root and push it to a registry the cluster can pull from:
+The chart runs the image this repository publishes on GitHub's container registry, `ghcr.io/sreent/tuos`, for amd64 and arm64:
 
-```bash
-TAG=$(git rev-parse --short HEAD)
-docker build -t registry.example.com/tuos:$TAG .
-docker push registry.example.com/tuos:$TAG
-```
+| Tag | What it is |
+|---|---|
+| `main` (the chart's default), `latest` | The newest commit on the main branch |
+| `vX.Y.Z` | A release |
+| `main-desktop`, `latest-desktop`, `vX.Y.Z-desktop` | The same, with the packages the [bots' screens](./features/bot-screen.md) need |
 
-[Docker → What the Dockerfile does](./docker.md#what-the-dockerfile-does) describes what goes into it.
+Set `image.tag` to a release tag to pin one; with a pinned tag, `image.pullPolicy: IfNotPresent` saves the registry check on each restart. To run your own build instead, push it to a registry the cluster can pull from and set `image.repository` and `image.tag`. [Docker → What the Dockerfile does](./docker.md#what-the-dockerfile-does) describes what goes into it.
 
 ## Install
 
@@ -43,8 +43,6 @@ kubectl create secret generic tuos-env -n tuos \
   --from-literal=TELEGRAM_ALLOWED_USERS=...
 
 helm install tuos deploy/helm/tuos -n tuos \
-  --set image.repository=registry.example.com/tuos \
-  --set image.tag=$TAG \
   --set secrets.existingSecret=tuos-env
 ```
 
@@ -169,13 +167,13 @@ A username and password suit a private network, not the open internet; [Web Dash
 
 ## Upgrading and uninstalling
 
-Build and push a new image, then:
+On `main`, restart the pod to pull the newest image: `kubectl rollout restart statefulset/tuos -n tuos`. To move to another tag:
 
 ```bash
-helm upgrade tuos deploy/helm/tuos -n tuos --reuse-values --set image.tag=$NEW_TAG
+helm upgrade tuos deploy/helm/tuos -n tuos --reuse-values --set image.tag=v1.2.3
 ```
 
-The pod is replaced; the volume and the bucket keep their contents.
+Either way the pod is replaced; the volume and the bucket keep their contents.
 
 `helm uninstall tuos -n tuos` removes everything except the volume's claim, `data-tuos-0`, and the bucket. Delete them yourself to remove the data: `kubectl delete pvc data-tuos-0 -n tuos`.
 

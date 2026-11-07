@@ -6,8 +6,9 @@
 #   - Uses explicit port mappings instead
 #   - Uses Windows-style volume path for ~/.hermes
 #
-# Like docker-compose.yml, it builds the image from this checkout: the published
-# nousresearch/hermes-agent image is Nous Research's upstream version, not this fork.
+# Like docker-compose.yml, it builds the image from this checkout. To run the image this
+# repository publishes instead, replace `build: .` and `image: hermes-agent` with
+# `image: ghcr.io/sreent/tuos:main` (FORK.md, "Hosted by this fork").
 #
 # Usage:
 #   docker compose -f docker-compose.windows.yml up -d

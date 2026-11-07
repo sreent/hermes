@@ -25,6 +25,11 @@ INSTALL_PS1_URL = f"{_SCRIPTS}/install.ps1"
 INSTALL_SH_COMMAND = f"curl -fsSL {INSTALL_SH_URL} | bash"
 INSTALL_PS1_COMMAND = f"iex (irm {INSTALL_PS1_URL})"
 
+# The container image this repository publishes (.github/workflows/tuos-docker.yml) and its page.
+# scripts/fork/relink.py writes it wherever upstream's code and docs name Nous's image.
+DOCKER_IMAGE = "ghcr.io/sreent/tuos"
+DOCKER_PACKAGE_URL = f"https://github.com/{REPOSITORY}/pkgs/container/tuos"
+
 # What people see is called tuos (FORK.md, "Rebranded as tuos"). Internal names stay Hermes's:
 # packages, HERMES_* variables, ~/.hermes, service names and the `hermes` command (`tuos` runs it).
 PRODUCT_NAME = "tuos"

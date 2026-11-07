@@ -1,13 +1,16 @@
 # tuos on Kubernetes: one pod running the messaging gateway (which also runs scheduled jobs) and,
 # optionally, the web dashboard. Guide: website/docs/user-guide/kubernetes.md
 
-# This fork publishes no image: build one from the repository's Dockerfile and push it to a
-# registry the cluster can pull from, e.g.
-#   docker build -t registry.example.com/tuos:$(git rev-parse --short HEAD) .
+# The image this repository publishes (.github/workflows/tuos-docker.yml). `main` (and `latest`) follow
+# the main branch; each release adds `vX.Y.Z`. Each has a `-desktop` twin (`main-desktop`...) with the
+# packages the bots' screens need. Pin a release tag in production. To run your own build, push it to a
+# registry the cluster can pull from and set both values.
 image:
-  repository: ""  # required
-  tag: ""         # required
-  pullPolicy: IfNotPresent
+  repository: ghcr.io/sreent/tuos
+  tag: main
+  # `main` moves with every merge, so Always pulls the newest on each restart; with a release tag,
+  # IfNotPresent saves the registry check.
+  pullPolicy: Always
 
 imagePullSecrets: []
 nameOverride: ""

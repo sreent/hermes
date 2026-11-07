@@ -44,6 +44,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 from hermes_cli.distribution import PRODUCT_NAME, brand
+from scripts.fork import relink
 
 PYTHON_DIRS = ("hermes_cli", "gateway", "tui_gateway", "cron", "tools", "agent", "plugins", "acp_adapter")
 PYTHON_FILES = ("cli.py",)
@@ -409,6 +410,11 @@ def _produced_now() -> Produced:
 
 
 def rename_text(name: str, text: str) -> str:
+    """``text`` renamed and relinked (``scripts/fork/relink.py``) as the repository file ``name`` would be."""
+    return relink.relink_file(name, _renamed_text(name, text))
+
+
+def _renamed_text(name: str, text: str) -> str:
     """``text`` renamed as the repository file ``name`` would be (unchanged outside the rename's scope)."""
     parts = PurePosixPath(name).parts
     if parts[0] == "tests" and name.endswith(".py"):
@@ -509,6 +515,7 @@ def main() -> int:
                 path.write_text(branded, encoding="utf-8")
     apps, apps_status = _rename_apps(args, renamed)
     changed += apps
+    changed += relink.run(args.check)
     print(f"{'would rename' if args.check else 'renamed'} {len(changed)} file(s)")
     if args.resolve:
         _git("add", "--", *taken) if taken else None
