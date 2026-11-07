@@ -1,0 +1,84 @@
+# tuos's docs site (FORK.md, "Hosted by this fork"): builds website/ and publishes it with GitHub Pages
+# at https://<owner>.github.io/<repository>/ (hermes_cli.distribution.DOCS_URL). Turn Pages on once:
+# the repository's Settings, Pages, Source: GitHub Actions.
+#
+# Search is Algolia DocSearch when the repository has the variables DOCSEARCH_APP_ID, DOCSEARCH_API_KEY
+# (the public search-only key) and DOCSEARCH_INDEX_NAME; without them the site has no search box.
+name: tuos docs site
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - website/**
+      - skills/**
+      - optional-skills/**
+      - plugin-catalog/**
+      - .github/workflows/tuos-docs.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tuos-docs
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build the site
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          fetch-depth: 0  # extract-plugins.py dates each catalog entry from git log
+          persist-credentials: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.14"
+
+      # The build's prebuild step (website/scripts/prebuild.mjs) extracts this repository's skills and
+      # plugins with these, and downloads the Skills Hub's catalog of external skills from Nous's site,
+      # which crawls and publishes it.
+      - name: Install the extraction scripts' packages
+        run: python3 -m pip install --disable-pip-version-check "ruamel.yaml==0.18.16" "httpx==0.28.1"
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020  # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: website/package-lock.json
+
+      - name: Install the site's packages
+        working-directory: website
+        run: npm ci
+
+      - name: Build
+        working-directory: website
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
+          DOCSEARCH_APP_ID: ${{ vars.DOCSEARCH_APP_ID }}
+          DOCSEARCH_API_KEY: ${{ vars.DOCSEARCH_API_KEY }}
+          DOCSEARCH_INDEX_NAME: ${{ vars.DOCSEARCH_INDEX_NAME }}
+        run: npm run build
+
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9  # v5.0.0
+        with:
+          path: website/build
+
+  deploy:
+    name: Publish
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346  # v5.0.1

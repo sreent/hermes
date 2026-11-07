@@ -1,0 +1,8 @@
+apiVersion: v2
+name: tuos
+description: tuos, a personal AI agent built on Hermes Agent, running its messaging gateway and web dashboard.
+type: application
+version: 0.1.0
+home: https://github.com/sreent/hermes
+sources:
+  - https://github.com/sreent/hermes

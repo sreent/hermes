@@ -1,0 +1,12 @@
+{{- if .Values.config }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "tuos.fullname" . }}
+  labels:
+    {{- include "tuos.labels" . | nindent 4 }}
+data:
+  # Mounted as the managed config.yaml (HERMES_MANAGED_DIR): these keys win over /opt/data/config.yaml.
+  config.yaml: |
+    {{- toYaml .Values.config | nindent 4 }}
+{{- end }}

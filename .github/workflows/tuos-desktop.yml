@@ -1,0 +1,250 @@
+# tuos's desktop app releases (FORK.md, "Hosted by this fork"): for a release tag vX.Y.Z, build the
+# bundled app ("tuos Agent", the agent inside) with the same driver as upstream's releases
+# (scripts/bundles/desktop.py), and attach the installers to a draft GitHub release of that tag.
+# Publish the draft by hand: installed apps update from the newest published release.
+#
+#   macOS arm64  DMG and ZIP. Signed and notarized when the secrets CSC_LINK and CSC_KEY_PASSWORD (a
+#                Developer ID Application certificate, base64 .p12) and APPLE_API_KEY_P8,
+#                APPLE_API_KEY_ID and APPLE_API_ISSUER (an App Store Connect API key) are set;
+#                otherwise ad-hoc signed, so macOS asks people to allow it in Privacy & Security, and
+#                it cannot update itself.
+#   Linux        AppImage for x64 and arm64.
+#   Windows x64  An MSIX, built only when Azure Trusted Signing is set up (the variables
+#                AZURE_SIGN_ENDPOINT, AZURE_SIGN_ACCOUNT, AZURE_SIGN_PROFILE, AZURE_SIGN_PUBLISHER,
+#                AZURE_CLIENT_ID and AZURE_TENANT_ID, with a federated credential for this
+#                workflow): Windows will not install an unsigned package. Its publisher must equal
+#                OUT_OF_STORE_PUBLISHER in scripts/msix-shared.mjs.
+name: tuos desktop release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to build (vX.Y.Z); it must already be pushed
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tuos-desktop-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  TAG: ${{ inputs.tag || github.ref_name }}
+  HERMES_DESKTOP_VARIANT: bundled
+  PYTHONUTF8: "1"
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    # Canary-style tags (vX.Y.Z+canary...) belong to Nous's channels, not this repository's releases.
+    if: ${{ !contains(inputs.tag || github.ref_name, '+') }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: darwin-arm64
+            runner: macos-15
+          - target: linux-x64
+            runner: ubuntu-24.04
+          - target: linux-arm64
+            runner: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          ref: refs/tags/${{ env.TAG }}
+          fetch-depth: 0
+          fetch-tags: true
+          persist-credentials: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.14"
+
+      - name: Claim the release
+        run: bash scripts/fork/release-claim.sh
+
+      # The bundled payload is several GB, and the AppImage step stages a second copy of the app, which
+      # outgrows the runner's free disk: drop toolchains this build never uses. The Linux build of the
+      # desktop's modifier-key helper (the HUD) needs the X11 and XInput headers; without them packaging
+      # continues and the app goes without it.
+      - name: Prepare Linux
+        if: runner.os == 'Linux'
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/.ghcup \
+            /opt/hostedtoolcache/CodeQL /usr/local/share/boost
+          sudo docker image prune --all --force > /dev/null || true
+          df -h /
+          sudo apt-get update -q
+          sudo apt-get install -y -q --no-install-recommends libx11-dev libxi-dev
+
+      - name: Prepare macOS
+        if: runner.os == 'macOS'
+        env:
+          APPLE_API_KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
+        run: |
+          set -euo pipefail
+          # Spotlight indexes the freshly mounted DMG staging image past hdiutil's detach retries.
+          sudo mdutil -a -i off || true
+          # electron-builder compiles the macOS 26 layered icon with Xcode 26's actool; without it the
+          # app carries the .icns alone (apps/desktop/scripts/mac-icon.cjs).
+          xcode="$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1 || true)"
+          if [ -n "$xcode" ]; then
+            echo "DEVELOPER_DIR=$xcode/Contents/Developer" >> "$GITHUB_ENV"
+          else
+            echo "::warning::no Xcode 26 on this runner; the app keeps the .icns icon only"
+          fi
+          if [ -n "$APPLE_API_KEY_P8" ]; then
+            # notarytool reads the key from a file (apps/desktop/scripts/notarize.mjs).
+            printf '%s\n' "$APPLE_API_KEY_P8" > "$RUNNER_TEMP/apple-api-key.p8"
+            echo "APPLE_API_KEY=$RUNNER_TEMP/apple-api-key.p8" >> "$GITHUB_ENV"
+            # stapler's HTTP/3 connections drop on GitHub's macOS runners (actions/runner-images#14924).
+            echo 'block return out quick proto udp to any port 443' | sudo pfctl -a com.apple/tuos-no-quic -f -
+            sudo pfctl -E
+          fi
+
+      - name: Build and package
+        env:
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          DEBUG: electron-osx-sign*,electron-notarize*
+        run: |
+          set -euo pipefail
+          if [ -z "$CSC_LINK" ]; then
+            # Nothing to sign with: do not search the runner's keychain for an identity.
+            unset CSC_LINK CSC_KEY_PASSWORD
+            export CSC_IDENTITY_AUTO_DISCOVERY=false
+          fi
+          ulimit -n 16384 2>/dev/null || true
+          python3 scripts/bundles/desktop.py --tag "$TAG"
+
+      - name: Check the macOS signature
+        if: runner.os == 'macOS'
+        env:
+          SIGNED: ${{ secrets.CSC_LINK != '' }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          apps=(apps/desktop/release/mac*/*.app)
+          [ ${#apps[@]} -gt 0 ] || { echo "::error::no packed .app under apps/desktop/release"; exit 1; }
+          for app in "${apps[@]}"; do
+            codesign --verify --strict --verbose=2 "$app"
+            if [ "$SIGNED" = true ]; then
+              xcrun stapler validate "$app"
+              spctl -a -vv -t exec "$app"
+            fi
+          done
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: desktop-${{ matrix.target }}
+          path: |
+            apps/desktop/release/*.dmg
+            apps/desktop/release/*.zip
+            apps/desktop/release/*.AppImage
+            apps/desktop/release/*.blockmap
+            apps/desktop/release/*.yml
+            !apps/desktop/release/builder-debug.yml
+            !apps/desktop/release/builder-effective-config.yaml
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 0
+
+  build-windows:
+    name: Build win32-x64
+    if: ${{ vars.AZURE_SIGN_ENDPOINT != '' && !contains(inputs.tag || github.ref_name, '+') }}
+    runs-on: windows-2025
+    timeout-minutes: 600
+    permissions:
+      contents: read
+      id-token: write  # Azure Trusted Signing signs with a federated token
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          ref: refs/tags/${{ env.TAG }}
+          fetch-depth: 0
+          fetch-tags: true
+          persist-credentials: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.14"
+
+      - name: Claim the release
+        shell: bash
+        run: bash scripts/fork/release-claim.sh
+
+      - uses: azure/login@f5d393ae46f8fde4be8b75f32e3fc50e654ad0ca  # v3.0.1
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+
+      - name: Mint the federated token the signing library reads
+        shell: bash
+        run: |
+          file="$RUNNER_TEMP/azure-federated-token"
+          mint() {
+            curl -sSf -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+              "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=api://AzureADTokenExchange" \
+              | jq -r .value > "$file.tmp" && mv -f "$file.tmp" "$file"
+          }
+          mint
+          ( while sleep 240; do mint || true; done ) &
+          echo "AZURE_FEDERATED_TOKEN_FILE=$file" >> "$GITHUB_ENV"
+
+      - name: Build and package
+        shell: bash
+        env:
+          AZURE_SIGN_ENDPOINT: ${{ vars.AZURE_SIGN_ENDPOINT }}
+          AZURE_SIGN_ACCOUNT: ${{ vars.AZURE_SIGN_ACCOUNT }}
+          AZURE_SIGN_PROFILE: ${{ vars.AZURE_SIGN_PROFILE }}
+          AZURE_SIGN_PUBLISHER: ${{ vars.AZURE_SIGN_PUBLISHER }}
+          AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+          AZURE_TOKEN_CREDENTIALS: prod
+        run: python scripts/bundles/desktop.py --tag "$TAG"
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: desktop-win32-x64
+          path: apps/desktop/release/*.msix
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 0
+
+  release:
+    name: Attach to a draft release
+    needs: [build, build-windows]
+    if: ${{ !cancelled() && needs.build.result == 'success' && needs.build-windows.result != 'failure' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          path: ${{ runner.temp }}/desktop
+          pattern: desktop-*
+          merge-multiple: true
+
+      - name: Create or update the draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        working-directory: ${{ runner.temp }}/desktop
+        run: |
+          set -euo pipefail
+          ls -l
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" --draft --verify-tag --title "tuos $TAG" \
+              --notes "Desktop apps for $TAG. Built by the tuos desktop release workflow; review, then publish."
+          fi
+          gh release upload "$TAG" --clobber ./*
