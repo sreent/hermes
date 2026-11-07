@@ -9,7 +9,7 @@
 // hits, and then drives the real search modal in a headless browser.
 //
 // Usage: node website/scripts/check-live-search.mjs [--no-browser]
-//   DOCS_URL       site to probe (default https://hermes-agent.nousresearch.com/docs)
+//   DOCS_URL       site to probe (default https://sreent.github.io/hermes)
 //   PLAYWRIGHT_DIR directory holding node_modules/playwright (browser check)
 // Exit 0 = search works; exit 1 = broken. Reasons go to stderr and, in
 // Actions, to the step summary and `::error::` annotations (alert receivers
@@ -19,7 +19,7 @@ import { appendFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 
-const DOCS_URL = (process.env.DOCS_URL || 'https://hermes-agent.nousresearch.com/docs').replace(/\/$/, '');
+const DOCS_URL = (process.env.DOCS_URL || 'https://sreent.github.io/hermes').replace(/\/$/, '');
 const ORIGIN = new URL(DOCS_URL).origin;
 // Terms that must always match many pages; one per major area of the docs.
 const QUERIES = ['telegram', 'install', 'skills'];

@@ -64,7 +64,7 @@ def build_catalog() -> dict:
         "updated_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "metadata": {
             "source": "hermes-agent repo",
-            "docs": "https://hermes-agent.nousresearch.com/docs/reference/model-catalog",
+            "docs": "https://sreent.github.io/hermes/reference/model-catalog",
         },
         "providers": {
             "openrouter": {

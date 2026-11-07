@@ -164,7 +164,7 @@ For long-lived processes: tuos gateway, tui_gateway, a daemon, a process that's 
 
 For tuos, use a separate development checkout and data home, not a live
 production generation. Follow the
-[PM developer workflow](https://hermes-agent.nousresearch.com/docs/reference/package-management#developer-workflow)
+[PM developer workflow](https://sreent.github.io/hermes/reference/package-management#developer-workflow)
 and activate that checkout — PowerShell: `. .\activate.ps1`. The declared `dev`
 extra includes debugpy, which PM activation does not sync (`all` excludes it).
 Through `terminal`, build a fresh, caller-owned debug/test environment with the

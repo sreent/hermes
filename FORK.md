@@ -144,9 +144,6 @@ Deliberately still upstream's:
   package and the stable/canary channels are Nous's; this fork doesn't build them yet.
 - **Nous's services**, which are product features: Nous Portal sign-in, inference and billing, the Tool
   Gateway, the plugin catalog and Skills Hub, and the opt-in telemetry endpoint (off unless a user consents).
-- **Documentation links** to `hermes-agent.nousresearch.com/docs` throughout the CLI, app and docs. Those pages
-  still describe this code; repoint them once this fork hosts its own docs (the site's `url` and `baseUrl`
-  are unchanged for that reason).
 - **Signing and release tooling for desktop builds.** Signing uses Nous's Azure Trusted Signing and Apple
   accounts (`AZURE_SIGN_*`, notarization). Before this fork publishes builds it needs its own certificate,
   and the MSIX publisher, `OUT_OF_STORE_PUBLISHER` in `scripts/msix-shared.mjs` (now `CN=tuos`), must
@@ -160,6 +157,14 @@ Deliberately still upstream's:
 What Nous Research hosts for Hermes, this fork hosts for itself on GitHub, from workflows of its own
 (`.github/workflows/tuos-*.yml`, kept out of the merge cleanup above):
 
+- **Docs site**: `https://sreent.github.io/hermes` (`hermes_cli.distribution.DOCS_URL`), built from
+  `website/` and published by `tuos-docs.yml` with GitHub Pages whenever `main` changes the site, the
+  skills or the plugin catalog. Turn Pages on once: Settings, Pages, Source "GitHub Actions". Pages keep
+  upstream's paths under the new base (`website/docusaurus.config.ts` `url` and `baseUrl`; the Skills
+  Hub, Plugins and blueprint pages read their data from `baseUrl` too). Search is Algolia DocSearch only
+  when the repository has the variables `DOCSEARCH_APP_ID`, `DOCSEARCH_API_KEY` and
+  `DOCSEARCH_INDEX_NAME` (DocSearch is free for open-source docs); Nous's index lists Nous's pages, so
+  until then there is no search box. The navbar's "Home", Nous's landing page, is gone.
 - **Docker image**: `ghcr.io/sreent/tuos` (`hermes_cli.distribution.DOCKER_IMAGE`), built by
   `tuos-docker.yml` for amd64 and arm64 on GitHub's runners. A push to `main` publishes `main` and
   `latest`; a tag `vX.Y.Z` publishes that version; each has a `-desktop` twin with the bots' screens.
@@ -167,8 +172,12 @@ What Nous Research hosts for Hermes, this fork hosts for itself on GitHub, from 
   runs `main` by default. After the first run, check that the package is public (the package's page,
   Package settings) so clusters can pull it without credentials.
 - **`scripts/fork/relink.py`** rewrites upstream's references to what Nous hosts, wherever they are
-  (code, tests and docs): the image `nousresearch/hermes-agent` becomes ours, and its Docker Hub page
-  our package page. The same words inside a path name the repository and stay. `rename.py` runs it, and
+  (code, tests, docs and the agent's prompt):
+  - links into Nous's docs site go to the same page on ours. What Nous's site serves for its services
+    stays: `/docs/api/` (the Skills Hub index, the plugin and model catalogs), `/docs/img/`, and the
+    hub page the desktop app embeds. So does the rest of `hermes-agent.nousresearch.com`;
+  - the image `nousresearch/hermes-agent` becomes ours, and its Docker Hub page our package page. The
+    same words inside a path name the repository and stay. `rename.py` runs it, and
   its `--resolve` treats relinked lines as ours, so syncing upstream needs no extra step; `relink.py
   --check` exits 1 while anything is left.
 

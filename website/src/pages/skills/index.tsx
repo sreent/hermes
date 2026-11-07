@@ -5,6 +5,7 @@ import styles from "./styles.module.css";
 import CatalogFeatured from "../../components/CatalogFeatured";
 import { isOfficialSkillSource, pickFeatured } from "../../../../apps/shared/src/catalog-featured";
 import { skillCatalogInstallIdentifier, skillCatalogInstallUrl } from "../../../../apps/shared/src/catalog-install";
+import siteConfig from "@generated/docusaurus.config";
 
 interface Skill {
   name: string;
@@ -506,7 +507,7 @@ function SkillCard({
               {skill.docsPath ? (
                 <a
                   className={styles.docsLink}
-                  href={`/docs/user-guide/skills/${skill.docsPath}`}
+                  href={`${siteConfig.baseUrl}user-guide/skills/${skill.docsPath}`}
                   onClick={(e) => e.stopPropagation()}
                 >
                   View full documentation →
@@ -543,12 +544,10 @@ function StatCard({ value, label, color }: { value: number; label: string; color
 
 const PAGE_SIZE = 60;
 
-// Routes Docusaurus serves the static API JSON from. `baseUrl` is `/docs/`,
-// `static/api/` ends up at `/docs/api/`. Hardcoding here is fine because the
-// same `baseUrl` is enforced repo-wide; if it ever changes, this is the only
-// place that needs to follow.
-const SKILLS_URL = "/docs/api/skills.json";
-const META_URL = "/docs/api/skills-meta.json";
+// Routes Docusaurus serves the static API JSON from: `static/api/` ends up at
+// `<baseUrl>api/`.
+const SKILLS_URL = `${siteConfig.baseUrl}api/skills.json`;
+const META_URL = `${siteConfig.baseUrl}api/skills-meta.json`;
 // Idle timeout for the catalog fetch — abort only when the transfer has
 // produced no bytes for this long, so slow-but-alive downloads survive.
 const CATALOG_STALL_TIMEOUT_MS = 45_000;

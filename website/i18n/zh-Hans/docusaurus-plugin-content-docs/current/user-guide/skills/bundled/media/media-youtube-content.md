@@ -36,7 +36,7 @@ YouTube 视频转文字摘要、推文、博客。
 
 通过 `terminal` 使用 PM 准备的 tuos 源码检出中的 Python。`youtube` extra
 声明了此辅助脚本的依赖；不要用 pip 或会自动发现项目的 `uv run` 修改 tuos 环境。
-先按照[包管理](https://hermes-agent.nousresearch.com/docs/reference/package-management#developer-workflow)
+先按照[包管理](https://sreent.github.io/hermes/reference/package-management#developer-workflow)
 选择独立开发数据目录，再准备依赖并重新激活：
 
 ```bash

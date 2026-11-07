@@ -771,7 +771,7 @@ _SSH_HINT_LOOPBACK = (
     "         ssh -N -L {port}:127.0.0.1:{port} <user>@<this-host>\n"
     "       then open the URL above and let it redirect normally.\n"
     "\n"
-    "  See: https://hermes-agent.nousresearch.com/docs/guides/oauth-over-ssh\n")
+    "  See: https://sreent.github.io/hermes/guides/oauth-over-ssh\n")
 
 
 def _announce_authorization_url(

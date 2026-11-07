@@ -358,7 +358,7 @@ class LongPreviewAgent:
 
 
 class UrlPreviewAgent:
-    URL = "https://hermes-agent.nousresearch.com/docs/gateway/discord/tool-progress"
+    URL = "https://sreent.github.io/hermes/gateway/discord/tool-progress"
 
     def __init__(self, **kwargs):
         self.tool_progress_callback = kwargs.get("tool_progress_callback")

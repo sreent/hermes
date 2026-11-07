@@ -3,13 +3,25 @@ import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 import relativeDocLinks from './src/remark/relativeDocLinks';
 
+// Search is Algolia DocSearch when the build is given an index of this site (FORK.md, "Hosted by this
+// fork"): Nous's index lists Nous's pages. Without one the site has no search box.
+const docsearch = process.env.DOCSEARCH_APP_ID && process.env.DOCSEARCH_API_KEY && process.env.DOCSEARCH_INDEX_NAME
+  ? {
+      appId: process.env.DOCSEARCH_APP_ID,
+      apiKey: process.env.DOCSEARCH_API_KEY,
+      indexName: process.env.DOCSEARCH_INDEX_NAME,
+      contextualSearch: true,
+    }
+  : undefined;
+
 const config: Config = {
   title: 'tuos',
   tagline: 'The self-improving AI agent',
   favicon: 'img/favicon.ico',
 
-  url: 'https://hermes-agent.nousresearch.com',
-  baseUrl: '/docs/',
+  // GitHub Pages, from .github/workflows/tuos-docs.yml (hermes_cli.distribution.DOCS_URL).
+  url: 'https://sreent.github.io',
+  baseUrl: '/hermes/',
 
   organizationName: 'sreent',
   projectName: 'hermes',
@@ -48,7 +60,7 @@ const config: Config = {
       '@docusaurus/plugin-client-redirects',
       {
         // Static-host redirects for renamed doc pages (GitHub Pages can't
-        // do server-side redirects). Paths are relative to baseUrl (/docs/).
+        // do server-side redirects). Paths are relative to baseUrl.
         redirects: [
           {
             // Renamed in #44470 (Automation Blueprints terminology rebrand)
@@ -81,7 +93,7 @@ const config: Config = {
       'classic',
       {
         docs: {
-          routeBasePath: '/',  // Docs at the root of /docs/
+          routeBasePath: '/',  // Docs at the root of the site
           sidebarPath: './sidebars.ts',
           editUrl: 'https://github.com/sreent/hermes/edit/main/website/',
           // Relative `.md` links (readable on GitHub, #114428) must also resolve
@@ -98,20 +110,7 @@ const config: Config = {
 
   themeConfig: {
     image: 'img/tuos-banner.png',
-    // Algolia DocSearch (replaces @easyops-cn/docusaurus-search-local).
-    // The local plugin shipped a ~16 MB client-side lunr index that every
-    // visitor downloaded and hydrated before their first result; DocSearch
-    // answers from Algolia's servers with no client index at all. These are
-    // public search-only credentials — safe to commit (the admin key is not
-    // in the repo). Index is populated by the Algolia Crawler configured at
-    // crawler.algolia.com; contextualSearch scopes results to the active
-    // locale via the docusaurus_tag/lang facets the crawler records carry.
-    algolia: {
-      appId: '2JLBVEYZN5',
-      apiKey: '9629ec26628d1a126535fd5ef408990d',
-      indexName: 'hermes docs',
-      contextualSearch: true,
-    },
+    ...(docsearch ? {algolia: docsearch} : {}),
     colorMode: {
       defaultMode: 'dark',
       respectPrefersColorScheme: true,
@@ -148,11 +147,6 @@ const config: Config = {
         },
         {
           type: 'localeDropdown',
-          position: 'right',
-        },
-        {
-          href: 'https://hermes-agent.nousresearch.com',
-          label: 'Home',
           position: 'right',
         },
         {

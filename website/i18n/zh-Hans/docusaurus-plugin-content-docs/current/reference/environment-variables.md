@@ -592,7 +592,7 @@ Graph 事件（Teams 会议、日历、聊天等）的入站变更通知监听�
 export HERMES_WRITE_SAFE_ROOT=/path/to/project:/home/you/.hermes
 ```
 
-取消设置或从 `.env` 中移除此变量可恢复常规写入（仍受凭证路径拒绝列表约束——见[文件写入安全](https://hermes-agent.nousresearch.com/docs/user-guide/security#file-write-safety)）。
+取消设置或从 `.env` 中移除此变量可恢复常规写入（仍受凭证路径拒绝列表约束——见[文件写入安全](https://sreent.github.io/hermes/user-guide/security#file-write-safety)）。
 
 ## 界面
 

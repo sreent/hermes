@@ -30,11 +30,12 @@ import CopyButton from "../../components/PluginCatalog/CopyButton";
 import CatalogFeatured from "../../components/CatalogFeatured";
 import { groupCatalogPlugins, sortCatalogPlugins } from "../../../../apps/shared/src/catalog-browse";
 import { pickFeatured } from "../../../../apps/shared/src/catalog-featured";
+import siteConfig from "@generated/docusaurus.config";
 
-// Routes Docusaurus serves the static API JSON from. `baseUrl` is `/docs/`,
-// `static/api/` ends up at `/docs/api/` — same pattern as the Skills Hub.
-const PLUGINS_URL = "/docs/api/plugins.json";
-const META_URL = "/docs/api/plugins-meta.json";
+// Routes Docusaurus serves the static API JSON from: `static/api/` ends up at
+// `<baseUrl>api/` — same pattern as the Skills Hub.
+const PLUGINS_URL = `${siteConfig.baseUrl}api/plugins.json`;
+const META_URL = `${siteConfig.baseUrl}api/plugins-meta.json`;
 /** Mirrors the `max-width: 600px` blocks in styles.module.css. */
 const MOBILE_PANEL_QUERY = "(max-width: 600px)";
 

@@ -1723,7 +1723,7 @@ def register(ctx) -> None:
         target_ref_syntax_fn=regex_stripped_parser(_SEND_DM_GUID_RE),
         name="photon", label="iMessage via Photon", adapter_factory=lambda cfg: PhotonAdapter(cfg),
         dashboard_description="Use tuos through iMessage via Photon's managed Spectrum platform.",
-        docs_url="https://hermes-agent.nousresearch.com/docs/user-guide/messaging/photon",
+        docs_url="https://sreent.github.io/hermes/user-guide/messaging/photon",
         check_fn=check_requirements, validate_config=validate_config, is_connected=is_connected,
         required_env=["PHOTON_PROJECT_ID", "PHOTON_PROJECT_SECRET"],
         install_hint=(

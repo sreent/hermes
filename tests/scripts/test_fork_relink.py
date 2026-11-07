@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 import hermes_yaml
-from hermes_cli.distribution import DOCKER_IMAGE, DOCKER_PACKAGE_URL
+from hermes_cli.distribution import DOCKER_IMAGE, DOCKER_PACKAGE_URL, DOCS_URL
 
 
 def _load(name: str):
@@ -48,6 +48,35 @@ def test_image_references_point_at_the_fork_and_repository_paths_stay():
         "clone https://github.com/nousresearch/hermes-agent.git\n"
         "\"skills-sh/nousresearch/hermes-agent/google-workspace\"\n"
         "grep -Eq '^(https://github\\.com/)nousresearch/hermes-agent(\\.git)?/?$'\n"
+    )
+
+
+def test_docs_links_go_to_the_same_page_here_and_nous_services_stay():
+    nous = "https://hermes-agent.nousresearch.com"
+    text = (
+        f"See {nous}/docs/user-guide/features/memory#storage for details.\n"
+        f'docs_url = "{nous}/docs/user-guide/messaging/webhooks/"\n'
+        f"[the docs]({nous}/docs) and {nous}/docs/\n"
+        "expect(title).toContain('hermes-agent.nousresearch.com/docs')\n"
+        f'LIVE_CATALOG_URL = "{nous}/docs/api/plugin-catalog.json"\n'
+        f'ART = "{nous}/docs/img/catalog/"\n'
+        f"embed {nous}/docs/skills?embed=picker\n"
+        f'HUB_ORIGIN = "{nous}"\n'
+        f"curl -fsSL {nous}/install.sh | bash\n"
+        "see hermes-agent.nousresearch.com/docsearch-faq\n"
+    )
+    bare = DOCS_URL.split("://", 1)[1]
+    assert relink.relink(text) == (
+        f"See {DOCS_URL}/user-guide/features/memory#storage for details.\n"
+        f'docs_url = "{DOCS_URL}/user-guide/messaging/webhooks/"\n'
+        f"[the docs]({DOCS_URL}) and {DOCS_URL}/\n"
+        f"expect(title).toContain('{bare}')\n"
+        f'LIVE_CATALOG_URL = "{nous}/docs/api/plugin-catalog.json"\n'
+        f'ART = "{nous}/docs/img/catalog/"\n'
+        f"embed {nous}/docs/skills?embed=picker\n"
+        f'HUB_ORIGIN = "{nous}"\n'
+        f"curl -fsSL {nous}/install.sh | bash\n"
+        "see hermes-agent.nousresearch.com/docsearch-faq\n"
     )
 
 

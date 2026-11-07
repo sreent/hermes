@@ -29,6 +29,9 @@ INSTALL_PS1_COMMAND = f"iex (irm {INSTALL_PS1_URL})"
 # scripts/fork/relink.py writes it wherever upstream's code and docs name Nous's image.
 DOCKER_IMAGE = "ghcr.io/sreent/tuos"
 DOCKER_PACKAGE_URL = f"https://github.com/{REPOSITORY}/pkgs/container/tuos"
+# The docs site, on GitHub Pages (.github/workflows/tuos-docs.yml), with upstream's page paths:
+# Nous's https://hermes-agent.nousresearch.com/docs/<page> is DOCS_URL/<page> here.
+DOCS_URL = "https://sreent.github.io/hermes"
 
 # What people see is called tuos (FORK.md, "Rebranded as tuos"). Internal names stay Hermes's:
 # packages, HERMES_* variables, ~/.hermes, service names and the `hermes` command (`tuos` runs it).

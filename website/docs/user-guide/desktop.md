@@ -542,7 +542,7 @@ The desktop app and the tuos backend it talks to update on separate clocks — t
 
 After any backend update, the app also re-checks its own version and warns with a one-click **Update desktop app** action if the GUI is still behind — so updating a remote backend can never silently leave you on a stale desktop build.
 
-The [manual update process](https://hermes-agent.nousresearch.com/docs/getting-started/updating) also works with the GUI.
+The [manual update process](https://sreent.github.io/hermes/getting-started/updating) also works with the GUI.
 
 ## Uninstalling
 

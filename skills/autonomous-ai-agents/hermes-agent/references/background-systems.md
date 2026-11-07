@@ -42,7 +42,7 @@ the `cronjob` tool, the `hermes cron` CLI (`list`, `add`, `edit`,
   header/footer instead of being mirrored into the target gateway
   session (keeps role alternation intact).
 
-User docs: https://hermes-agent.nousresearch.com/docs/user-guide/features/cron
+User docs: https://sreent.github.io/hermes/user-guide/features/cron
 
 ### Curator (skill lifecycle)
 
@@ -69,7 +69,7 @@ so nothing is lost.
 
 Config: `curator.*` (`enabled`, `interval_hours`, `min_idle_hours`,
 `stale_after_days`, `archive_after_days`, `backup.*`).
-User docs: https://hermes-agent.nousresearch.com/docs/user-guide/features/curator
+User docs: https://sreent.github.io/hermes/user-guide/features/curator
 
 ### Kanban (multi-agent work queue)
 
@@ -100,4 +100,4 @@ sessions still have zero `kanban_*` schema footprint unless configured.
 
 Project-linked tasks (worktree + branch by default under a Project's primary folder, when it has one):
 `references/projects-and-folders.md`.
-User docs: https://hermes-agent.nousresearch.com/docs/user-guide/features/kanban
+User docs: https://sreent.github.io/hermes/user-guide/features/kanban

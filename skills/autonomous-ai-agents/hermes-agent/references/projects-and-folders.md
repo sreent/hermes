@@ -141,6 +141,6 @@ hermes kanban create "Wire the webhook" --project payments
 - `references/background-systems.md` — kanban overview.
 - `references/project-context-files.md` — a different feature: `AGENTS.md` / `.hermes.md` /
   `CLAUDE.md` instruction files that load into a session.
-- https://hermes-agent.nousresearch.com/docs/user-guide/features/kanban#managing-boards-from-the-dashboard
+- https://sreent.github.io/hermes/user-guide/features/kanban#managing-boards-from-the-dashboard
   (board ↔ project binding) and
-  https://hermes-agent.nousresearch.com/docs/reference/cli-commands#hermes-project
+  https://sreent.github.io/hermes/reference/cli-commands#hermes-project
