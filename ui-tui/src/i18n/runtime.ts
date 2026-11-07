@@ -108,14 +108,21 @@ export function nestPack(base: unknown, messages: Record<string, string>): Recor
   return out
 }
 
+const CREDIT_KEYS = new Set(['chatBits.branding.tagFull', 'chatBits.branding.tagMid'])
+
 /** Merge a pack (flat dotted map) over the bundled English catalog. */
 export function catalogFromPack(messages: Record<string, string> | undefined): Translations {
   if (!messages || Object.keys(messages).length === 0) {
     return en
   }
 
-  // tuos (FORK.md): pack copy written for Hermes names the product, as the bundled English does.
-  return mergeTranslations<Translations>(en, nestPack(en, brandCatalog(messages)) as TranslationOverride<Translations>)
+  // tuos (FORK.md): pack copy written for Hermes names the product, as the bundled English does. The
+  // taglines credit upstream by name in every language, and brand() recognises credit only in English.
+  const branded = Object.fromEntries(
+    Object.entries(messages).map(([key, text]) => [key, CREDIT_KEYS.has(key) ? text : brandCatalog(text)])
+  )
+
+  return mergeTranslations<Translations>(en, nestPack(en, branded) as TranslationOverride<Translations>)
 }
 
 /** Install a language: `pack` may be null when the backend has no TUI strings

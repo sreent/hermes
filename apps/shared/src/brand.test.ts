@@ -10,6 +10,9 @@ describe('brand', () => {
     expect(brand('Hermesを再起動')).toBe('tuosを再起動')
     expect(brand('Run `hermes setup`, then hermes -p work chat')).toBe('Run `tuos setup`, then tuos -p work chat')
     expect(brand('then run hermes {profile_arg}sessions recover')).toBe('then run tuos {profile_arg}sessions recover')
+    expect(brand('docker exec -u hermes hermes-agent hermes pairing approve telegram ABC')).toBe(
+      'docker exec -u hermes hermes-agent tuos pairing approve telegram ABC'
+    )
   })
 
   it('keeps Nous services and models, the wake word, credit to upstream and internal names', () => {
@@ -24,7 +27,13 @@ describe('brand', () => {
       'Certificate name (default: Hermes Local Signing)',
       'Send the X-Hermes-Session-Id header',
       "Load the `hermes-agent` skill with skill_view(name='hermes-agent')",
-      'HermesDesktop'
+      'HermesDesktop',
+      // The `hermes` user and group the Docker image and the Nix module run as
+      'creates the `hermes` user and adds you to the `hermes` group',
+      'docker exec -u hermes hermes-agent sh; sudo -u hermes cat .env; su - hermes',
+      'pass `--user hermes`, or `s6-setuidgid hermes`; state is `0750 hermes:hermes`',
+      'the entrypoint drops to hermes via s6, and the reconciler runs as hermes',
+      "Added to the hermes user's profile"
     ]) {
       expect(brand(text)).toBe(text)
     }

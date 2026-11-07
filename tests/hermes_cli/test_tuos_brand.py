@@ -14,6 +14,8 @@ from hermes_cli.distribution import PRODUCT_NAME, brand
     ("Hermesを再起動", "tuosを再起動"),
     ("Run `hermes setup`, then hermes -p work chat", "Run `tuos setup`, then tuos -p work chat"),
     ("then run hermes {profile_arg}sessions recover", "then run tuos {profile_arg}sessions recover"),
+    ("docker exec -u hermes hermes-agent hermes pairing approve telegram ABC",
+     "docker exec -u hermes hermes-agent tuos pairing approve telegram ABC"),
 ])
 def test_copy_written_for_hermes_names_tuos(text, shown):
     assert brand(text) == shown
@@ -30,6 +32,12 @@ def test_copy_written_for_hermes_names_tuos(text, shown):
     "Certificate name (default: Hermes Local Signing)",  # the keychain certificate's name
     "Send the X-Hermes-Session-Id header",  # a hyphenated name
     "Load the `hermes-agent` skill with skill_view(name='hermes-agent')",  # the skill keeps its name
+    # The `hermes` user and group the Docker image and the Nix module run as
+    "creates the `hermes` user and adds you to the `hermes` group",
+    "docker exec -u hermes hermes-agent sh; sudo -u hermes cat .env; su - hermes",
+    "pass `--user hermes`, or `s6-setuidgid hermes`; state is `0750 hermes:hermes`",
+    "the entrypoint drops to hermes via s6, and the reconciler runs as hermes",
+    "Added to the hermes user's profile",
 ])
 def test_names_that_are_not_the_product_stay(text):
     assert brand(text) == text
@@ -42,6 +50,23 @@ def test_shipped_catalogs_name_tuos_in_every_language():
         catalog = i18n._load_bundled(lang)
         assert any(PRODUCT_NAME in text for text in catalog.values()), lang
         assert all(brand(text) == text for text in catalog.values()), lang
+
+
+def test_tui_taglines_credit_upstream_in_every_language():
+    """brand() recognises credit only in English, so the TUI's translated taglines are served as written."""
+    from pathlib import Path
+
+    from agent import i18n
+
+    locales = Path(__file__).resolve().parents[2] / "locales"
+    languages = sorted(path.name.removesuffix(".tui.yaml") for path in locales.glob("*.tui.yaml"))
+    assert languages
+    for lang in languages:
+        catalog = i18n.surface_catalog(lang, "tui")
+        assert "Hermes Agent" in catalog["chatBits.branding.tagFull"], lang
+        assert "Nous Research" in catalog["chatBits.branding.tagFull"], lang
+        assert "Hermes Agent" in catalog["chatBits.branding.tagMid"], lang
+        assert all(brand(text) == text for key, text in catalog.items() if key not in i18n.CREDIT_KEYS), lang
 
 
 def test_agent_introduces_itself_as_tuos():

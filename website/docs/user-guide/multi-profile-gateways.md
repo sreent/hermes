@@ -1068,7 +1068,7 @@ use a third-party tool.
 
 ```bash
 # Inhibit suspend while a command runs
-systemd-inhibit --what=idle:sleep --who=tuos --why="gateways running" \
+systemd-inhibit --what=idle:sleep --who=hermes --why="gateways running" \
   sleep infinity &
 
 # Allow user services to keep running after logout (recommended)

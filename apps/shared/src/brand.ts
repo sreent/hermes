@@ -20,8 +20,11 @@ const PRODUCT =
 
 // The command, wherever copy tells someone to run it: `hermes setup`, `hermes -p work ...`, a template's
 // `hermes {profile_arg}doctor`, `hermes` in backticks, "the hermes command". Not a path, package or module
-// (~/.hermes, /opt/hermes/, hermes-agent, hermes_cli, hermes.exe).
-const COMMAND = /(?<![A-Za-z0-9_./\\`-])hermes(?=\s(?:-{1,2}[A-Za-z]|[a-z{])|`)|(?<=`)hermes(?=`|\s)/g
+// (~/.hermes, /opt/hermes/, hermes-agent, hermes_cli, hermes.exe), nor the `hermes` user and group the
+// Docker image and the Nix module run as ("the `hermes` user", "drops to hermes", `sudo -u hermes`, `--user hermes`,
+// `s6-setuidgid hermes`, `chown hermes:hermes`), which keep their name.
+const COMMAND =
+  /(?<![A-Za-z0-9_./\\`:=-])(?<!-u )(?<!--user )(?<!setuidgid )(?<!chown )(?<!id -u )(?<!id -g )(?<!su - )(?<!to )(?<!as )hermes(?=\s(?:-{1,2}[A-Za-z]|[a-z{])|`)(?!`?\s(?:user|group|account)\b)|(?<=`)hermes(?=`|\s)(?!`?\s(?:user|group|account)\b)/g
 
 export function brand(text: string): string {
   return text.replace(PRODUCT, PRODUCT_NAME).replace(COMMAND, PRODUCT_NAME)

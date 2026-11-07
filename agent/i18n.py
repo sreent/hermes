@@ -151,6 +151,9 @@ def _normalize_lang(value: Any, home: str | None = None) -> str:
     return resolve_language_id(value, home) or DEFAULT_LANGUAGE
 
 
+CREDIT_KEYS = frozenset({"chatBits.branding.tagFull", "chatBits.branding.tagMid"})
+
+
 def _load_bundled(lang: str) -> dict[str, str]:
     """One bundled locale YAML flattened to dotted keys (empty dict on any failure — never crashes)."""
     path = _locales_dir() / f"{lang}.yaml"
@@ -162,7 +165,9 @@ def _load_bundled(lang: str) -> dict[str, str]:
     except Exception as exc:
         logger.warning("Failed to load i18n catalog %s: %s", path, exc)
         return {}
-    return {key: brand(text) for key, text in catalog.items()}  # the shipped copy names the product tuos
+    # The shipped copy names the product tuos, except the TUI's taglines: they credit upstream by name in
+    # every language, and brand() recognises credit only in English (FORK.md, "Rebranded as tuos").
+    return {key: text if key in CREDIT_KEYS else brand(text) for key, text in catalog.items()}
 
 
 def _flatten_into(node: Any, prefix: str, out: dict[str, str]) -> None:

@@ -484,7 +484,7 @@ Token 存储在 `$HERMES_HOME/mcp-tokens/<server-name>.json` 中，在重启和�
 
 首次 OAuth 授权需要基于浏览器的同意流程。在无头部署中，tuos 将授权 URL 打印到 stdout/日志，而不是打开浏览器。
 
-**方案 A：交互式引导** — 通过 `docker exec`（容器）或 `sudo -u tuos`（原生）运行一次流程：
+**方案 A：交互式引导** — 通过 `docker exec`（容器）或 `sudo -u hermes`（原生）运行一次流程：
 
 ```bash
 # 容器模式
@@ -959,7 +959,7 @@ sudo systemctl start hermes-agent
 
 ```bash
 # 原生模式
-sudo -u tuos cat /var/lib/hermes/.hermes/.env
+sudo -u hermes cat /var/lib/hermes/.hermes/.env
 
 # 容器模式
 docker exec hermes-agent cat /data/.hermes/.env
@@ -978,7 +978,7 @@ nix-store --query --roots $(docker exec hermes-agent readlink /data/current-pack
 | `Cannot save configuration: managed by NixOS` | CLI 守卫已激活 | 编辑 `configuration.nix` 并执行 `nixos-rebuild switch` |
 | 容器意外重建 | `extraVolumes`、`extraOptions` 或 `image` 发生变更 | 预期行为——可写层重置。重新安装包或使用自定义镜像 |
 | `tuos --version` 显示旧版本 | 容器未重启 | `systemctl restart hermes-agent` |
-| `/var/lib/hermes` 权限拒绝 | 状态目录为 `0750 hermes:tuos` | 使用 `docker exec` 或 `sudo -u tuos` |
+| `/var/lib/hermes` 权限拒绝 | 状态目录为 `0750 hermes:hermes` | 使用 `docker exec` 或 `sudo -u hermes` |
 | `nix-collect-garbage` 删除了 hermes | GC root 缺失 | 重启服务（preStart 会重新创建 GC root） |
 | `no container with name or ID "hermes-agent"`（Podman） | Podman rootful 容器对普通用户不可见 | 为 podman 添加免密 sudo（参见[容器模式](#容器架构)章节） |
 | `unable to find user tuos` | 容器仍在启动中（入口点尚未创建用户） | 等待几秒后重试——CLI 会自动重试 |

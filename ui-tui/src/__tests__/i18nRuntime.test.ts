@@ -77,6 +77,21 @@ describe('TUI i18n runtime', () => {
     void base
   })
 
+  it('serves the taglines as translated but names tuos in the rest of a pack', () => {
+    applyLocale('de', {
+      lang: 'de',
+      surface: 'tui',
+      messages: {
+        'chatBits.branding.tagFull': 'Basiert auf Hermes Agent von Nous Research',
+        'chatBits.branding.tagMid': 'Basiert auf Hermes Agent',
+        'status.ready': 'Hermes ist bereit'
+      }
+    })
+    expect($catalog.get().chatBits.branding.tagFull).toBe('Basiert auf Hermes Agent von Nous Research')
+    expect($catalog.get().chatBits.branding.tagMid).toBe('Basiert auf Hermes Agent')
+    expect($catalog.get().status.ready).toBe('tuos ist bereit')
+  })
+
   it('drops pack keys that en does not know', () => {
     applyLocale('pl', { lang: 'pl', surface: 'tui', messages: { 'status.bogus': 'x', 'status.ready': 'ok' } })
     expect(($catalog.get().status as Record<string, unknown>).bogus).toBeUndefined()

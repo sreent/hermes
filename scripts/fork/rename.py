@@ -12,7 +12,8 @@ exceptions: Nous's services and models, the wake word, credit to upstream, paths
 * Python tests: an expectation quoting copy the code now shows renamed follows it (``follow_tests``).
 * The desktop app, web dashboard, TUI and docs site's pages: JSX text and string literals in copy
   positions (``scripts/fork/rename_ts.mjs``).
-* Docs pages: prose and shell blocks. A line that credits Nous Research keeps its wording.
+* Docs pages, the READMEs, the contributing guides and the plugin catalog's rules (``DOC_FILES``): prose
+  and shell blocks. A line that credits Nous Research keeps its wording.
 
 Files in ``NEVER`` are not touched, nor text in ``KEEP``. Translation catalogs are not rewritten
 here: each app brands them as it loads them.
@@ -31,6 +32,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import fnmatch
 import functools
 import json
 import re
@@ -49,6 +51,9 @@ from scripts.fork import relink
 PYTHON_DIRS = ("hermes_cli", "gateway", "tui_gateway", "cron", "tools", "agent", "plugins", "acp_adapter")
 PYTHON_FILES = ("cli.py",)
 DOC_DIRS = ("website/docs", "website/i18n/zh-Hans/docusaurus-plugin-content-docs/current")
+# Docs outside the site, renamed the same way: the READMEs and contributing guides in every language, and
+# the plugin catalog's rules (the docs site mirrors them word for word).
+DOC_FILES = ("README.md", "README.*.md", "CONTRIBUTING.md", "CONTRIBUTING.*.md", "plugin-catalog/README.md")
 
 # Never rewritten: the rule itself, text matched against stored data, and the persona/markers the
 # fork brands at runtime (agent/prompt_builder.py's block at its end).
@@ -335,9 +340,10 @@ def _brand_line(line: str) -> str:
     return line if _KEEP_LINE.search(line) or any(text in line for text in KEEP) else brand(line)
 
 
-def rename_markdown(text: str) -> str:
+def rename_markdown(text: str, *, anchors: bool = True) -> str:
     """Prose and shell blocks renamed; other code blocks (YAML, JSON, Python...) and lines crediting
-    Nous Research as they are. A renamed heading keeps its anchor, so links to it still land."""
+    Nous Research as they are. A renamed heading keeps its anchor, so links to it still land, unless
+    ``anchors`` is off: GitHub, which renders ``DOC_FILES``, shows a ``{#id}`` as text."""
     out, fence, shell, seen = [], None, False, {}
     in_front = text.startswith("---\n")
     for index, line in enumerate(text.splitlines(keepends=True)):
@@ -360,7 +366,7 @@ def rename_markdown(text: str) -> str:
             anchor = explicit.group(1) if explicit else _slug(heading.group(1))
             seen[anchor] = seen.get(anchor, -1) + 1
             anchor += f"-{seen[anchor]}" if seen[anchor] else ""
-            if (branded := _brand_line(line)) != line and not explicit:
+            if (branded := _brand_line(line)) != line and not explicit and anchors:
                 branded = f"{branded.rstrip()} {{#{anchor}}}" + line[len(line.rstrip()):]
             out.append(branded)
             continue
@@ -380,7 +386,7 @@ def python_files() -> list[Path]:
 
 
 def doc_files() -> list[Path]:
-    return _git_files(*(f"{d}/*.md" for d in DOC_DIRS), *(f"{d}/*.mdx" for d in DOC_DIRS))
+    return _git_files(*(f"{d}/*.md" for d in DOC_DIRS), *(f"{d}/*.mdx" for d in DOC_DIRS), *DOC_FILES)
 
 
 def test_files() -> list[Path]:
@@ -430,6 +436,8 @@ def _renamed_text(name: str, text: str) -> str:
             return text
     if name.endswith((".md", ".mdx")) and any(name.startswith(f"{d}/") for d in DOC_DIRS):
         return rename_markdown(text)
+    if any(fnmatch.fnmatchcase(name, pattern) for pattern in DOC_FILES):
+        return rename_markdown(text, anchors=False)
     if name.endswith((".ts", ".tsx")):
         return subprocess.run(["node", str(ROOT / "scripts/fork/rename_ts.mjs"), "--stdin", name], input=text,
                               cwd=ROOT, capture_output=True, text=True, encoding="utf-8", check=True, timeout=300).stdout
@@ -509,7 +517,8 @@ def main() -> int:
     print(*conflicts, sep="\n", file=sys.stderr) if conflicts else None
     for path in doc_files():
         text = path.read_text(encoding="utf-8-sig")
-        if (branded := rename_markdown(text)) != text:
+        github = any(fnmatch.fnmatchcase(path.relative_to(ROOT).as_posix(), pattern) for pattern in DOC_FILES)
+        if (branded := rename_markdown(text, anchors=not github)) != text:
             changed.append(path.relative_to(ROOT).as_posix())
             if not args.check:
                 path.write_text(branded, encoding="utf-8")

@@ -1,10 +1,10 @@
 <p align="center">
-  <img src="assets/banner.png" alt="Hermes Agent" width="100%">
+  <img src="assets/banner.png" alt="tuos" width="100%">
 </p>
 
-# Hermes Agent ☤
+# tuos ☤
 <p align="center">
-  <a href="https://hermes-agent.nousresearch.com/">Hermes Agent</a> | <a href="https://hermes-agent.nousresearch.com/">Hermes Desktop</a>
+  <a href="https://hermes-agent.nousresearch.com/">tuos</a> | <a href="https://hermes-agent.nousresearch.com/">tuos Desktop</a>
 </p>
 <p align="center">
   <a href="https://sreent.github.io/hermes/"><img src="https://img.shields.io/badge/Docs-hermes--agent.nousresearch.com-FFD700?style=for-the-badge" alt="Documentación"></a>
@@ -20,7 +20,7 @@
 
 **El agente de IA con mejora continua creado por [Nous Research](https://nousresearch.com).** Es el único agente con un bucle de aprendizaje integrado: crea habilidades a partir de la experiencia, las mejora durante el uso, se impulsa a sí mismo a persistir el conocimiento, busca en sus propias conversaciones pasadas y construye un modelo cada vez más profundo de quién eres a lo largo de las sesiones. Ejecútalo en un VPS de $5, un clúster de GPUs o infraestructura sin servidor que cuesta casi nada cuando está inactivo. No está atado a tu laptop — habla con él desde Telegram mientras trabaja en una VM en la nube.
 
-Usa cualquier modelo que quieras — [Nous Portal](https://portal.nousresearch.com), [OpenRouter](https://openrouter.ai) (más de 200 modelos), [NovitaAI](https://novita.ai), [NVIDIA NIM](https://build.nvidia.com) (Nemotron), [Xiaomi MiMo](https://platform.xiaomimimo.com), [z.ai/GLM](https://z.ai), [Kimi/Moonshot](https://platform.moonshot.ai), [MiniMax](https://www.minimax.io), [Hugging Face](https://huggingface.co), OpenAI, o tu propio endpoint. Cambia con `hermes model` — sin cambios de código, sin dependencias.
+Usa cualquier modelo que quieras — [Nous Portal](https://portal.nousresearch.com), [OpenRouter](https://openrouter.ai) (más de 200 modelos), [NovitaAI](https://novita.ai), [NVIDIA NIM](https://build.nvidia.com) (Nemotron), [Xiaomi MiMo](https://platform.xiaomimimo.com), [z.ai/GLM](https://z.ai), [Kimi/Moonshot](https://platform.moonshot.ai), [MiniMax](https://www.minimax.io), [Hugging Face](https://huggingface.co), OpenAI, o tu propio endpoint. Cambia con `tuos model` — sin cambios de código, sin dependencias.
 
 <table>
 <tr><td><b>Una interfaz de terminal real</b></td><td>TUI completa con edición multilínea, autocompletado de comandos, historial de conversaciones, interrupción y redirección, y salida de herramientas en streaming.</td></tr>
@@ -44,7 +44,7 @@ curl -fsSL https://raw.githubusercontent.com/sreent/hermes/main/scripts/install.
 
 ### Windows (nativo, PowerShell)
 
-> **Nota:** En Windows nativo, Hermes funciona sin WSL — la CLI, el gateway, la TUI y las herramientas funcionan de forma nativa. Si prefieres usar WSL2, el comando de Linux/macOS de arriba también funciona allí. ¿Encontraste un error? Por favor [crea un issue](https://github.com/sreent/hermes/issues).
+> **Nota:** En Windows nativo, tuos funciona sin WSL — la CLI, el gateway, la TUI y las herramientas funcionan de forma nativa. Si prefieres usar WSL2, el comando de Linux/macOS de arriba también funciona allí. ¿Encontraste un error? Por favor [crea un issue](https://github.com/sreent/hermes/issues).
 
 Ejecuta esto en PowerShell:
 
@@ -54,7 +54,7 @@ iex (irm https://raw.githubusercontent.com/sreent/hermes/main/scripts/install.ps
 
 El instalador de código fuente usa PM para Python 3.14, Node.js, npm,
 ripgrep, FFmpeg y las dependencias de Python. Si falta Git, descarga el archivo
-verificado de Git for Windows en el almacén de Hermes, sin reemplazar el Git
+verificado de Git for Windows en el almacén de tuos, sin reemplazar el Git
 del sistema. MSIX/App Installer es una distribución separada.
 
 > **Android / Termux:** Hay un paquete APT en pruebas para dispositivos aarch64. Incluye Python, Node.js y la TUI. Sigue la [guía de Termux](https://sreent.github.io/hermes/getting-started/termux), no el script de instalación para escritorio y servidor.
@@ -74,14 +74,14 @@ hermes              # ¡empieza a chatear!
 
 ```bash
 hermes              # CLI interactiva — inicia una conversación
-hermes model        # Elige tu proveedor y modelo LLM
-hermes tools        # Configura qué herramientas están habilitadas
-hermes config set   # Establece valores de configuración individuales
-hermes gateway      # Inicia el gateway de mensajería (Telegram, Discord, etc.)
-hermes setup        # Ejecuta el asistente de configuración completo
-hermes claw migrate # Migra desde OpenClaw (si vienes de OpenClaw)
-hermes update       # Actualiza a la última versión
-hermes doctor       # Diagnostica cualquier problema
+tuos model        # Elige tu proveedor y modelo LLM
+tuos tools        # Configura qué herramientas están habilitadas
+tuos config set   # Establece valores de configuración individuales
+tuos gateway      # Inicia el gateway de mensajería (Telegram, Discord, etc.)
+tuos setup        # Ejecuta el asistente de configuración completo
+tuos claw migrate # Migra desde OpenClaw (si vienes de OpenClaw)
+tuos update       # Actualiza a la última versión
+tuos doctor       # Diagnostica cualquier problema
 ```
 
 📖 **[Documentación completa →](https://sreent.github.io/hermes/)**
@@ -90,7 +90,7 @@ hermes doctor       # Diagnostica cualquier problema
 
 ## Evita la colección de claves API — Nous Portal
 
-Hermes funciona con cualquier proveedor que quieras — eso no cambiará. Pero si prefieres no recopilar cinco claves API separadas para el modelo, búsqueda web, generación de imágenes, TTS y un navegador en la nube, **[Nous Portal](https://portal.nousresearch.com)** las cubre todas bajo una sola suscripción:
+tuos funciona con cualquier proveedor que quieras — eso no cambiará. Pero si prefieres no recopilar cinco claves API separadas para el modelo, búsqueda web, generación de imágenes, TTS y un navegador en la nube, **[Nous Portal](https://portal.nousresearch.com)** las cubre todas bajo una sola suscripción:
 
 - **Más de 300 modelos** — elige cualquiera con `/model <nombre>`
 - **Tool Gateway** — búsqueda web, generación de imágenes (FAL), texto a voz (OpenAI), navegador en la nube (Browser Use), todo enrutado a través de tu suscripción. Sin cuentas adicionales.
@@ -98,10 +98,10 @@ Hermes funciona con cualquier proveedor que quieras — eso no cambiará. Pero s
 Un comando desde una instalación nueva:
 
 ```bash
-hermes setup --portal
+tuos setup --portal
 ```
 
-Esto te autentica vía OAuth, establece Nous como tu proveedor y activa el Tool Gateway. Comprueba qué está conectado en cualquier momento con `hermes portal info`. Detalles completos en la [página de documentación del Tool Gateway](https://sreent.github.io/hermes/user-guide/features/tool-gateway).
+Esto te autentica vía OAuth, establece Nous como tu proveedor y activa el Tool Gateway. Comprueba qué está conectado en cualquier momento con `tuos portal info`. Detalles completos en la [página de documentación del Tool Gateway](https://sreent.github.io/hermes/user-guide/features/tool-gateway).
 
 Puedes seguir usando tus propias claves por herramienta cuando quieras — el gateway es por backend, no todo o nada.
 
@@ -109,11 +109,11 @@ Puedes seguir usando tus propias claves por herramienta cuando quieras — el ga
 
 ## Referencia rápida: CLI vs Mensajería
 
-Hermes tiene dos puntos de entrada: inicia la interfaz de terminal con `hermes`, o ejecuta el gateway y habla con él desde Telegram, Discord, Slack, WhatsApp, Signal o Email. Una vez en una conversación, muchos comandos de barra son compartidos entre ambas interfaces.
+tuos tiene dos puntos de entrada: inicia la interfaz de terminal con `tuos`, o ejecuta el gateway y habla con él desde Telegram, Discord, Slack, WhatsApp, Signal o Email. Una vez en una conversación, muchos comandos de barra son compartidos entre ambas interfaces.
 
 | Acción                              | CLI                                           | Plataformas de mensajería                                                         |
 | ----------------------------------- | --------------------------------------------- | --------------------------------------------------------------------------------- |
-| Empezar a chatear                   | `hermes`                                      | Ejecuta `hermes gateway setup` + `hermes gateway start`, luego envía un mensaje al bot |
+| Empezar a chatear                   | `tuos`                                      | Ejecuta `tuos gateway setup` + `tuos gateway start`, luego envía un mensaje al bot |
 | Nueva conversación                  | `/new` o `/reset`                             | `/new` o `/reset`                                                                 |
 | Cambiar modelo                      | `/model [proveedor:modelo]`                   | `/model [proveedor:modelo]`                                                       |
 | Establecer personalidad             | `/personality [nombre]`                       | `/personality [nombre]`                                                           |
@@ -153,18 +153,18 @@ Toda la documentación está en **[sreent.github.io/hermes](https://sreent.githu
 
 ## Migración desde OpenClaw
 
-Si vienes de OpenClaw, Hermes puede importar automáticamente tu configuración, memorias, habilidades y claves API.
+Si vienes de OpenClaw, tuos puede importar automáticamente tu configuración, memorias, habilidades y claves API.
 
-**Durante la configuración inicial:** El asistente de configuración (`hermes setup`) detecta automáticamente `~/.openclaw` y ofrece migrar antes de que comience la configuración.
+**Durante la configuración inicial:** El asistente de configuración (`tuos setup`) detecta automáticamente `~/.openclaw` y ofrece migrar antes de que comience la configuración.
 
 **En cualquier momento después de instalar:**
 
 ```bash
-hermes plugins install agent-importers  # una vez: OpenClaw, Claude Code, Codex y Cursor
-hermes claw migrate              # Migración interactiva (preset completo)
-hermes claw migrate --dry-run    # Vista previa de qué se migraría
-hermes claw migrate --preset user-data   # Migrar sin secretos
-hermes claw migrate --overwrite  # Sobreescribir conflictos existentes
+tuos plugins install agent-importers  # una vez: OpenClaw, Claude Code, Codex y Cursor
+tuos claw migrate              # Migración interactiva (preset completo)
+tuos claw migrate --dry-run    # Vista previa de qué se migraría
+tuos claw migrate --preset user-data   # Migrar sin secretos
+tuos claw migrate --overwrite  # Sobreescribir conflictos existentes
 ```
 
 Qué se importa:
@@ -178,7 +178,7 @@ Qué se importa:
 - **Assets de TTS** — archivos de audio del espacio de trabajo
 - **Instrucciones del espacio de trabajo** — AGENTS.md (con `--workspace-target`)
 
-Consulta `hermes claw migrate --help` para todas las opciones, o usa la habilidad `openclaw-migration` para una migración guiada interactiva por el agente con vistas previas de dry-run.
+Consulta `tuos claw migrate --help` para todas las opciones, o usa la habilidad `openclaw-migration` para una migración guiada interactiva por el agente con vistas previas de dry-run.
 
 ---
 
@@ -196,8 +196,8 @@ de verificación están en [Development Setup](CONTRIBUTING.md#development-setup
 - 💬 [Discord](https://discord.gg/NousResearch)
 - 📚 [Skills Hub](https://agentskills.io)
 - 🐛 [Issues](https://github.com/sreent/hermes/issues)
-- 🔌 [computer-use-linux](https://github.com/avifenesh/computer-use-linux) — Servidor MCP de control de escritorio Linux para Hermes y otros hosts MCP, con árboles de accesibilidad AT-SPI, entrada Wayland/X11, capturas de pantalla y targeting de ventanas del compositor.
-- 🔌 [HermesClaw](https://github.com/AaronWong1999/hermesclaw) — Puente WeChat comunitario: Ejecuta Hermes Agent y OpenClaw en la misma cuenta de WeChat.
+- 🔌 [computer-use-linux](https://github.com/avifenesh/computer-use-linux) — Servidor MCP de control de escritorio Linux para tuos y otros hosts MCP, con árboles de accesibilidad AT-SPI, entrada Wayland/X11, capturas de pantalla y targeting de ventanas del compositor.
+- 🔌 [HermesClaw](https://github.com/AaronWong1999/hermesclaw) — Puente WeChat comunitario: Ejecuta tuos y OpenClaw en la misma cuenta de WeChat.
 
 ---
 

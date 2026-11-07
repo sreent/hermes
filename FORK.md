@@ -277,7 +277,15 @@ state folder, service and unit names, and the `hermes` command.
   - credit to upstream ("built on / based on Hermes Agent");
   - paths, packages, modules and file or app names (`~/.hermes`, `hermes-agent`, `hermes_cli`,
     `hermes.exe`, `Hermes.app`, `Application Support/Hermes`);
-  - "Hermes Local Signing", the macOS signing certificate's name in the keychain.
+  - "Hermes Local Signing", the macOS signing certificate's name in the keychain;
+  - the `hermes` user and group the Docker image and the Nix module run as ("the `hermes` user",
+    `sudo -u hermes`, `--user hermes`, `s6-setuidgid hermes`, `hermes:hermes`, "drops to hermes").
+    The first rename turned these into `tuos` in 9 docs pages (`docker exec -u tuos ...` fails: there is
+    no such user); they read `hermes` again.
+  - The TUI's taglines credit upstream in every language ("Built on Hermes Agent by Nous Research"), and
+    the rule recognises credit only in English, so `agent/i18n.py` and `ui-tui/src/i18n/runtime.ts`
+    serve those two keys as translated (`CREDIT_KEYS`). Before, the translations still carried Hermes's
+    "Messenger of the Digital Gods".
 - **Applied where copy is loaded, not in the strings themselves**, so upstream's strings merge untouched and
   its new ones are rebranded too:
   - Gateway messages, and the translations the TUI fetches from the backend: `agent/i18n.py` `_load_bundled`.
@@ -305,6 +313,9 @@ state folder, service and unit names, and the `hermes` command.
   - Docs pages (`website/docs` and the zh-Hans translation): prose, front-matter titles and descriptions,
     and shell blocks. Other code blocks, and lines that credit Nous Research, stay. A renamed heading keeps
     its old anchor (`{#...}`), so links into the page still land.
+  - The READMEs and contributing guides in every language and the plugin catalog's rules (`DOC_FILES`),
+    the same way but without the anchors, which GitHub would show as text. The docs site mirrors the
+    catalog rules word for word (`tests/website/test_catalog_rules_mirror.py`).
   - Tests follow: an expectation that quotes copy the code now shows renamed is renamed with it.
     - Python: text a test searches output for (`"..." in out`, `not in`, `any(...)`, `.count(...)`),
       passes to a mock's `assert_*` as a message naming the product, or matches in
@@ -431,9 +442,8 @@ Not rebranded yet:
   notification footer), so extend the scripts' rules with care.
 - What only the agent reads, such as skills and tool descriptions, still says Hermes. Its identity, help
   guidance and surface hints say tuos.
-- Translated READMEs (their banner image is the new one), the desktop pet's pixel knight and the
-  feature illustrations, the TUI's translated taglines, and upstream's community stories on the docs
-  site.
+- The desktop pet's pixel knight and the feature illustrations, and upstream's community stories on the
+  docs site (quotes from people about Hermes).
 
 ### Memory sharing per agent: shared, per_user, hybrid
 

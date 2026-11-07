@@ -182,4 +182,4 @@ Either way the pod is replaced; the volume and the bucket keep their contents.
 - One pod per release. For a second agent, install a second release, with its own memory `prefix` or the same one to share memory.
 - The chart creates no inbound route for chat platforms. Telegram, Discord and Slack connect outwards and need none; a platform that delivers messages by webhook needs a Service and Ingress of your own.
 - Several profiles in the pod work as in the [Docker image](./docker.md#multi-profile-support). With `gateway.multiplex_profiles` on, each profile reads its keys only from its own `.env` on the volume, not from the pod's environment.
-- The image starts as root to prepare the volume, then runs everything as the `tuos` user (UID 10000). Other start users are not supported, so policies that require `runAsNonRoot` rule it out.
+- The image starts as root to prepare the volume, then runs everything as the `hermes` user (UID 10000). Other start users are not supported, so policies that require `runAsNonRoot` rule it out.

@@ -72,7 +72,7 @@ to `http://127.0.0.1:P/callback?code=...`, which resolves to the user's own
 laptop and fails to connect. The callback never reaches the tuos process, the
 flow times out, and `/reload-mcp` returns "No MCP tools available" with no detail.
 
-Symptoms to recognize: `[xdg-open] <defunct>` processes under the tuos user, an
+Symptoms to recognize: `[xdg-open] <defunct>` processes under the hermes user, an
 empty or missing tokens directory (`$HERMES_HOME/mcp-tokens/`), and a reload that
 responds without any "Added/Reconnected: X" line in `change_detail`.
 

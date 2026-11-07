@@ -59,8 +59,13 @@ _PRODUCT_RE = re.compile(
     rf"Hermes(?:[ -]Agent(?![{_WORD}]))?(?![{_WORD}/\\])(?!\.[A-Za-z])(?![ -]?(?:Cloud|\d)| Local Signing)")
 # The command, wherever copy tells someone to run it: `hermes setup`, `hermes -p work ...`, a template's
 # `hermes {profile_arg}doctor`, `hermes` in backticks, "the hermes command". Not a path, package or module
-# (~/.hermes, /opt/hermes/, hermes-agent, hermes_cli, hermes.exe).
-_COMMAND_RE = re.compile(rf"(?<![{_WORD}./\\`-])hermes(?=\s(?:-{{1,2}}[A-Za-z]|[a-z{{])|`)|(?<=`)hermes(?=`|\s)")
+# (~/.hermes, /opt/hermes/, hermes-agent, hermes_cli, hermes.exe), nor the `hermes` user and group the
+# Docker image and the Nix module run as ("the `hermes` user", "drops to hermes", `sudo -u hermes`, `--user hermes`,
+# `s6-setuidgid hermes`, `chown hermes:hermes`), which keep their name.
+_NOT_A_USER = r"(?!`?\s(?:user|group|account)\b)"
+_COMMAND_RE = re.compile(
+    rf"(?<![{_WORD}./\\`:=-])(?<!-u )(?<!--user )(?<!setuidgid )(?<!chown )(?<!id -u )(?<!id -g )(?<!su - )(?<!to )(?<!as )"
+    rf"hermes(?=\s(?:-{{1,2}}[A-Za-z]|[a-z{{])|`){_NOT_A_USER}|(?<=`)hermes(?=`|\s){_NOT_A_USER}")
 
 _HERMES_IDENTITY = "You are Hermes Agent, built by Nous Research."
 IDENTITY = f"You are {PRODUCT_NAME}, built on Nous Research's open-source Hermes Agent."

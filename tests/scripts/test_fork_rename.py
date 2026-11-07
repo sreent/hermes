@@ -112,3 +112,11 @@ def test_tests_keep_wording_the_code_still_has_or_feeds_in():
     produced = rename.Produced("Run `tuos webapp`.\0Then restart tuos to finish.", '{"error": "Run: hermes webapp"}')
     assert rename.follow_tests(test, produced) == test
 
+
+
+def test_github_rendered_docs_rename_without_heading_anchors():
+    """GitHub shows a ``{#id}`` heading anchor as text, so the READMEs get none; the docs site's pages
+    keep their old anchors. Neither renames the `hermes` user."""
+    text = "# Hermes Agent\n\nRun `hermes setup`; the image runs as the `hermes` user.\n"
+    assert rename.rename_text("README.md", text) == "# tuos\n\nRun `tuos setup`; the image runs as the `hermes` user.\n"
+    assert rename.rename_text("website/docs/x.md", text).startswith("# tuos {#hermes-agent}\n")
