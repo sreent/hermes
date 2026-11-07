@@ -225,7 +225,8 @@ profile's `logs/debug-reports/` and reports its path:
   they only delete pastes that an earlier version uploaded.
 - CLI `/debug` (`cli_commands_mixin.py`), chat `/debug` (`gateway/slash_commands.py`), the dashboard's
   `POST /api/ops/debug-share` (`hermes_cli/web_routers/status.py`) and the desktop RPC, renamed
-  `diagnostics.save` (`tui_gateway/methods_config.py`, contracts regenerated), save locally.
+  `diagnostics.save` (`tui_gateway/methods_config.py`, contracts and
+  `tests/hermes_cli/serve_handler_ledger.json` regenerated), save locally.
 - UI: the desktop's "Save diagnostics" dialog, update-error report and maintenance action, and the web
   dashboard's System page show the saved path. The rewritten desktop strings fall back to English in the
   other languages (`apps/desktop/src/i18n/overlay-gaps.json`); the chat strings are translated in all 17

@@ -325,4 +325,4 @@ def test_initial_auth_failure_parks_and_revives_after_relogin(
         and "failed initial authentication" in r.getMessage()
     ]
     assert len(auth_warnings) == 1
-    assert "hermes mcp login figma" in auth_warnings[0].getMessage()
+    assert "tuos mcp login figma" in auth_warnings[0].getMessage()
