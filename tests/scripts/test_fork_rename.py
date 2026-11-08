@@ -136,3 +136,39 @@ def test_copy_kept_as_data_is_renamed_but_identities_are_not():
     assert '"description": "Run commands for tuos"' in out
     assert 'UPDATE_MESSAGE = "tuos updated; run `tuos doctor`"' in out
     assert 'NAME = "Hermes Agent"' in out
+
+
+def _git(cwd: Path, *args: str) -> subprocess.CompletedProcess:
+    return subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@example.invalid", "-c", "commit.gpgsign=false",
+                           *args], cwd=cwd, capture_output=True, text=True, check=False)
+
+
+def test_a_merge_resolves_conflicts_the_rename_caused_and_keeps_our_changes(tmp_path, monkeypatch):
+    """--resolve merges a conflicted file again with the rename on both sides: upstream's change to a
+    line we renamed arrives renamed, our own change stays, and a file that still conflicts is left for
+    a hand, out of the rename until resolved (its markers would not parse)."""
+    page, code = tmp_path / "website/docs/page.md", tmp_path / "hermes_cli/thing.py"
+    page.parent.mkdir(parents=True)
+    code.parent.mkdir()
+    _git(tmp_path, "init", "-q", "-b", "main")
+    page.write_text("# Page\n\nHermes keeps notes.\n\nRun `hermes setup` once.\n\nPlain line.\n", encoding="utf-8")
+    code.write_text('print("Hermes ready")\nLIMIT = 1\n', encoding="utf-8")
+    _git(tmp_path, "add", ".")
+    _git(tmp_path, "commit", "-q", "-m", "base")
+    _git(tmp_path, "checkout", "-q", "-b", "upstream")
+    page.write_text(page.read_text(encoding="utf-8").replace("keeps notes.", "keeps notes and skills."), encoding="utf-8")
+    code.write_text(code.read_text(encoding="utf-8").replace("1", "3"), encoding="utf-8")
+    _git(tmp_path, "commit", "-q", "-am", "upstream")
+    _git(tmp_path, "checkout", "-q", "main")
+    page.write_text(rename.rename_markdown(page.read_text(encoding="utf-8")).replace("Plain line.", "Plain line, ours."),
+                    encoding="utf-8")
+    code.write_text(code.read_text(encoding="utf-8").replace("1", "2"), encoding="utf-8")
+    _git(tmp_path, "commit", "-q", "-am", "ours")
+    assert _git(tmp_path, "merge", "-q", "upstream").returncode != 0
+    monkeypatch.setattr(rename, "ROOT", tmp_path)
+
+    assert rename.resolve() == ["website/docs/page.md"]
+    assert page.read_text(encoding="utf-8") == (
+        "# Page\n\ntuos keeps notes and skills.\n\nRun `tuos setup` once.\n\nPlain line, ours.\n")
+    assert rename.unmerged_files() == ["hermes_cli/thing.py"]
+    assert code not in rename.python_files()

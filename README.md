@@ -49,7 +49,7 @@ Run this in PowerShell:
 iex (irm https://raw.githubusercontent.com/sreent/hermes/main/scripts/install.ps1)
 ```
 
-The source installer delegates Python 3.14, Node.js, npm, ripgrep, FFmpeg,
+The source installer delegates Python 3.14, Node.js, npm, pnpm, ripgrep, FFmpeg,
 and Python dependencies to PM. If Git is absent, it stages the verified Git
 for Windows archive in tuos' tool store. It does not replace your system Git.
 See [installation methods](https://sreent.github.io/hermes/getting-started/installation)

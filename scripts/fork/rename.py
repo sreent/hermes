@@ -397,9 +397,12 @@ def rename_markdown(text: str, *, anchors: bool = True, shell: bool = True) -> s
 
 
 def _git_files(*patterns: str) -> list[Path]:
+    """Tracked files matching ``patterns``, except those a merge left conflicted: their text holds both
+    sides between markers (Python's does not even parse), so they are renamed once resolved."""
     listed = subprocess.run(["git", "ls-files", "--", *patterns], cwd=ROOT, capture_output=True,
                             text=True, encoding="utf-8", check=True, timeout=120)
-    return [ROOT / name for name in dict.fromkeys(listed.stdout.splitlines())]  # mid-merge: once per side
+    unmerged = set(unmerged_files())
+    return [ROOT / name for name in dict.fromkeys(listed.stdout.splitlines()) if name not in unmerged]  # mid-merge: once per side
 
 
 def python_files() -> list[Path]:
@@ -476,20 +479,37 @@ def _git(*args: str, data: bytes | None = None) -> subprocess.CompletedProcess:
     return subprocess.run(["git", *args], cwd=ROOT, input=data, capture_output=True, check=False, timeout=120)
 
 
-def resolve() -> tuple[list[str], list[str]]:
-    """Mid-merge, take upstream's side of each conflicted file whose only change on our side is the
-    rename (the rewrite that follows renames it again). Returns (taken, left for a hand)."""
-    taken, left = [], []
-    for name in _git("diff", "--name-only", "--diff-filter=U").stdout.decode().split():
-        base, ours, theirs = (_git("show", f":{stage}:{name}") for stage in (1, 2, 3))
-        if all(side.returncode == 0 for side in (base, ours, theirs)) and \
-                rename_text(name, base.stdout.decode("utf-8", "surrogateescape")) == ours.stdout.decode("utf-8", "surrogateescape"):
-            (ROOT / name).write_bytes(theirs.stdout)
+def unmerged_files() -> list[str]:
+    """The files a merge left conflicted, each once."""
+    return list(dict.fromkeys(_git("diff", "--name-only", "--diff-filter=U").stdout.decode().splitlines()))
+
+
+def resolve() -> list[str]:
+    """Mid-merge, merge each conflicted file again with the rename applied to the merge base and to
+    upstream's side, so lines that differ only by the rename stop conflicting: a file our side only
+    renamed takes upstream's text, and one that also carries changes of ours keeps them. Stages and
+    returns the files that now merge cleanly; the rest stay conflicted for a hand."""
+    settled = []
+    for name in unmerged_files():
+        sides = [_git("show", f":{stage}:{name}") for stage in (1, 2, 3)]
+        if any(side.returncode for side in sides):  # added or deleted on one side
+            continue
+        base, ours, theirs = (side.stdout.decode("utf-8", "surrogateescape") for side in sides)
+        if (merged := _merge_file(ours, rename_text(name, base), rename_text(name, theirs))) is not None:
+            (ROOT / name).write_bytes(merged)
             _git("add", "--", name)
-            taken.append(name)
-        else:
-            left.append(name)
-    return taken, left
+            settled.append(name)
+    return settled
+
+
+def _merge_file(ours: str, base: str, theirs: str) -> bytes | None:
+    """``git merge-file``'s three-way merge of the texts, or None where they conflict."""
+    with tempfile.TemporaryDirectory() as tmp:
+        paths = [Path(tmp, side) for side in ("ours", "base", "theirs")]
+        for path, text in zip(paths, (ours, base, theirs), strict=True):
+            path.write_bytes(text.encode("utf-8", "surrogateescape"))
+        merged = subprocess.run(["git", "merge-file", "-p", *map(str, paths)], capture_output=True, check=False, timeout=120)
+    return merged.stdout if merged.returncode == 0 else None
 
 
 def _rename_apps(args: argparse.Namespace, renamed: list[tuple[str, int, str]]) -> tuple[list[str], int]:
@@ -511,9 +531,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--check", action="store_true", help="change nothing; exit 1 if anything would change")
     parser.add_argument("--report", action="store_true", help="also list strings left as they are")
-    parser.add_argument("--resolve", action="store_true", help="mid-merge: take upstream's side where ours only renamed")
+    parser.add_argument("--resolve", action="store_true",
+                        help="mid-merge: merge conflicted files again with the rename applied to both sides")
     args = parser.parse_args()
-    taken, unmerged = resolve() if args.resolve else ([], [])
+    settled = resolve() if args.resolve else []
+    unmerged = unmerged_files()
     changed: list[str] = []
     renamed: list[tuple[str, int, str]] = []
     matched: list[tuple[str, int, str]] = []
@@ -555,9 +577,9 @@ def main() -> int:
     changed += relink.run(args.check)
     print(f"{'would rename' if args.check else 'renamed'} {len(changed)} file(s)")
     if args.resolve:
-        _git("add", "--", *taken) if taken else None
-        print(f"took upstream's side of {len(taken)} conflicted file(s) and renamed them again")
-        print(*(f"    resolve by hand: {name}" for name in unmerged), sep="\n") if unmerged else None
+        _git("add", "--", *settled) if settled else None
+        print(f"merged {len(settled)} conflicted file(s) again with the rename on both sides")
+    print(*(f"    conflicted, renamed once resolved by hand: {name}" for name in unmerged), sep="\n") if unmerged else None
     if conflicts or apps_status == 3:
         return 3
     return 1 if (args.check and changed) or unmerged else 0

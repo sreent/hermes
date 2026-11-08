@@ -56,7 +56,7 @@ def test_declared_key_missing_from_profile_scope_fails_before_the_request(tmp_pa
         resolve_runtime_provider()
     message = str(excinfo.value)
     assert excinfo.value.code == "missing_api_key"
-    for needle in ("FakeUp", "CANARY_KEY", "'beta'", "hermes -p beta config set CANARY_KEY"):
+    for needle in ("FakeUp", "CANARY_KEY", "'beta'", "tuos -p beta config set CANARY_KEY"):
         assert needle in message
     assert "server's environment" in message  # the key the user exported is named as unreadable here
     assert "canary-process-env" not in message

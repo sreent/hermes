@@ -12,7 +12,7 @@
  *
  * Tests follow (`followTest`): an expectation quoting copy that now reads renamed is renamed with it.
  *
- * Needs the repository's node_modules (`npm ci`) for the TypeScript parser.
+ * Needs the repository's node_modules (`pnpm install --frozen-lockfile`) for the TypeScript parser.
  *
  *     node scripts/fork/rename_ts.mjs             # rewrite; prints the files it changed
  *     node scripts/fork/rename_ts.mjs --check     # change nothing; prints the files it would change
@@ -502,9 +502,15 @@ function applyRenames(text, renamed) {
   return text
 }
 
-// Once each: mid-merge, ls-files lists a conflicted file once per side.
-const listed = () =>
-  [...new Set(execFileSync('git', ['ls-files', '--', ...ROOTS], { cwd: ROOT, encoding: 'utf8' }).split('\n'))]
+const git = (...args) => execFileSync('git', args, { cwd: ROOT, encoding: 'utf8' }).split('\n')
+
+// Once each: mid-merge, ls-files lists a conflicted file once per side. A file a merge left conflicted
+// holds both sides between markers: it is renamed once resolved.
+const listed = () => {
+  const unmerged = new Set(git('diff', '--name-only', '--diff-filter=U'))
+
+  return [...new Set(git('ls-files', '--', ...ROOTS))].filter(file => !unmerged.has(file))
+}
 const isTest = file => TEST.test(file) && !/fixture/.test(file)
 const read = file => readFileSync(path.join(ROOT, file), 'utf8')
 

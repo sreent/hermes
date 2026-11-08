@@ -59,7 +59,7 @@ iex (irm https://raw.githubusercontent.com/sreent/hermes/main/scripts/install.ps
 
 </div>
 
-سورس انسٹالر Python 3.14، Node.js، npm، ripgrep، FFmpeg اور Python کی
+سورس انسٹالر Python 3.14، Node.js، npm، pnpm، ripgrep، FFmpeg اور Python کی
 ڈیپینڈینسیز کے لیے PM استعمال کرتا ہے۔ اگر Git موجود نہ ہو تو Git for Windows
 کا تصدیق شدہ آرکائیو ہرمیس کے ٹول اسٹور میں نصب کرتا ہے۔ سسٹم کا Git تبدیل نہیں
 ہوتا۔ MSIX/App Installer ایک الگ پیکیج ہے۔
